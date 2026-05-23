@@ -1,6 +1,5 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { scryptSync, randomBytes } from 'crypto';
 import * as schema from './schema';
 import {
 	inviteCodes,
@@ -8,9 +7,13 @@ import {
 	categories,
 	reports,
 	reportAttachments,
-	webUsers,
-	statusHistories
+	statusHistories,
+	user,
+	account,
+	session,
+	verification
 } from './schema';
+import { hashPassword } from 'better-auth/crypto';
 import { loadEnvFile } from 'process';
 
 try {
@@ -29,13 +32,6 @@ if (!process.env.DATABASE_URL) {
 const client = postgres(process.env.DATABASE_URL, { max: 1 });
 const db = drizzle(client, { schema });
 
-// Helper to hash password using Node.js crypto module (scrypt)
-function hashPassword(password: string): string {
-	const salt = randomBytes(16).toString('hex');
-	const hash = scryptSync(password, salt, 64).toString('hex');
-	return `${salt}:${hash}`;
-}
-
 async function main() {
 	console.log('⏳ Starting database seeding (Digital Product Complaints)...');
 
@@ -47,7 +43,10 @@ async function main() {
 		await db.delete(reports);
 		await db.delete(reporters);
 		await db.delete(categories);
-		await db.delete(webUsers);
+		await db.delete(session);
+		await db.delete(account);
+		await db.delete(user);
+		await db.delete(verification);
 		await db.delete(inviteCodes);
 		console.log('✅ Tables cleaned successfully.');
 
@@ -75,26 +74,50 @@ async function main() {
 			.returning();
 		console.log(`✅ Seeded ${inviteCodeRecords.length} invite codes.`);
 
-		// 3. Insert Web Users (Admin & Agent)
-		console.log('👥 Seeding web users...');
-		const webUserRecords = await db
-			.insert(webUsers)
+		// 3. Insert Users & Accounts (Admin & Agent)
+		console.log('👥 Seeding users and accounts...');
+		const adminId = 'admin-user-id-1';
+		const agentId = 'agent-user-id-1';
+
+		const userRecords = await db
+			.insert(user)
 			.values([
 				{
+					id: adminId,
+					name: 'Admin',
 					email: 'admin@trak.id',
-					passwordHash: hashPassword('adminpassword123'),
+					emailVerified: true,
 					role: 'admin',
 					isActive: true
 				},
 				{
+					id: agentId,
+					name: 'Agent Budi',
 					email: 'agent.budi@trak.id',
-					passwordHash: hashPassword('agentpassword123'),
+					emailVerified: true,
 					role: 'agent',
 					isActive: true
 				}
 			])
 			.returning();
-		console.log(`✅ Seeded ${webUserRecords.length} web users.`);
+
+		await db.insert(account).values([
+			{
+				id: 'admin-account-id',
+				userId: adminId,
+				accountId: adminId,
+				providerId: 'credential',
+				password: await hashPassword('adminpassword123')
+			},
+			{
+				id: 'agent-account-id',
+				userId: agentId,
+				accountId: agentId,
+				providerId: 'credential',
+				password: await hashPassword('agentpassword123')
+			}
+		]);
+		console.log(`✅ Seeded ${userRecords.length} users and accounts.`);
 
 		// 4. Insert Categories
 		console.log('📁 Seeding categories...');
@@ -174,7 +197,7 @@ async function main() {
 			.values([
 				{
 					reportId: reportRecords[1].id,
-					changedBy: webUserRecords[0].id, // Admin
+					changedBy: adminId, // Reference the admin user we just seeded
 					oldStatus: 'open',
 					newStatus: 'in_progress',
 					note: 'Keluhan diterima. Tim Finance kami sedang mencocokkan mutasi pembayaran pada sistem pembayaran LinkAja. Proses pencocokan biasanya memakan waktu maksimal 1 jam kerja.'
