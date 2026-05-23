@@ -7,7 +7,7 @@ export const load: LayoutServerLoad = async (event) => {
 	}
 
 	if (event.url.pathname === '/login' && event.locals.user) {
-		return redirect(302, '/');
+		return redirect(302, '/dashboard');
 	}
 
 	return { user: event.locals.user };
