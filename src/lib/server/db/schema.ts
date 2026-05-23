@@ -1,5 +1,8 @@
 import { pgTable, uuid, bigint, text, varchar, boolean, timestamp } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+import { user } from './auth.schema';
+
+export * from './auth.schema';
 
 // Helper for standard timestamp fields
 export const lifecycleDates = {
@@ -58,23 +61,14 @@ export const reportAttachments = pgTable('report_attachments', {
 	uploadedAt: timestamp('uploaded_at', { withTimezone: true }).notNull().defaultNow()
 });
 
-export const webUsers = pgTable('web_users', {
-	id: uuid('id').defaultRandom().primaryKey(),
-	email: text('email').notNull().unique(),
-	passwordHash: text('password_hash').notNull(),
-	role: varchar('role', { length: 50 }).notNull().default('agent'),
-	isActive: boolean('is_active').notNull().default(true),
-	...lifecycleDates
-});
-
 export const statusHistories = pgTable('status_histories', {
 	id: uuid('id').defaultRandom().primaryKey(),
 	reportId: uuid('report_id')
 		.notNull()
 		.references(() => reports.id, { onDelete: 'cascade' }),
-	changedBy: uuid('changed_by')
+	changedBy: text('changed_by')
 		.notNull()
-		.references(() => webUsers.id),
+		.references(() => user.id),
 	oldStatus: varchar('old_status', { length: 50 }).notNull(),
 	newStatus: varchar('new_status', { length: 50 }).notNull(),
 	note: text('note'),
@@ -119,17 +113,13 @@ export const reportAttachmentsRelations = relations(reportAttachments, ({ one })
 	})
 }));
 
-export const webUsersRelations = relations(webUsers, ({ many }) => ({
-	statusHistories: many(statusHistories)
-}));
-
 export const statusHistoriesRelations = relations(statusHistories, ({ one }) => ({
 	report: one(reports, {
 		fields: [statusHistories.reportId],
 		references: [reports.id]
 	}),
-	changedByUser: one(webUsers, {
+	changedByUser: one(user, {
 		fields: [statusHistories.changedBy],
-		references: [webUsers.id]
+		references: [user.id]
 	})
 }));
