@@ -36,47 +36,4 @@
 	</div>
 
 	<TicketsTable tickets={data.tickets} />
-
-	<div
-		class="bg-surface-container-lowest border-outline-variant soft-shadow overflow-hidden rounded-xl border"
-	>
-		<!-- Pagination -->
-		<div
-			class="border-outline-variant bg-surface-container-low/30 flex items-center justify-between border-t px-6 py-4"
-		>
-			<p class="text-body-sm text-on-surface-variant">
-				Showing <span class="text-on-surface font-bold">1-{data.tickets.length}</span> of
-				<span class="text-on-surface font-bold">{data.tickets.length}</span> reports
-			</p>
-			<div class="flex items-center gap-1">
-				<button
-					class="border-outline-variant text-on-surface-variant hover:bg-surface-container-low flex h-9 w-9 items-center justify-center rounded-lg border disabled:cursor-not-allowed disabled:opacity-30"
-				>
-					<span class="material-symbols-outlined">chevron_left</span>
-				</button>
-				<button
-					class="text-on-primary font-label-md text-label-md flex h-9 w-9 items-center justify-center rounded-lg bg-primary"
-					>1</button
-				>
-				<button
-					class="border-outline-variant text-on-surface font-label-md text-label-md hover:bg-surface-container-low flex h-9 w-9 items-center justify-center rounded-lg border"
-					>2</button
-				>
-				<button
-					class="border-outline-variant text-on-surface font-label-md text-label-md hover:bg-surface-container-low flex h-9 w-9 items-center justify-center rounded-lg border"
-					>3</button
-				>
-				<span class="text-on-surface-variant px-2">...</span>
-				<button
-					class="border-outline-variant text-on-surface font-label-md text-label-md hover:bg-surface-container-low flex h-9 w-9 items-center justify-center rounded-lg border"
-					>248</button
-				>
-				<button
-					class="border-outline-variant text-on-surface-variant hover:bg-surface-container-low flex h-9 w-9 items-center justify-center rounded-lg border"
-				>
-					<span class="material-symbols-outlined">chevron_right</span>
-				</button>
-			</div>
-		</div>
-	</div>
 </div>

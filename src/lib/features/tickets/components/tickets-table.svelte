@@ -1,138 +1,64 @@
 <script lang="ts">
-	import { DotsThreeVerticalIcon } from 'phosphor-svelte';
-	import {
-		Table,
-		TableBody,
-		TableCell,
-		TableHead,
-		TableHeader,
-		TableRow
-	} from '$lib/components/ui/table';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+	import { X } from 'phosphor-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
-
+	import { Input } from '$lib/components/ui/input/index.js';
+	import type { ColumnDef } from '@tanstack/table-core';
+	import {
+		DataTable,
+		DataTableViewOptions,
+		DataTableFacetedFilter
+	} from '$lib/components/shared/data-table/index.js';
+	import Columns from './columns.svelte';
 	import type { TicketWithRelations } from '$lib/features/tickets/types';
 
 	let { tickets = [] }: { tickets?: TicketWithRelations[] } = $props();
 
-	const statusStyles: Record<string, string> = {
-		open: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-900',
-		in_progress:
-			'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900',
-		resolved:
-			'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900',
-		closed:
-			'bg-zinc-50 text-zinc-700 border-zinc-200 dark:bg-zinc-950/30 dark:text-zinc-400 dark:border-zinc-900'
-	};
+	let columns: ColumnDef<TicketWithRelations, unknown>[] = $state([]);
 
-	function formatStatus(status: string) {
-		return status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-	}
-
-	function formatDate(date: Date) {
-		return date.toLocaleDateString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric'
-		});
-	}
-
-	function getInitials(name: string) {
-		return (
-			name
-				.split(' ')
-				.map((n) => n[0])
-				.join('')
-				.slice(0, 2)
-				.toUpperCase() || 'U'
-		);
-	}
+	const statusOptions = [
+		{ label: 'Open', value: 'open' },
+		{ label: 'In Progress', value: 'in_progress' },
+		{ label: 'Resolved', value: 'resolved' },
+		{ label: 'Closed', value: 'closed' }
+	];
 </script>
 
-<Table class="border">
-	<TableHeader>
-		<TableRow class="rounded-md border bg-card">
-			<TableHead class="w-[120px]">Ticket ID</TableHead>
-			<TableHead>Subject</TableHead>
-			<TableHead>Reporter</TableHead>
-			<TableHead>Category</TableHead>
-			<TableHead>Status</TableHead>
-			<TableHead>Date Created</TableHead>
-			<TableHead class="w-[80px]">Actions</TableHead>
-		</TableRow>
-	</TableHeader>
-	<TableBody>
-		{#if tickets.length === 0}
-			<TableRow>
-				<TableCell colspan={7} class="h-24 text-center text-muted-foreground">
-					No tickets found.
-				</TableCell>
-			</TableRow>
-		{:else}
-			{#each tickets as ticket (ticket.id)}
-				<TableRow>
-					<TableCell class="font-mono text-xs">
-						#TK-{ticket.id.slice(0, 8).toUpperCase()}
-					</TableCell>
-					<TableCell class="font-medium">
-						<a href={resolve(`/tickets/${ticket.id}`)} class="hover:text-primary hover:underline">
-							{ticket.title}
-						</a>
-					</TableCell>
-					<TableCell>
-						<div class="flex items-center gap-2">
-							<div
-								class="flex size-7 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary"
-							>
-								{getInitials(ticket.reporter.fullName)}
-							</div>
-							<div class="flex flex-col">
-								<span class="text-sm leading-none font-medium">{ticket.reporter.fullName}</span>
-								{#if ticket.reporter.username}
-									<span class="text-xs text-muted-foreground">@{ticket.reporter.username}</span>
-								{/if}
-							</div>
-						</div>
-					</TableCell>
-					<TableCell>
-						{ticket.category?.name ?? 'Uncategorized'}
-					</TableCell>
-					<TableCell>
-						<span
-							class="text-label-sm rounded-lg border px-2.5 py-1 text-xs font-semibold {statusStyles[
-								ticket.status
-							] || statusStyles.open}"
-						>
-							{formatStatus(ticket.status)}
-						</span>
-					</TableCell>
-					<TableCell class="text-sm text-muted-foreground">
-						{formatDate(new Date(ticket.createdAt))}
-					</TableCell>
-					<TableCell>
-						<DropdownMenu.Root>
-							<DropdownMenu.Trigger>
-								{#snippet child({ props })}
-									<Button variant="ghost" size="icon" {...props}>
-										<DotsThreeVerticalIcon class="size-4" />
-									</Button>
-								{/snippet}
-							</DropdownMenu.Trigger>
-							<DropdownMenu.Content align="end" class="w-36 rounded-lg">
-								<DropdownMenu.Item onSelect={() => goto(resolve(`/tickets/${ticket.id}`))}>
-									View Details
-								</DropdownMenu.Item>
-								<DropdownMenu.Item>Assign Agent</DropdownMenu.Item>
-								<DropdownMenu.Item class="text-destructive focus:text-destructive">
-									Delete Ticket
-								</DropdownMenu.Item>
-							</DropdownMenu.Content>
-						</DropdownMenu.Root>
-					</TableCell>
-				</TableRow>
-			{/each}
-		{/if}
-	</TableBody>
-</Table>
+<Columns bind:columns />
+
+<DataTable data={tickets} {columns}>
+	{#snippet toolbar(table)}
+		{@const isFiltered = table.getState().columnFilters.length > 0}
+		{@const statusCol = table.getColumn('status')}
+		<div class="flex items-center justify-between">
+			<div class="flex flex-1 items-center space-x-2">
+				<Input
+					placeholder="Filter tickets..."
+					value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
+					oninput={(e) => {
+						table.getColumn('title')?.setFilterValue(e.currentTarget.value);
+					}}
+					onchange={(e) => {
+						table.getColumn('title')?.setFilterValue(e.currentTarget.value);
+					}}
+					class="h-8 w-40 lg:w-3xs"
+				/>
+
+				{#if statusCol}
+					<DataTableFacetedFilter column={statusCol} title="Status" options={statusOptions} />
+				{/if}
+
+				{#if isFiltered}
+					<Button
+						variant="ghost"
+						onclick={() => table.resetColumnFilters()}
+						class="h-8 px-2 lg:px-3"
+					>
+						Reset
+						<X class="ms-2 size-4" />
+					</Button>
+				{/if}
+			</div>
+			<DataTableViewOptions {table} />
+		</div>
+	{/snippet}
+</DataTable>
