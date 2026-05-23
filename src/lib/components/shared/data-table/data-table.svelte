@@ -19,6 +19,7 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
+	import Empty from '$lib/components/ui/empty/empty.svelte';
 	import type { Snippet } from 'svelte';
 
 	import {
@@ -223,7 +224,16 @@
 					</Table.Row>
 				{:else}
 					<Table.Row>
-						<Table.Cell colspan={columns.length} class="h-24 text-center">No results.</Table.Cell>
+						<Table.Cell colspan={columns.length} class="p-0">
+							<Empty class="border-0 rounded-none bg-transparent py-16">
+								<div class="flex flex-col items-center gap-1.5">
+									<p class="text-sm font-semibold">No results found</p>
+									<p class="text-xs text-muted-foreground">
+										Try adjusting your filters or search term.
+									</p>
+								</div>
+							</Empty>
+						</Table.Cell>
 					</Table.Row>
 				{/each}
 			</Table.Body>
