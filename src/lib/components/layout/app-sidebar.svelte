@@ -1,126 +1,75 @@
 <script lang="ts" module>
 	import {
-		BookOpenIcon,
-		RobotIcon,
 		ChartPieIcon,
-		SidebarIcon,
-		GearSixIcon,
-		TerminalWindowIcon,
-		MapPinIcon
+		TicketIcon,
+		UsersIcon,
+		KeyIcon,
+		TagIcon,
+		ShieldIcon,
+		GearSixIcon
 	} from 'phosphor-svelte';
 
 	const data = {
 		navMain: [
 			{
-				title: 'Playground',
-				url: '#',
-				icon: TerminalWindowIcon,
-				isActive: true,
-				items: [
-					{
-						title: 'History',
-						url: '#'
-					},
-					{
-						title: 'Starred',
-						url: '#'
-					},
-					{
-						title: 'Settings',
-						url: '#'
-					}
-				]
-			},
-			{
-				title: 'Models',
-				url: '#',
-				icon: RobotIcon,
-				items: [
-					{
-						title: 'Genesis',
-						url: '#'
-					},
-					{
-						title: 'Explorer',
-						url: '#'
-					},
-					{
-						title: 'Quantum',
-						url: '#'
-					}
-				]
-			},
-			{
-				title: 'Documentation',
-				url: '#',
-				icon: BookOpenIcon,
-				items: [
-					{
-						title: 'Introduction',
-						url: '#'
-					},
-					{
-						title: 'Get Started',
-						url: '#'
-					},
-					{
-						title: 'Tutorials',
-						url: '#'
-					},
-					{
-						title: 'Changelog',
-						url: '#'
-					}
-				]
-			},
-			{
-				title: 'Settings',
-				url: '#',
-				icon: GearSixIcon,
-				items: [
-					{
-						title: 'General',
-						url: '#'
-					},
-					{
-						title: 'Team',
-						url: '#'
-					},
-					{
-						title: 'Billing',
-						url: '#'
-					},
-					{
-						title: 'Limits',
-						url: '#'
-					}
-				]
-			}
-		],
-		projects: [
-			{
-				name: 'Design Engineering',
-				url: '#',
-				icon: SidebarIcon
-			},
-			{
-				name: 'Sales & Marketing',
-				url: '#',
+				title: 'Dashboard',
+				url: '/dashboard',
 				icon: ChartPieIcon
 			},
 			{
-				name: 'Travel',
-				url: '#',
-				icon: MapPinIcon
+				title: 'Tickets',
+				url: '/tickets',
+				icon: TicketIcon,
+				items: [
+					{
+						title: 'All Tickets',
+						url: '/tickets'
+					},
+					{
+						title: 'Open',
+						url: '/tickets?status=open'
+					},
+					{
+						title: 'In Progress',
+						url: '/tickets?status=in_progress'
+					},
+					{
+						title: 'Resolved',
+						url: '/tickets?status=resolved'
+					}
+				]
+			},
+			{
+				title: 'Reporters',
+				url: '/reporters',
+				icon: UsersIcon
+			},
+			{
+				title: 'Invite Codes',
+				url: '/invite-codes',
+				icon: KeyIcon
+			},
+			{
+				title: 'Categories',
+				url: '/categories',
+				icon: TagIcon
+			},
+			{
+				title: 'Agents',
+				url: '/agents',
+				icon: ShieldIcon
+			},
+			{
+				title: 'Settings',
+				url: '/settings',
+				icon: GearSixIcon
 			}
 		]
 	};
 </script>
 
 <script lang="ts">
-	import NavHeader from './nav-header.svelte';
 	import NavMain from './nav-main.svelte';
-	import NavProjects from './nav-projects.svelte';
 	import NavUser from './nav-user.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { page } from '$app/state';
@@ -137,11 +86,22 @@
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>
 	<Sidebar.Header>
-		<NavHeader />
+		<div class="flex items-center gap-2 px-2 py-1.5 text-start">
+			<div
+				class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
+			>
+				<TicketIcon class="size-4" />
+			</div>
+			<div
+				class="grid flex-1 text-start text-sm leading-tight group-data-[collapsible=icon]:hidden"
+			>
+				<span class="truncate font-semibold">Acme Inc.</span>
+				<span class="truncate text-xs text-muted-foreground">Ticketing System</span>
+			</div>
+		</div>
 	</Sidebar.Header>
 	<Sidebar.Content>
 		<NavMain items={data.navMain} />
-		<NavProjects projects={data.projects} />
 	</Sidebar.Content>
 	<Sidebar.Footer>
 		{#if user}
