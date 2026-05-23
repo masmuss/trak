@@ -1,40 +1,15 @@
 <script lang="ts" module>
 	import {
-		WavesIcon,
 		BookOpenIcon,
 		RobotIcon,
 		ChartPieIcon,
-		CommandIcon,
 		SidebarIcon,
-		SlideshowIcon,
 		GearSixIcon,
 		TerminalWindowIcon,
 		MapPinIcon
 	} from 'phosphor-svelte';
 
 	const data = {
-		user: {
-			name: 'shadcn',
-			email: 'm@example.com',
-			avatar: '/avatars/shadcn.jpg'
-		},
-		teams: [
-			{
-				name: 'Acme Inc',
-				logo: SlideshowIcon,
-				plan: 'Enterprise'
-			},
-			{
-				name: 'Acme Corp.',
-				logo: WavesIcon,
-				plan: 'Startup'
-			},
-			{
-				name: 'Evil Corp.',
-				logo: CommandIcon,
-				plan: 'Free'
-			}
-		],
 		navMain: [
 			{
 				title: 'Playground',
@@ -143,29 +118,35 @@
 </script>
 
 <script lang="ts">
+	import NavHeader from './nav-header.svelte';
 	import NavMain from './nav-main.svelte';
 	import NavProjects from './nav-projects.svelte';
 	import NavUser from './nav-user.svelte';
-	import TeamSwitcher from './team-switcher.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import { page } from '$app/state';
 	import type { ComponentProps } from 'svelte';
+
 	let {
 		ref = $bindable(null),
 		collapsible = 'icon',
 		...restProps
 	}: ComponentProps<typeof Sidebar.Root> = $props();
+
+	const user = $derived(page.data.user);
 </script>
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>
 	<Sidebar.Header>
-		<TeamSwitcher teams={data.teams} />
+		<NavHeader />
 	</Sidebar.Header>
 	<Sidebar.Content>
 		<NavMain items={data.navMain} />
 		<NavProjects projects={data.projects} />
 	</Sidebar.Content>
 	<Sidebar.Footer>
-		<NavUser user={data.user} />
+		{#if user}
+			<NavUser {user} />
+		{/if}
 	</Sidebar.Footer>
 	<Sidebar.Rail />
 </Sidebar.Root>
