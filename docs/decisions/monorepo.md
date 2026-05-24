@@ -4,12 +4,12 @@
 
 Proyek ini punya tiga entitas yang perlu berbagi kode:
 
-| Entitas | Peran |
-|---------|-------|
-| `apps/web` | SvelteKit frontend (ticketing portal) |
-| `apps/bot` | Telegram bot |
-| `packages/database` | Schema & client Drizzle ORM |
-| `packages/shared` | Types & constants bersama |
+| Entitas             | Peran                                 |
+| ------------------- | ------------------------------------- |
+| `apps/web`          | SvelteKit frontend (ticketing portal) |
+| `apps/bot`          | Telegram bot                          |
+| `packages/database` | Schema & client Drizzle ORM           |
+| `packages/shared`   | Types & constants bersama             |
 
 ### Masalah yang Dipecahkan
 
