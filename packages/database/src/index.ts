@@ -8,7 +8,8 @@ type Database = PostgresJsDatabase<typeof schema>;
 let _db: Database | null = null;
 let _connectionString: string | undefined;
 
-export function initDb(connectionString: string) {
+export function initDb(connectionString: string | undefined) {
+	if (!connectionString) throw new Error('DATABASE_URL is not set');
 	_connectionString = connectionString;
 }
 
