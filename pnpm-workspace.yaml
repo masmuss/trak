@@ -5,3 +5,5 @@ packages:
 onlyBuiltDependencies:
   - esbuild
   - lefthook
+  - better-sqlite3
+  - '@prisma/client'
