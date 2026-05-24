@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { X } from 'phosphor-svelte';
+	import { X, PlusIcon, CloudArrowDownIcon } from 'phosphor-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import type { ColumnDef } from '@tanstack/table-core';
@@ -106,7 +106,17 @@
 					</Button>
 				{/if}
 			</div>
-			<DataTableViewOptions {table} />
+			<div class="flex items-center gap-2">
+				<DataTableViewOptions {table} />
+				<Button variant="outline" size="sm" class="h-8">
+					<CloudArrowDownIcon />
+					Export
+				</Button>
+				<Button size="sm" class="h-8">
+					<PlusIcon />
+					Create Ticket
+				</Button>
+			</div>
 		</div>
 	{/snippet}
 </DataTable>

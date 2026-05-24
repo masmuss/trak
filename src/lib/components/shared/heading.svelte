@@ -14,7 +14,7 @@
 	}>();
 </script>
 
-<header class={cn(variant === 'small' ? '' : 'mb-8 space-y-0.5', cls)}>
+<header class={cn(variant === 'small' ? '' : 'mb-4 space-y-0.5', cls)}>
 	<h2
 		class={variant === 'small'
 			? 'mb-0.5 text-base font-medium'
