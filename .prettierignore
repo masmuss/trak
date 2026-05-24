@@ -5,6 +5,16 @@ yarn.lock
 bun.lock
 bun.lockb
 
+# Build output
+.svelte-kit/
+apps/web/.svelte-kit/
+apps/web/build/
+
+# Static assets
+apps/web/static/
+
+# Database migrations
+packages/database/drizzle/
+
 # Miscellaneous
-/static/
-/drizzle/
+.DS_Store
