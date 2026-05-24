@@ -2,8 +2,8 @@ packages:
   - 'apps/*'
   - 'packages/*'
 
-onlyBuiltDependencies:
-  - esbuild
-  - lefthook
-  - better-sqlite3
-  - '@prisma/client'
+allowBuilds:
+  esbuild: true
+  lefthook: true
+  better-sqlite3: true
+  '@prisma/client': true
