@@ -173,9 +173,13 @@ var statusHistoriesRelations = relations(statusHistories, ({ one }) => ({
 //#endregion
 //#region ../../packages/database/src/index.ts
 var _db = null;
+var _connectionString;
+function initDb(connectionString) {
+	_connectionString = connectionString;
+}
 function getClient() {
 	if (!_db) {
-		const connectionString = process.env.DATABASE_URL;
+		const connectionString = _connectionString || process.env.DATABASE_URL;
 		if (!connectionString) throw new Error("DATABASE_URL is not set");
 		_db = drizzle(postgres(connectionString), { schema: schema_exports });
 	}
@@ -185,4 +189,4 @@ var db = new Proxy({}, { get(_, prop) {
 	return getClient()[prop];
 } });
 //#endregion
-export { reports as n, statusHistories as r, db as t };
+export { statusHistories as i, initDb as n, reports as r, db as t };

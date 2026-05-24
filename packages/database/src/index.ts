@@ -6,10 +6,15 @@ import * as schema from './schema';
 type Database = PostgresJsDatabase<typeof schema>;
 
 let _db: Database | null = null;
+let _connectionString: string | undefined;
+
+export function initDb(connectionString: string) {
+	_connectionString = connectionString;
+}
 
 function getClient(): Database {
 	if (!_db) {
-		const connectionString = process.env.DATABASE_URL;
+		const connectionString = _connectionString || process.env.DATABASE_URL;
 		if (!connectionString) throw new Error('DATABASE_URL is not set');
 
 		const client = postgres(connectionString);

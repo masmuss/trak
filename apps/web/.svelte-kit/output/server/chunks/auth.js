@@ -1,7 +1,7 @@
 import "./shared.js";
 import { o as private_env } from "./environment.js";
 import "./remote.js";
-import { t as db } from "./src.js";
+import { n as initDb, t as db } from "./src.js";
 import "./paths.js";
 import { a as getBaseURL, c as getProtocol, d as resolveBaseURL, f as wildcardMatch, i as defu, l as isDynamicBaseURLConfig, o as getHost, r as createDefu, s as getOrigin, t as betterFetch, u as isRequestLike } from "./dist2.js";
 import { a as env, c as isDevelopment, i as ENV, l as isProduction, n as BetterAuthError, o as getBooleanEnvVar, r as BASE_ERROR_CODES, s as getEnvVar, t as APIError$1, u as isTest } from "./error.js";
@@ -16025,6 +16025,7 @@ var sveltekitCookies = (getRequestEvent) => {
 };
 //#endregion
 //#region src/lib/server/auth.ts
+initDb(private_env.DATABASE_URL);
 var auth = betterAuth({
 	baseURL: private_env.ORIGIN,
 	secret: private_env.BETTER_AUTH_SECRET,
