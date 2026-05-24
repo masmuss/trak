@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import type { SubmitFunction } from '@sveltejs/kit';
+	import { toast } from 'svelte-sonner';
 	import { Button } from '$lib/components/ui/button';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import * as Select from '$lib/components/ui/select';
@@ -24,6 +26,20 @@
 		{ label: 'Resolved', value: 'resolved' },
 		{ label: 'Closed', value: 'closed' }
 	];
+
+	const formEnhance: SubmitFunction = () => {
+		return async ({ result, update }) => {
+			if (result.type === 'success') {
+				noteText = '';
+				toast.success('Status transition applied');
+				await update();
+			} else if (result.type === 'error') {
+				toast.error(result.error?.message ?? 'Something went wrong');
+			} else if (result.type === 'failure') {
+				toast.error((result.data?.error as string) ?? 'Invalid submission');
+			}
+		};
+	};
 </script>
 
 <Card.Root>
@@ -32,17 +48,8 @@
 		<Card.Description>Update state and document actions.</Card.Description>
 	</Card.Header>
 	<Card.Content>
-		<form
-			method="POST"
-			action="?/updateStatus"
-			use:enhance={() => {
-				return ({ result }) => {
-					if (result.type === 'success') {
-						noteText = '';
-					}
-				};
-			}}
-		>
+		<form method="POST" action="?/updateStatus" use:enhance={formEnhance}>
+			<input type="hidden" name="status" value={selectedStatus} />
 			<Field.Set>
 				<Field.Group>
 					<Field.Field>
