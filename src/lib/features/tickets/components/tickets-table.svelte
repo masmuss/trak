@@ -111,7 +111,7 @@
 					variant="outline"
 					size="sm"
 					class="h-8"
-					// href={resolve(('/tickets/export' + pageState.url.search) as any)}
+					href={resolve('/tickets/export') + pageState.url.search}
 					download="tickets-export.csv"
 				>
 					<CloudArrowDownIcon />
