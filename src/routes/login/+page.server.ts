@@ -5,7 +5,7 @@ import { APIError } from 'better-auth';
 
 export const load: PageServerLoad = (event) => {
 	if (event.locals.user) {
-		return redirect(302, '/');
+		return redirect(302, '/dashboard');
 	}
 
 	return {};
@@ -32,6 +32,6 @@ export const actions: Actions = {
 			return fail(500, { message: 'Internal server error' });
 		}
 
-		return redirect(302, '/');
+		return redirect(302, '/dashboard');
 	}
 };
