@@ -1,0 +1,16 @@
+{
+	"name": "@trak/bot",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"dev": "echo 'TODO: implement Telegram bot'",
+		"build": "echo 'TODO: implement Telegram bot'"
+	},
+	"dependencies": {
+		"@trak/database": "workspace:*",
+		"@trak/shared": "workspace:*"
+	},
+	"devDependencies": {
+		"typescript": "^6.0.2"
+	}
+}
