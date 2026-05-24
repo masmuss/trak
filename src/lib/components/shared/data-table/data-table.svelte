@@ -2,7 +2,6 @@
 	import {
 		type ColumnDef,
 		type ColumnFiltersState,
-		type PaginationState,
 		type RowSelectionState,
 		type SortingState,
 		type VisibilityState,
@@ -32,22 +31,35 @@
 	let {
 		data,
 		columns,
-		toolbar
+		toolbar,
+		pageIndex = $bindable(0),
+		pageSize = $bindable(10),
+		pageCount = $bindable(1),
+		manualPagination = false
 	}: {
 		data: TData[];
 		columns: ColumnDef<TData, TValue>[];
 		toolbar?: Snippet<[TableType<TData>]>;
+		pageIndex?: number;
+		pageSize?: number;
+		pageCount?: number;
+		manualPagination?: boolean;
 	} = $props();
 
 	let rowSelection = $state<RowSelectionState>({});
 	let columnVisibility = $state<VisibilityState>({});
 	let columnFilters = $state<ColumnFiltersState>([]);
 	let sorting = $state<SortingState>([]);
-	let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 10 });
 
 	const table = createSvelteTable({
 		get data() {
 			return data;
+		},
+		get pageCount() {
+			return manualPagination ? pageCount : undefined;
+		},
+		get manualPagination() {
+			return manualPagination;
 		},
 		state: {
 			get sorting() {
@@ -63,7 +75,7 @@
 				return columnFilters;
 			},
 			get pagination() {
-				return pagination;
+				return { pageIndex, pageSize };
 			}
 		},
 		get columns() {
@@ -100,9 +112,12 @@
 		},
 		onPaginationChange: (updater) => {
 			if (typeof updater === 'function') {
-				pagination = updater(pagination);
+				const next = updater({ pageIndex, pageSize });
+				pageIndex = next.pageIndex;
+				pageSize = next.pageSize;
 			} else {
-				pagination = updater;
+				pageIndex = updater.pageIndex;
+				pageSize = updater.pageSize;
 			}
 		},
 		getCoreRowModel: getCoreRowModel(),

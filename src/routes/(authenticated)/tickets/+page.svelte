@@ -35,5 +35,10 @@
 		</div>
 	</div>
 
-	<TicketsTable tickets={data.tickets} />
+	<TicketsTable
+		tickets={data.tickets}
+		totalCount={data.totalCount}
+		page={data.page}
+		limit={data.limit}
+	/>
 </div>

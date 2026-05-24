@@ -10,10 +10,51 @@
 	} from '$lib/components/shared/data-table/index.js';
 	import Columns from './columns.svelte';
 	import type { TicketWithRelations } from '$lib/features/tickets/types';
+	import { goto } from '$app/navigation';
+	import { page as pageState } from '$app/state';
+	import { resolve } from '$app/paths';
 
-	let { tickets = [] }: { tickets?: TicketWithRelations[] } = $props();
+	let {
+		tickets = [],
+		totalCount = 0,
+		page = 1,
+		limit = 10
+	}: {
+		tickets?: TicketWithRelations[];
+		totalCount?: number;
+		page?: number;
+		limit?: number;
+	} = $props();
 
 	let columns: ColumnDef<TicketWithRelations, unknown>[] = $state([]);
+
+	let pageIndex = $state(0);
+	let pageSize = $state(10);
+	const pageCount = $derived(Math.ceil(totalCount / pageSize));
+
+	// Keep local state in sync when url changes page/limit
+	$effect.pre(() => {
+		pageIndex = page - 1;
+		pageSize = limit;
+	});
+
+	// Trigger navigation when pagination state changes
+	$effect(() => {
+		const currentUrl = pageState.url;
+		const urlPage = parseInt(currentUrl.searchParams.get('page') || '1');
+		const urlLimit = parseInt(currentUrl.searchParams.get('limit') || '10');
+
+		if (pageIndex + 1 !== urlPage || pageSize !== urlLimit) {
+			const nextUrl = new URL(currentUrl);
+			nextUrl.searchParams.set('page', String(pageIndex + 1));
+			nextUrl.searchParams.set('limit', String(pageSize));
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			goto(resolve((nextUrl.pathname + nextUrl.search) as any), {
+				keepFocus: true,
+				noScroll: true
+			});
+		}
+	});
 
 	const statusOptions = [
 		{ label: 'Open', value: 'open' },
@@ -25,7 +66,14 @@
 
 <Columns bind:columns />
 
-<DataTable data={tickets} {columns}>
+<DataTable
+	data={tickets}
+	{columns}
+	bind:pageIndex
+	bind:pageSize
+	{pageCount}
+	manualPagination={true}
+>
 	{#snippet toolbar(table)}
 		{@const isFiltered = table.getState().columnFilters.length > 0}
 		{@const statusCol = table.getColumn('status')}
