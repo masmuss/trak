@@ -52,21 +52,21 @@ pnpm dev
 
 ## Scripts
 
-| Script | Description |
-|--------|-------------|
-| `pnpm dev` | Start semua workspace di dev mode |
-| `pnpm build` | Build semua workspace |
-| `pnpm preview` | Preview production build (web) |
-| `pnpm lint` | Lint semua workspace via turbo |
-| `pnpm check` | Type check semua workspace (svelte-check) |
-| `pnpm test:unit` | Unit test (vitest) |
-| `pnpm test:e2e` | E2E test (Playwright) |
-| `pnpm format` | Format semua file dengan prettier |
-| `pnpm db:push` | Push schema ke database |
-| `pnpm db:generate` | Generate migration files |
-| `pnpm db:migrate` | Apply migration |
-| `pnpm db:studio` | Buka Drizzle Studio |
-| `pnpm db:seed` | Seed database |
+| Script             | Description                               |
+| ------------------ | ----------------------------------------- |
+| `pnpm dev`         | Start semua workspace di dev mode         |
+| `pnpm build`       | Build semua workspace                     |
+| `pnpm preview`     | Preview production build (web)            |
+| `pnpm lint`        | Lint semua workspace via turbo            |
+| `pnpm check`       | Type check semua workspace (svelte-check) |
+| `pnpm test:unit`   | Unit test (vitest)                        |
+| `pnpm test:e2e`    | E2E test (Playwright)                     |
+| `pnpm format`      | Format semua file dengan prettier         |
+| `pnpm db:push`     | Push schema ke database                   |
+| `pnpm db:generate` | Generate migration files                  |
+| `pnpm db:migrate`  | Apply migration                           |
+| `pnpm db:studio`   | Buka Drizzle Studio                       |
+| `pnpm db:seed`     | Seed database                             |
 
 ## Environment Variables (`apps/web/.env`)
 
