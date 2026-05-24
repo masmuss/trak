@@ -94,7 +94,9 @@
 
 {#snippet subjectCell({ row }: CellContext<TicketWithRelations, unknown>)}
 	<a
-		href={resolve(`/tickets/${row.original.id}`)}
+		href={resolve(`/(authenticated)/tickets/[id]`, {
+			id: row.original.id
+		})}
 		class="block truncate font-medium hover:text-primary hover:underline"
 		title={row.original.title}
 	>
@@ -142,7 +144,14 @@
 			{/snippet}
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content align="end" class="w-36 rounded-lg">
-			<DropdownMenu.Item onSelect={() => goto(resolve(`/tickets/${row.original.id}`))}>
+			<DropdownMenu.Item
+				onSelect={() =>
+					goto(
+						resolve(`/(authenticated)/tickets/[id]`, {
+							id: row.original.id
+						})
+					)}
+			>
 				View Details
 			</DropdownMenu.Item>
 			<DropdownMenu.Item>Assign Agent</DropdownMenu.Item>
