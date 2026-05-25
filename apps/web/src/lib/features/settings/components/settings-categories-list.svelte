@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import * as Avatar from '$lib/components/ui/avatar';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
+	import * as Switch from '$lib/components/ui/switch';
 	import { PencilIcon, TrashIcon } from 'phosphor-svelte';
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
@@ -21,6 +21,17 @@
 
 	let dialogOpen = $state(false);
 	let deleteTarget = $state<{ id: string; name: string; action: string } | null>(null);
+
+	const toggleEnhance: SubmitFunction = () => {
+		return async ({ result, update }) => {
+			if (result.type === 'success') {
+				toast.success('Category updated');
+				await update();
+			} else if (result.type === 'failure') {
+				toast.error((result.data?.error as string) ?? 'Failed to update');
+			}
+		};
+	};
 
 	const deleteEnhance: SubmitFunction = () => {
 		return async ({ result, update }) => {
@@ -53,19 +64,29 @@
 				</div>
 			</div>
 			<div class="flex items-center gap-4">
-				<Badge
-					variant={category.isActive ? 'default' : 'secondary'}
-					class="text-[10px] tracking-wider uppercase"
-				>
-					{category.isActive ? 'Active' : 'Inactive'}
-				</Badge>
-				<div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-					<Button variant="ghost" size="icon-sm" onclick={() => onEdit(category)}>
+				<form method="POST" action={actionPrefix + '/update'} use:enhance={toggleEnhance}>
+					<input type="hidden" name="id" value={category.id} />
+					<input type="hidden" name="name" value={category.name} />
+					<input type="hidden" name="description" value={category.description ?? ''} />
+					<input type="hidden" name="isActive" value={String(category.isActive)} />
+					<Switch.Root
+						checked={category.isActive}
+						size="sm"
+						onclick={(e) => {
+							const form = e.currentTarget.closest('form')!;
+							const input = form.querySelector('input[name="isActive"]') as HTMLInputElement;
+							input.value = String(input.value === 'true' ? false : true);
+							form.requestSubmit();
+						}}
+					/>
+				</form>
+				<div class="flex items-center gap-1">
+					<Button variant="secondary" size="icon-sm" onclick={() => onEdit(category)}>
 						<PencilIcon />
 						<span class="sr-only">Edit</span>
 					</Button>
 					<Button
-						variant="ghost"
+						variant="destructive"
 						size="icon-sm"
 						onclick={() => {
 							deleteTarget = {
