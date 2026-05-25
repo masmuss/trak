@@ -1,15 +1,8 @@
-import { db, reporters } from '@trak/database';
-import { desc } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
+import { getReporters } from '@trak/services';
 
 export const load: PageServerLoad = async () => {
-	const allReporters = await db.query.reporters.findMany({
-		with: {
-			inviteCode: true,
-			reports: true
-		},
-		orderBy: [desc(reporters.createdAt)]
-	});
+	const allReporters = await getReporters();
 
 	const rows = allReporters.map((r) => ({
 		id: r.id,
