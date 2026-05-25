@@ -64,20 +64,12 @@
 				</div>
 			</div>
 			<div class="flex items-center gap-4">
-				<form method="POST" action={actionPrefix + '/update'} use:enhance={toggleEnhance}>
+				<form method="POST" action={actionPrefix + '/toggle'} use:enhance={toggleEnhance}>
 					<input type="hidden" name="id" value={category.id} />
-					<input type="hidden" name="name" value={category.name} />
-					<input type="hidden" name="description" value={category.description ?? ''} />
-					<input type="hidden" name="isActive" value={String(category.isActive)} />
 					<Switch.Root
 						checked={category.isActive}
 						size="sm"
-						onclick={(e) => {
-							const form = e.currentTarget.closest('form')!;
-							const input = form.querySelector('input[name="isActive"]') as HTMLInputElement;
-							input.value = String(input.value === 'true' ? false : true);
-							form.requestSubmit();
-						}}
+						onclick={(e) => e.currentTarget.closest('form')!.requestSubmit()}
 					/>
 				</form>
 				<div class="flex items-center gap-1">

@@ -158,6 +158,34 @@ export const actions: Actions = {
 		return { success: true };
 	},
 
+	'category/toggle': async (event) => {
+		const user = event.locals.user;
+		if (!user) {
+			throw error(401, 'Unauthorized');
+		}
+
+		const formData = await event.request.formData();
+		const id = formData.get('id') as string;
+
+		if (!id) {
+			return fail(400, { error: 'Category ID is required' });
+		}
+
+		const existing = await getCategoryById(id);
+
+		if (!existing) {
+			throw error(404, 'Category not found');
+		}
+
+		await updateCategory(id, {
+			name: existing.name,
+			description: existing.description,
+			isActive: !existing.isActive
+		});
+
+		return { success: true };
+	},
+
 	'category/delete': async (event) => {
 		const user = event.locals.user;
 		if (!user) {
