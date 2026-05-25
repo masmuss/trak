@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as Table from '$lib/components/ui/table';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import type { Category } from '$lib/features/category/types';
 	import { PencilIcon, TrashIcon } from 'phosphor-svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -17,6 +18,9 @@
 		actionPrefix?: string;
 	} = $props();
 
+	let dialogOpen = $state(false);
+	let deleteTarget = $state<{ id: string; name: string; action: string } | null>(null);
+
 	const deleteEnhance: SubmitFunction = () => {
 		return async ({ result, update }) => {
 			if (result.type === 'success') {
@@ -27,6 +31,8 @@
 			} else if (result.type === 'failure') {
 				toast.error((result.data?.error as string) ?? 'Invalid submission');
 			}
+			dialogOpen = false;
+			deleteTarget = null;
 		};
 	};
 </script>
@@ -56,25 +62,42 @@
 							<PencilIcon />
 							<span class="sr-only">Edit</span>
 						</Button>
-						<form
-							method="POST"
-							action={actionPrefix + '/delete'}
-							use:enhance={deleteEnhance}
-							onsubmit={(e) => {
-								if (!confirm(`Are you sure you want to delete "${category.name}"?`)) {
-									e.preventDefault();
-								}
+						<Button
+							variant="ghost"
+							size="icon-sm"
+							onclick={() => {
+								deleteTarget = {
+									id: category.id,
+									name: category.name,
+									action: actionPrefix + '/delete'
+								};
+								dialogOpen = true;
 							}}
 						>
-							<input type="hidden" name="id" value={category.id} />
-							<Button variant="ghost" size="icon-sm" type="submit">
-								<TrashIcon />
-								<span class="sr-only">Delete</span>
-							</Button>
-						</form>
+							<TrashIcon />
+							<span class="sr-only">Delete</span>
+						</Button>
 					</div>
 				</Table.Cell>
 			</Table.Row>
 		{/each}
 	</Table.Body>
 </Table.Root>
+
+<AlertDialog.Root bind:open={dialogOpen}>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Title>Delete "{deleteTarget?.name}"?</AlertDialog.Title>
+			<AlertDialog.Description>
+				This action cannot be undone. The category will be permanently deleted.
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+		<form method="POST" action={deleteTarget?.action ?? ''} use:enhance={deleteEnhance}>
+			<input type="hidden" name="id" value={deleteTarget?.id} />
+			<AlertDialog.Footer>
+				<AlertDialog.Cancel type="button">Cancel</AlertDialog.Cancel>
+				<AlertDialog.Action type="submit" variant="destructive">Delete</AlertDialog.Action>
+			</AlertDialog.Footer>
+		</form>
+	</AlertDialog.Content>
+</AlertDialog.Root>
