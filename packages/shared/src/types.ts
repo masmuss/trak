@@ -4,7 +4,8 @@ import type {
 	statusHistories,
 	user,
 	reporters,
-	categories
+	categories,
+	inviteCodes
 } from '@trak/database';
 
 export type Ticket = typeof reports.$inferSelect;
@@ -13,6 +14,7 @@ export type User = typeof user.$inferSelect;
 export type StatusHistory = typeof statusHistories.$inferSelect;
 export type Reporter = typeof reporters.$inferSelect;
 export type Category = typeof categories.$inferSelect;
+export type InviteCode = typeof inviteCodes.$inferSelect;
 
 export type StatusHistoryWithUser = StatusHistory & {
 	changedByUser: User;
