@@ -22,7 +22,7 @@
 	<Heading title="Settings" description="Manage your account and organization preferences." />
 
 	<Tabs.Root bind:value={tab}>
-		<Tabs.List variant="line">
+		<Tabs.List>
 			<Tabs.Trigger value="account">Account</Tabs.Trigger>
 			<Tabs.Trigger value="categories">Categories</Tabs.Trigger>
 		</Tabs.List>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as Table from '$lib/components/ui/table';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import type { Agent } from '$lib/features/agents/types';
 	import { Badge } from '$lib/components/ui/badge';
 	import { PencilIcon, TrashIcon } from 'phosphor-svelte';
@@ -15,6 +16,9 @@
 		agents: Agent[];
 		onEdit: (agent: Agent) => void;
 	} = $props();
+
+	let dialogOpen = $state(false);
+	let deleteTarget = $state<{ id: string; name: string; action: string } | null>(null);
 
 	function formatDate(date: Date | null | undefined): string {
 		if (!date) return '—';
@@ -35,6 +39,8 @@
 			} else if (result.type === 'failure') {
 				toast.error((result.data?.error as string) ?? 'Invalid submission');
 			}
+			dialogOpen = false;
+			deleteTarget = null;
 		};
 	};
 
@@ -80,25 +86,38 @@
 							<PencilIcon />
 							<span class="sr-only">Edit</span>
 						</Button>
-						<form
-							method="POST"
-							action="?/delete"
-							use:enhance={deleteEnhance}
-							onsubmit={(e) => {
-								if (!confirm(`Are you sure you want to delete agent "${agent.name}"?`)) {
-									e.preventDefault();
-								}
+						<Button
+							variant="ghost"
+							size="icon-sm"
+							onclick={() => {
+								deleteTarget = { id: agent.id, name: agent.name, action: '?/delete' };
+								dialogOpen = true;
 							}}
 						>
-							<input type="hidden" name="id" value={agent.id} />
-							<Button variant="ghost" size="icon-sm" type="submit">
-								<TrashIcon />
-								<span class="sr-only">Delete</span>
-							</Button>
-						</form>
+							<TrashIcon />
+							<span class="sr-only">Delete</span>
+						</Button>
 					</div>
 				</Table.Cell>
 			</Table.Row>
 		{/each}
 	</Table.Body>
 </Table.Root>
+
+<AlertDialog.Root bind:open={dialogOpen}>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Title>Delete agent "{deleteTarget?.name}"?</AlertDialog.Title>
+			<AlertDialog.Description>
+				This action cannot be undone. The agent will be permanently removed.
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+		<form method="POST" action={deleteTarget?.action ?? ''} use:enhance={deleteEnhance}>
+			<input type="hidden" name="id" value={deleteTarget?.id} />
+			<AlertDialog.Footer>
+				<AlertDialog.Cancel type="button">Cancel</AlertDialog.Cancel>
+				<AlertDialog.Action type="submit" variant="destructive">Delete</AlertDialog.Action>
+			</AlertDialog.Footer>
+		</form>
+	</AlertDialog.Content>
+</AlertDialog.Root>
