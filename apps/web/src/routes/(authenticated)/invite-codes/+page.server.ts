@@ -1,12 +1,15 @@
 import { fail, error } from '@sveltejs/kit';
-import { db, inviteCodes } from '@trak/database';
-import { eq } from 'drizzle-orm';
 import type { PageServerLoad, Actions } from './$types';
+import {
+	createInviteCode,
+	deleteInviteCode,
+	getInviteCodeById,
+	getInviteCodes,
+	updateInviteCode
+} from '@trak/services';
 
 export const load: PageServerLoad = async () => {
-	const all = await db.query.inviteCodes.findMany({
-		orderBy: (inviteCodes, { desc }) => [desc(inviteCodes.createdAt)]
-	});
+	const all = await getInviteCodes();
 
 	return {
 		inviteCodes: all
@@ -30,10 +33,7 @@ export const actions: Actions = {
 
 		const expiresAt = expiresAtRaw && expiresAtRaw.trim() ? new Date(expiresAtRaw) : null;
 
-		await db.insert(inviteCodes).values({
-			code: code.trim(),
-			expiresAt
-		});
+		await createInviteCode({ code, expiresAt });
 
 		return { success: true };
 	},
@@ -58,9 +58,7 @@ export const actions: Actions = {
 			return fail(400, { error: 'Code is required' });
 		}
 
-		const existing = await db.query.inviteCodes.findFirst({
-			where: eq(inviteCodes.id, id)
-		});
+		const existing = await getInviteCodeById(id);
 
 		if (!existing) {
 			throw error(404, 'Invite code not found');
@@ -68,14 +66,11 @@ export const actions: Actions = {
 
 		const expiresAt = expiresAtRaw && expiresAtRaw.trim() ? new Date(expiresAtRaw) : null;
 
-		await db
-			.update(inviteCodes)
-			.set({
-				code: code.trim(),
-				isActive: isActive === 'true',
-				expiresAt
-			})
-			.where(eq(inviteCodes.id, id));
+		await updateInviteCode(id, {
+			code,
+			isActive: isActive === 'true',
+			expiresAt
+		});
 
 		return { success: true };
 	},
@@ -93,15 +88,13 @@ export const actions: Actions = {
 			return fail(400, { error: 'Invite code ID is required' });
 		}
 
-		const existing = await db.query.inviteCodes.findFirst({
-			where: eq(inviteCodes.id, id)
-		});
+		const existing = await getInviteCodeById(id);
 
 		if (!existing) {
 			throw error(404, 'Invite code not found');
 		}
 
-		await db.delete(inviteCodes).where(eq(inviteCodes.id, id));
+		await deleteInviteCode(id);
 
 		return { success: true };
 	}
