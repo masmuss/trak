@@ -51,4 +51,4 @@ export { getReporters } from './reporter.service';
 export type { ReporterWithRelations } from './reporter.service';
 
 export { getDashboardStats, getRecentTickets, getTopInviteCodes } from './dashboard.service';
-export type { DashboardStats, RecentTicket, TopInviteCode } from './dashboard.service';
+export type { DashboardStats, TopInviteCode } from './dashboard.service';

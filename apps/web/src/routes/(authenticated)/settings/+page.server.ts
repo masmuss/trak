@@ -1,8 +1,18 @@
 import { fail, error } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
-import { db, user, account, categories } from '@trak/database';
 import { hashPassword, verifyPassword } from 'better-auth/crypto';
 import type { PageServerLoad, Actions } from './$types';
+import {
+	getUserById,
+	getCategories,
+	getCategoryDistribution,
+	getCategoryById,
+	createCategory,
+	updateCategory,
+	deleteCategory,
+	updateProfile,
+	getPasswordAccount,
+	updateAccountPassword
+} from '@trak/services';
 
 export const load: PageServerLoad = async (event) => {
 	const session = event.locals.user;
@@ -10,43 +20,15 @@ export const load: PageServerLoad = async (event) => {
 		throw error(401, 'Unauthorized');
 	}
 
-	const currentUser = await db.query.user.findFirst({
-		where: eq(user.id, session.id)
-	});
+	const [currentUser, categoriesList, distributionData] = await Promise.all([
+		getUserById(session.id),
+		getCategories(),
+		getCategoryDistribution()
+	]);
 
 	if (!currentUser) {
 		throw error(404, 'User not found');
 	}
-
-	const [allCategories, allReports] = await Promise.all([
-		db.query.categories.findMany({
-			orderBy: (categories, { desc }) => [desc(categories.createdAt)]
-		}),
-		db.query.reports.findMany({
-			columns: { categoryId: true }
-		})
-	]);
-
-	const countMap = new Map<string, number>();
-	let uncategorized = 0;
-	for (const r of allReports) {
-		if (r.categoryId) {
-			countMap.set(r.categoryId, (countMap.get(r.categoryId) ?? 0) + 1);
-		} else {
-			uncategorized++;
-		}
-	}
-
-	const totalReports = allReports.length;
-	const distribution = allCategories.map((cat) => {
-		const count = countMap.get(cat.id) ?? 0;
-		return {
-			categoryId: cat.id,
-			categoryName: cat.name,
-			count,
-			percentage: totalReports > 0 ? Math.round((count / totalReports) * 100) : 0
-		};
-	});
 
 	return {
 		user: {
@@ -56,9 +38,9 @@ export const load: PageServerLoad = async (event) => {
 			role: currentUser.role,
 			createdAt: currentUser.createdAt
 		},
-		categories: allCategories,
-		distribution,
-		uncategorized
+		categories: categoriesList,
+		distribution: distributionData.distribution,
+		uncategorized: distributionData.uncategorized
 	};
 };
 
@@ -76,7 +58,7 @@ export const actions: Actions = {
 			return fail(400, { profileError: 'Name is required' });
 		}
 
-		await db.update(user).set({ name: name.trim() }).where(eq(user.id, session.id));
+		await updateProfile(session.id, name);
 
 		return { profileSuccess: true };
 	},
@@ -104,9 +86,7 @@ export const actions: Actions = {
 			return fail(400, { passwordError: 'New passwords do not match' });
 		}
 
-		const userAccount = await db.query.account.findFirst({
-			where: eq(account.userId, session.id)
-		});
+		const userAccount = await getPasswordAccount(session.id);
 
 		if (!userAccount?.password) {
 			return fail(400, { passwordError: 'No password account found' });
@@ -119,7 +99,7 @@ export const actions: Actions = {
 
 		const hashed = await hashPassword(newPassword);
 
-		await db.update(account).set({ password: hashed }).where(eq(account.userId, session.id));
+		await updateAccountPassword(session.id, hashed);
 
 		return { passwordSuccess: true };
 	},
@@ -138,10 +118,7 @@ export const actions: Actions = {
 			return fail(400, { error: 'Category name is required' });
 		}
 
-		await db.insert(categories).values({
-			name: name.trim(),
-			description: description?.trim() || null
-		});
+		await createCategory({ name, description });
 
 		return { success: true };
 	},
@@ -166,22 +143,17 @@ export const actions: Actions = {
 			return fail(400, { error: 'Category name is required' });
 		}
 
-		const existing = await db.query.categories.findFirst({
-			where: eq(categories.id, id)
-		});
+		const existing = await getCategoryById(id);
 
 		if (!existing) {
 			throw error(404, 'Category not found');
 		}
 
-		await db
-			.update(categories)
-			.set({
-				name: name.trim(),
-				description: description?.trim() || null,
-				isActive: isActive === 'true'
-			})
-			.where(eq(categories.id, id));
+		await updateCategory(id, {
+			name: name.trim(),
+			description: description?.trim() || null,
+			isActive: isActive === 'true'
+		});
 
 		return { success: true };
 	},
@@ -199,15 +171,13 @@ export const actions: Actions = {
 			return fail(400, { error: 'Category ID is required' });
 		}
 
-		const existing = await db.query.categories.findFirst({
-			where: eq(categories.id, id)
-		});
+		const existing = await getCategoryById(id);
 
 		if (!existing) {
 			throw error(404, 'Category not found');
 		}
 
-		await db.delete(categories).where(eq(categories.id, id));
+		await deleteCategory(id);
 
 		return { success: true };
 	}

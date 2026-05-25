@@ -1,5 +1,6 @@
 import { eq, count } from 'drizzle-orm';
 import { db, reports, reporters, inviteCodes } from '@trak/database';
+import type { TicketWithRelations } from '@trak/shared';
 
 export type DashboardStats = {
 	totalTickets: number;
@@ -24,34 +25,22 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 	};
 }
 
-export type RecentTicket = {
-	id: string;
-	title: string;
-	status: string;
-	createdAt: Date;
-	reporter: { fullName: string } | null;
-	category: { name: string } | null;
-};
-
-export async function getRecentTickets(limit = 5): Promise<RecentTicket[]> {
+export async function getRecentTickets(limit = 5): Promise<TicketWithRelations[]> {
 	return db.query.reports.findMany({
 		limit,
 		with: {
-			reporter: {
-				columns: { fullName: true }
-			},
-			category: {
-				columns: { name: true }
-			}
+			reporter: true,
+			category: true
 		},
 		orderBy: (reports, { desc }) => [desc(reports.createdAt)]
-	}) as Promise<RecentTicket[]>;
+	}) as Promise<TicketWithRelations[]>;
 }
 
 export type TopInviteCode = {
 	id: string;
 	code: string;
 	isActive: boolean;
+	expiresAt: Date | null;
 	reporters: { id: string }[];
 };
 
