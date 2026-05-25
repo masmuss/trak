@@ -1,46 +1,24 @@
-import { count, eq } from 'drizzle-orm';
-import { reports } from '@trak/database';
-import type { TicketWithRelations } from '@trak/shared';
-import { db } from '@trak/database';
+import { listTickets } from '@trak/services';
 import type { PageServerLoad } from './$types';
 import { parsePaginationParams } from '$lib/utils/pagination';
 
-export const load: PageServerLoad = async ({
-	url
-}): Promise<{
-	tickets: TicketWithRelations[];
-	totalCount: number;
-	page: number;
-	limit: number;
-}> => {
+const validStatuses = ['open', 'in_progress', 'resolved', 'closed'];
+
+export const load: PageServerLoad = async ({ url }) => {
 	const status = url.searchParams.get('status');
-	const validStatuses = ['open', 'in_progress', 'resolved', 'closed'];
 	const isValidStatus = status && validStatuses.includes(status);
 
 	const { page, limit, offset } = parsePaginationParams(url);
 
-	const whereClause = isValidStatus ? eq(reports.status, status) : undefined;
-
-	const [countResult] = await db
-		.select({ count: count(reports.id) })
-		.from(reports)
-		.where(whereClause);
-	const totalCount = countResult?.count ?? 0;
-
-	const tickets = await db.query.reports.findMany({
-		where: whereClause,
+	const { tickets, total } = await listTickets({
+		status: isValidStatus ? status : undefined,
 		limit,
-		offset,
-		with: {
-			reporter: true,
-			category: true
-		},
-		orderBy: (reports, { desc }) => [desc(reports.createdAt)]
+		offset
 	});
 
 	return {
-		tickets: tickets as TicketWithRelations[],
-		totalCount,
+		tickets,
+		totalCount: total,
 		page,
 		limit
 	};

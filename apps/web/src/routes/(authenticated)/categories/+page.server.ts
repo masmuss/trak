@@ -1,12 +1,15 @@
 import { fail, error } from '@sveltejs/kit';
-import { db, categories } from '@trak/database';
-import { eq } from 'drizzle-orm';
 import type { PageServerLoad, Actions } from './$types';
+import {
+	createCategory,
+	deleteCategory,
+	getCategories,
+	getCategoryById,
+	updateCategory
+} from '@trak/services';
 
 export const load: PageServerLoad = async () => {
-	const allCategories = await db.query.categories.findMany({
-		orderBy: (categories, { desc }) => [desc(categories.createdAt)]
-	});
+	const allCategories = await getCategories();
 
 	return {
 		categories: allCategories
@@ -28,7 +31,7 @@ export const actions: Actions = {
 			return fail(400, { error: 'Category name is required' });
 		}
 
-		await db.insert(categories).values({
+		await createCategory({
 			name: name.trim(),
 			description: description?.trim() || null
 		});
@@ -56,22 +59,17 @@ export const actions: Actions = {
 			return fail(400, { error: 'Category name is required' });
 		}
 
-		const existing = await db.query.categories.findFirst({
-			where: eq(categories.id, id)
-		});
+		const existing = await getCategoryById(id);
 
 		if (!existing) {
 			throw error(404, 'Category not found');
 		}
 
-		await db
-			.update(categories)
-			.set({
-				name: name.trim(),
-				description: description?.trim() || null,
-				isActive: isActive === 'true'
-			})
-			.where(eq(categories.id, id));
+		await updateCategory(id, {
+			name: name.trim(),
+			description: description?.trim() || null,
+			isActive: isActive === 'true'
+		});
 
 		return { success: true };
 	},
@@ -89,15 +87,13 @@ export const actions: Actions = {
 			return fail(400, { error: 'Category ID is required' });
 		}
 
-		const existing = await db.query.categories.findFirst({
-			where: eq(categories.id, id)
-		});
+		const existing = await getCategoryById(id);
 
 		if (!existing) {
 			throw error(404, 'Category not found');
 		}
 
-		await db.delete(categories).where(eq(categories.id, id));
+		await deleteCategory(id);
 
 		return { success: true };
 	}
