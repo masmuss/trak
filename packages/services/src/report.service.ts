@@ -27,7 +27,8 @@ export async function getTicketById(id: string): Promise<TicketDetails | undefin
 			statusHistories: {
 				with: {
 					changedByUser: true
-				}
+				},
+				orderBy: (statusHistories, { desc }) => [desc(statusHistories.changedAt)]
 			}
 		}
 	}) as Promise<TicketDetails | undefined>;
@@ -106,6 +107,16 @@ export async function updateTicketStatus(
 			note: note || null
 		});
 	});
+}
+
+export async function getTicketsForExport(status?: string): Promise<TicketListItem[]> {
+	const whereClause = status ? eq(reports.status, status) : undefined;
+
+	return db.query.reports.findMany({
+		where: whereClause,
+		with: { reporter: true, category: true },
+		orderBy: (reports, { desc }) => [desc(reports.createdAt)]
+	}) as Promise<TicketListItem[]>;
 }
 
 export type CategoryDistribution = {

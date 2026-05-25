@@ -27,7 +27,8 @@ export {
 	listTickets,
 	getTicketByIdSimple,
 	updateTicketStatus,
-	getCategoryDistribution
+	getCategoryDistribution,
+	getTicketsForExport
 } from './report.service';
 export type {
 	TicketListItem,

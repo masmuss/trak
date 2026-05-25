@@ -1,23 +1,14 @@
 import type { RequestHandler } from './$types';
-import { db, reports } from '@trak/database';
-import { eq } from 'drizzle-orm';
+import { getTicketsForExport } from '@trak/services';
 import { convertToCSV } from '$lib/utils/csv';
+
+const validStatuses = ['open', 'in_progress', 'resolved', 'closed'];
 
 export const GET: RequestHandler = async ({ url }) => {
 	const status = url.searchParams.get('status');
-	const validStatuses = ['open', 'in_progress', 'resolved', 'closed'];
 	const isValidStatus = status && validStatuses.includes(status);
 
-	const whereClause = isValidStatus ? eq(reports.status, status) : undefined;
-
-	const tickets = await db.query.reports.findMany({
-		where: whereClause,
-		with: {
-			reporter: true,
-			category: true
-		},
-		orderBy: (reports, { desc }) => [desc(reports.createdAt)]
-	});
+	const tickets = await getTicketsForExport(isValidStatus ? status : undefined);
 
 	const headers = [
 		'ID',
