@@ -9,10 +9,12 @@
 
 	let {
 		categories,
-		onEdit
+		onEdit,
+		actionPrefix = '?'
 	}: {
 		categories: Category[];
 		onEdit: (category: Category) => void;
+		actionPrefix?: string;
 	} = $props();
 
 	const deleteEnhance: SubmitFunction = () => {
@@ -56,7 +58,7 @@
 						</Button>
 						<form
 							method="POST"
-							action="?/delete"
+							action={actionPrefix + '/delete'}
 							use:enhance={deleteEnhance}
 							onsubmit={(e) => {
 								if (!confirm(`Are you sure you want to delete "${category.name}"?`)) {
