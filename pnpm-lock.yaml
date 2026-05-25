@@ -66,6 +66,9 @@ importers:
       '@trak/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@trak/services':
+        specifier: workspace:*
+        version: link:../../packages/services
       '@trak/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -197,6 +200,19 @@ importers:
       drizzle-kit:
         specifier: ^0.31.10
         version: 0.31.10
+      typescript:
+        specifier: ^6.0.2
+        version: 6.0.3
+
+  packages/services:
+    dependencies:
+      '@trak/database':
+        specifier: workspace:*
+        version: link:../database
+      '@trak/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
       typescript:
         specifier: ^6.0.2
         version: 6.0.3
