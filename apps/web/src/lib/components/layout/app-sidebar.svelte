@@ -4,7 +4,6 @@
 		TicketIcon,
 		UsersIcon,
 		KeyIcon,
-		TagIcon,
 		ShieldIcon,
 		GearSixIcon
 	} from 'phosphor-svelte';
@@ -48,11 +47,6 @@
 				title: 'Invite Codes',
 				url: '/invite-codes',
 				icon: KeyIcon
-			},
-			{
-				title: 'Categories',
-				url: '/categories',
-				icon: TagIcon
 			},
 			{
 				title: 'Agents',
