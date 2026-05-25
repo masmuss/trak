@@ -11,11 +11,13 @@
 	let {
 		dialogOpen = $bindable(false),
 		editingCategory = $bindable<Category | null>(null),
-		onClose
+		onClose,
+		actionPrefix = '?'
 	}: {
 		dialogOpen: boolean;
 		editingCategory: Category | null;
 		onClose: () => void;
+		actionPrefix?: string;
 	} = $props();
 
 	const formEnhance: SubmitFunction = () => {
@@ -38,7 +40,7 @@
 	<Dialog.Content>
 		<form
 			method="POST"
-			action={editingCategory ? '?/update' : '?/create'}
+			action={editingCategory ? actionPrefix + '/update' : actionPrefix + '/create'}
 			use:enhance={formEnhance}
 		>
 			<Dialog.Header>

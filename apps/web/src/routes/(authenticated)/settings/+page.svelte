@@ -1,13 +1,17 @@
 <script lang="ts">
 	import Heading from '$lib/components/shared/heading.svelte';
+	import * as Tabs from '$lib/components/ui/tabs';
 	import SettingsProfileForm from '$lib/features/settings/components/settings-profile-form.svelte';
 	import SettingsPasswordForm from '$lib/features/settings/components/settings-password-form.svelte';
 	import SettingsUserCard from '$lib/features/settings/components/settings-user-card.svelte';
+	import SettingsCategoriesTab from '$lib/features/settings/components/settings-categories-tab.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 
 	let currentUser = $derived(data.user);
+
+	let tab = $state('account');
 </script>
 
 <svelte:head>
@@ -15,25 +19,41 @@
 </svelte:head>
 
 <div class="flex flex-1 flex-col gap-4 p-4 pt-0">
-	<Heading title="Settings" description="Manage your account profile and security preferences." />
+	<Heading title="Settings" description="Manage your account and organization preferences." />
 
-	<div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
-		<div class="space-y-4 xl:col-span-2">
-			<SettingsProfileForm
-				name={currentUser.name}
-				email={currentUser.email}
-				updateProfileAction="?/updateProfile"
-			/>
-			<SettingsPasswordForm changePasswordAction="?/changePassword" />
-		</div>
+	<Tabs.Root bind:value={tab}>
+		<Tabs.List variant="line">
+			<Tabs.Trigger value="account">Account</Tabs.Trigger>
+			<Tabs.Trigger value="categories">Categories</Tabs.Trigger>
+		</Tabs.List>
 
-		<div class="space-y-4">
-			<SettingsUserCard
-				name={currentUser.name}
-				email={currentUser.email}
-				role={currentUser.role}
-				createdAt={currentUser.createdAt}
+		<Tabs.Content value="account">
+			<div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
+				<div class="space-y-4 xl:col-span-2">
+					<SettingsProfileForm
+						name={currentUser.name}
+						email={currentUser.email}
+						updateProfileAction="?/updateProfile"
+					/>
+					<SettingsPasswordForm changePasswordAction="?/changePassword" />
+				</div>
+				<div class="space-y-4">
+					<SettingsUserCard
+						name={currentUser.name}
+						email={currentUser.email}
+						role={currentUser.role}
+						createdAt={currentUser.createdAt}
+					/>
+				</div>
+			</div>
+		</Tabs.Content>
+
+		<Tabs.Content value="categories">
+			<SettingsCategoriesTab
+				categories={data.categories}
+				distribution={data.distribution}
+				uncategorized={data.uncategorized}
 			/>
-		</div>
-	</div>
+		</Tabs.Content>
+	</Tabs.Root>
 </div>
