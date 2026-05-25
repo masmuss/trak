@@ -29,7 +29,7 @@
 		<Card.Description>Average response time over last 7 days</Card.Description>
 	</Card.Header>
 	<Card.Content>
-		<ChartContainer config={chartConfig} class="aspect-auto h-[120px] w-full">
+		<ChartContainer config={chartConfig} class="aspect-auto h-30 w-full">
 			<BarChart {data} x="day" y="minutes" />
 			<ChartTooltip />
 		</ChartContainer>

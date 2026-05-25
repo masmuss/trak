@@ -1,11 +1,13 @@
 <script lang="ts">
 	import Heading from '$lib/components/shared/heading.svelte';
-	import * as Card from '$lib/components/ui/card';
-	import { Badge } from '$lib/components/ui/badge';
+	import type { PageData } from './$types';
+	import DashboardStats from '$lib/features/dashboard/components/dashboard-stats.svelte';
 	import DashboardReportsTable from '$lib/features/dashboard/components/dashboard-reports-table.svelte';
 	import DashboardInviteCodes from '$lib/features/dashboard/components/dashboard-invite-codes.svelte';
 	import DashboardResponseTime from '$lib/features/dashboard/components/dashboard-response-time.svelte';
 	import DashboardSatisfaction from '$lib/features/dashboard/components/dashboard-satisfaction.svelte';
+
+	let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head>
@@ -19,50 +21,15 @@
 	/>
 
 	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-		<Card.Root>
-			<Card.Header>
-				<Card.Title>Total Reports</Card.Title>
-				<Card.Action>
-					<Badge variant="default">+12.5%</Badge>
-				</Card.Action>
-			</Card.Header>
-			<Card.Content class="text-2xl font-semibold">2,482</Card.Content>
-		</Card.Root>
-		<Card.Root>
-			<Card.Header>
-				<Card.Title>Open Tickets</Card.Title>
-				<Card.Action>
-					<Badge variant="destructive">High volume</Badge>
-				</Card.Action>
-			</Card.Header>
-			<Card.Content class="text-2xl font-semibold">42</Card.Content>
-		</Card.Root>
-		<Card.Root>
-			<Card.Header>
-				<Card.Title>Active Reporters</Card.Title>
-				<Card.Action>
-					<Badge variant="secondary">Stable</Badge>
-				</Card.Action>
-			</Card.Header>
-			<Card.Content class="text-2xl font-semibold">156</Card.Content>
-		</Card.Root>
-		<Card.Root>
-			<Card.Header>
-				<Card.Title>Invite Codes Used</Card.Title>
-				<Card.Action>
-					<Badge variant="outline">84% Capacity</Badge>
-				</Card.Action>
-			</Card.Header>
-			<Card.Content class="text-2xl font-semibold">1,024</Card.Content>
-		</Card.Root>
+		<DashboardStats stats={data.stats} />
 	</div>
 
 	<div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
 		<div class="xl:col-span-2">
-			<DashboardReportsTable />
+			<DashboardReportsTable reports={data.recentReports} />
 		</div>
 		<div>
-			<DashboardInviteCodes />
+			<DashboardInviteCodes inviteCodes={data.inviteCodes} />
 		</div>
 	</div>
 

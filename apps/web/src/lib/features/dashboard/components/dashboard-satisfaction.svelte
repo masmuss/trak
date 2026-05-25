@@ -13,7 +13,7 @@
 	</Card.Header>
 	<Card.Content>
 		<div class="flex items-center gap-1">
-			{#each [1, 2, 3, 4, 5] as star}
+			{#each [1, 2, 3, 4, 5] as star (star)}
 				<StarIcon class="size-5 {star <= 4 ? 'text-primary' : 'text-primary/30'}" />
 			{/each}
 			<span class="ml-2 text-xs text-muted-foreground">(Last 50 reviews)</span>
