@@ -1,8 +1,16 @@
 import { fail, error } from '@sveltejs/kit';
-import { db, user, account } from '@trak/database';
-import { eq } from 'drizzle-orm';
 import { hashPassword } from 'better-auth/crypto';
 import type { PageServerLoad, Actions } from './$types';
+import {
+	createAccount,
+	createUser,
+	deleteUser,
+	findUserByEmail,
+	findUserByEmailExcluding,
+	getUserById,
+	getUsers,
+	updateUser
+} from '@trak/services';
 
 const CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
@@ -13,9 +21,7 @@ function generatePassword(length: number): string {
 }
 
 export const load: PageServerLoad = async () => {
-	const allUsers = await db.query.user.findMany({
-		orderBy: (user, { desc }) => [desc(user.createdAt)]
-	});
+	const allUsers = await getUsers();
 
 	return {
 		agents: allUsers
@@ -42,9 +48,7 @@ export const actions: Actions = {
 			return fail(400, { error: 'Email is required' });
 		}
 
-		const existingEmail = await db.query.user.findFirst({
-			where: eq(user.email, email.trim())
-		});
+		const existingEmail = await findUserByEmail(email.trim());
 
 		if (existingEmail) {
 			return fail(400, { error: 'Email already in use' });
@@ -53,16 +57,15 @@ export const actions: Actions = {
 		const password = generatePassword(12);
 		const id = crypto.randomUUID();
 
-		await db.insert(user).values({
+		await createUser({
 			id,
 			name: name.trim(),
 			email: email.trim(),
-			emailVerified: true,
 			role,
 			isActive: true
 		});
 
-		await db.insert(account).values({
+		await createAccount({
 			id: crypto.randomUUID(),
 			userId: id,
 			accountId: id,
@@ -98,31 +101,24 @@ export const actions: Actions = {
 			return fail(400, { error: 'Email is required' });
 		}
 
-		const existing = await db.query.user.findFirst({
-			where: eq(user.id, id)
-		});
+		const existing = await getUserById(id);
 
 		if (!existing) {
 			throw error(404, 'Agent not found');
 		}
 
-		const emailConflict = await db.query.user.findFirst({
-			where: (user, { and, ne }) => and(ne(user.id, id), eq(user.email, email.trim()))
-		});
+		const emailConflict = await findUserByEmailExcluding(email.trim(), id);
 
 		if (emailConflict) {
 			return fail(400, { error: 'Email already in use by another agent' });
 		}
 
-		await db
-			.update(user)
-			.set({
-				name: name.trim(),
-				email: email.trim(),
-				role,
-				isActive: isActive === 'true'
-			})
-			.where(eq(user.id, id));
+		await updateUser(id, {
+			name: name.trim(),
+			email: email.trim(),
+			role,
+			isActive: isActive === 'true'
+		});
 
 		return { success: true };
 	},
@@ -144,15 +140,13 @@ export const actions: Actions = {
 			return fail(400, { error: 'Cannot delete your own account' });
 		}
 
-		const existing = await db.query.user.findFirst({
-			where: eq(user.id, id)
-		});
+		const existing = await getUserById(id);
 
 		if (!existing) {
 			throw error(404, 'Agent not found');
 		}
 
-		await db.delete(user).where(eq(user.id, id));
+		await deleteUser(id);
 
 		return { success: true };
 	}
