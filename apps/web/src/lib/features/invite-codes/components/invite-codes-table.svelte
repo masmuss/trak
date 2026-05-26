@@ -1,13 +1,10 @@
 <script lang="ts">
 	import * as Table from '$lib/components/ui/table';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import type { InviteCode } from '$lib/features/invite-codes/types';
 	import { Badge } from '$lib/components/ui/badge';
 	import { PencilIcon, TrashIcon } from 'phosphor-svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { enhance } from '$app/forms';
-	import type { SubmitFunction } from '@sveltejs/kit';
-	import { toast } from 'svelte-sonner';
+	import DeleteConfirmDialog from '$lib/components/shared/delete-confirm-dialog.svelte';
 
 	let {
 		inviteCodes,
@@ -35,21 +32,6 @@
 		if (!code.expiresAt) return false;
 		return new Date(code.expiresAt) < new Date();
 	}
-
-	const deleteEnhance: SubmitFunction = () => {
-		return async ({ result, update }) => {
-			if (result.type === 'success') {
-				toast.success('Invite code deleted successfully');
-				await update();
-			} else if (result.type === 'error') {
-				toast.error(result.error?.message ?? 'Something went wrong');
-			} else if (result.type === 'failure') {
-				toast.error((result.data?.error as string) ?? 'Invalid submission');
-			}
-			dialogOpen = false;
-			deleteTarget = null;
-		};
-	};
 </script>
 
 <Table.Root class="border">
@@ -105,20 +87,11 @@
 	</Table.Body>
 </Table.Root>
 
-<AlertDialog.Root bind:open={dialogOpen}>
-	<AlertDialog.Content>
-		<AlertDialog.Header>
-			<AlertDialog.Title>Delete code "{deleteTarget?.code}"?</AlertDialog.Title>
-			<AlertDialog.Description>
-				This action cannot be undone. The invite code will be permanently deleted.
-			</AlertDialog.Description>
-		</AlertDialog.Header>
-		<form method="POST" action={deleteTarget?.action ?? ''} use:enhance={deleteEnhance}>
-			<input type="hidden" name="id" value={deleteTarget?.id} />
-			<AlertDialog.Footer>
-				<AlertDialog.Cancel type="button">Cancel</AlertDialog.Cancel>
-				<AlertDialog.Action type="submit" variant="destructive">Delete</AlertDialog.Action>
-			</AlertDialog.Footer>
-		</form>
-	</AlertDialog.Content>
-</AlertDialog.Root>
+<DeleteConfirmDialog
+	bind:open={dialogOpen}
+	title={`Delete code "${deleteTarget?.code}"?`}
+	description="This action cannot be undone. The invite code will be permanently deleted."
+	action={deleteTarget?.action ?? ''}
+	id={deleteTarget?.id ?? ''}
+	successMessage="Invite code deleted successfully"
+/>
