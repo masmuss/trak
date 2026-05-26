@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { db, inviteCodes } from '@trak/database';
 import type { InviteCode } from '@trak/shared';
 
@@ -12,6 +12,24 @@ export async function getInviteCodeById(id: string): Promise<InviteCode | undefi
 	return db.query.inviteCodes.findFirst({
 		where: eq(inviteCodes.id, id)
 	});
+}
+
+export async function getInviteCodeByCode(code: string): Promise<InviteCode | undefined> {
+	return db.query.inviteCodes.findFirst({
+		where: eq(inviteCodes.code, code)
+	});
+}
+
+export async function validateInviteCode(code: string): Promise<boolean> {
+	const invite = await db.query.inviteCodes.findFirst({
+		where: and(eq(inviteCodes.code, code), eq(inviteCodes.isActive, true))
+	});
+
+	if (!invite) return false;
+
+	if (invite.expiresAt && invite.expiresAt < new Date()) return false;
+
+	return true;
 }
 
 export type CreateInviteCodeInput = {

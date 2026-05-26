@@ -8,6 +8,13 @@ export async function getCategories(): Promise<Category[]> {
 	});
 }
 
+export async function getActiveCategories(): Promise<Category[]> {
+	return db.query.categories.findMany({
+		where: eq(categories.isActive, true),
+		orderBy: (categories, { asc }) => [asc(categories.name)]
+	});
+}
+
 export async function getCategoryById(id: string): Promise<Category | undefined> {
 	return db.query.categories.findFirst({
 		where: eq(categories.id, id)
