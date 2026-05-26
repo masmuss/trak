@@ -11,7 +11,13 @@ export const load: PageServerLoad = async (event) => {
 		throw error(404, 'Ticket not found');
 	}
 
-	return { ticket };
+	return {
+		ticket,
+		breadcrumbs: [
+			{ label: 'Tickets', href: '/tickets' },
+			{ label: `Ticket #TK-${ticket.id.slice(0, 8).toUpperCase()}` }
+		]
+	};
 };
 
 export const actions: Actions = {

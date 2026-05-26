@@ -3,6 +3,7 @@
 	import type { TicketDetails } from '../types.js';
 	import { UserIcon, TelegramLogoIcon, CalendarIcon, ClockIcon } from 'phosphor-svelte';
 	import * as Card from '$lib/components/ui/card';
+	import getInitials from '$lib/utils/initials';
 
 	let { ticket }: { ticket: TicketDetails } = $props();
 
@@ -15,15 +16,6 @@
 			hour: '2-digit',
 			minute: '2-digit'
 		});
-	}
-
-	function getInitials(name: string) {
-		return name
-			.split(' ')
-			.map((n) => n[0])
-			.join('')
-			.slice(0, 2)
-			.toUpperCase();
 	}
 </script>
 
