@@ -30,22 +30,31 @@ bot.hears(/^\/cancel$/, async (ctx) => {
 		categoryName: undefined,
 		attachments: []
 	});
-	await ctx.reply('🚫 Laporan dibatalkan.');
+	await ctx.reply('🚫 Laporan dibatalkan.', { reply_markup: { remove_keyboard: true } });
 });
 
 bot.hears(/^\/done$/, async (ctx) => {
 	const session = ctx.session;
 	const categoryName = session.categoryName ?? 'Tidak ada';
 
+	const attachmentCount =
+		session.attachments.length > 0 ? `${session.attachments.length} file(s)` : 'Tidak ada';
+
 	const confirmation =
 		`Ringkasan Laporan:\n\n` +
 		`Judul: ${session.title}\n` +
 		`Deskripsi: ${session.body}\n` +
 		`Kategori: ${categoryName}\n` +
-		`Lampiran: ${session.attachments.length} file(s)\n\n` +
+		`Lampiran: ${attachmentCount}\n\n` +
 		`Kirim laporan ini?`;
 
 	await ctx.reply(confirmation, {
+		reply_markup: {
+			remove_keyboard: true
+		}
+	});
+
+	await ctx.reply('Pilih aksi:', {
 		reply_markup: {
 			inline_keyboard: [
 				[
@@ -105,6 +114,12 @@ bot.on('message:document', async (ctx) => {
 		`📎 Dokumen diterima. Total lampiran: ${session.attachments.length}\nKirim lagi atau ketik "/done" untuk selesai.`
 	);
 });
+
+bot.api.setMyCommands([
+	{ command: 'start', description: 'Mulai dan daftarkan diri' },
+	{ command: 'report', description: 'Buat laporan baru' },
+	{ command: 'help', description: 'Bantuan' }
+]);
 
 bot.catch((err) => {
 	console.error('Bot error:', err);

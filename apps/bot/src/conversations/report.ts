@@ -2,6 +2,12 @@ import { getActiveCategories } from '@trak/services';
 import type { Context } from 'grammy';
 import { BotContext, BotSession } from '../types';
 
+const reportKeyboard = {
+	keyboard: [[{ text: '✅ Selesai' }, { text: '❌ Batal' }]],
+	resize_keyboard: true,
+	one_time_keyboard: true
+};
+
 export async function startReportFlow(ctx: BotContext, reporterId: string): Promise<void> {
 	const session = ctx.session;
 
@@ -9,11 +15,9 @@ export async function startReportFlow(ctx: BotContext, reporterId: string): Prom
 	session.reporterId = reporterId;
 	session.attachments = [];
 
-	await ctx.reply(
-		'Buat Laporan Baru\n\n' +
-			'Langkah 1/3: Masukkan judul laporan.\n\n' +
-			'Ketik /cancel untuk membatalkan kapan saja.'
-	);
+	await ctx.reply('Buat Laporan Baru\n\nLangkah 1/3: Masukkan judul laporan.', {
+		reply_markup: reportKeyboard
+	});
 }
 
 export async function handleTitleInput(ctx: Context, session: BotSession): Promise<void> {
@@ -22,7 +26,9 @@ export async function handleTitleInput(ctx: Context, session: BotSession): Promi
 	session.title = ctx.message.text.trim();
 	session.step = 'body';
 
-	await ctx.reply('Langkah 2/3: Masukkan deskripsi laporan secara detail.');
+	await ctx.reply('Langkah 2/3: Masukkan deskripsi laporan secara detail.', {
+		reply_markup: reportKeyboard
+	});
 }
 
 export async function handleBodyInput(ctx: Context, session: BotSession): Promise<void> {
@@ -35,7 +41,7 @@ export async function handleBodyInput(ctx: Context, session: BotSession): Promis
 	if (categories.length === 0) {
 		session.step = 'attachment';
 		await ctx.reply(
-			'Tidak ada kategori tersedia.\n\nSekarang kirim lampiran (foto/dokumen) atau ketik "/done" untuk selesai.',
+			'Tidak ada kategori tersedia.\n\nSekarang kirim lampiran (foto/dokumen) atau gunakan tombol di bawah.',
 			{
 				reply_markup: {
 					inline_keyboard: [[{ text: 'Lewati lampiran', callback_data: 'skip_attachment' }]]
@@ -47,12 +53,12 @@ export async function handleBodyInput(ctx: Context, session: BotSession): Promis
 
 	session.step = 'category';
 
-	const keyboard = categories.map((cat) => [
+	const inlineKeyboard = categories.map((cat) => [
 		{ text: cat.name, callback_data: `category_${cat.id}` }
 	]);
-	keyboard.push([{ text: 'Lewati', callback_data: 'skip_category' }]);
+	inlineKeyboard.push([{ text: 'Lewati', callback_data: 'skip_category' }]);
 
 	await ctx.reply('Langkah 3/3: Pilih kategori laporan:', {
-		reply_markup: { inline_keyboard: keyboard }
+		reply_markup: { inline_keyboard: inlineKeyboard }
 	});
 }

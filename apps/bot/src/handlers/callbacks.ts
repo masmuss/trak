@@ -3,8 +3,11 @@ import {
 	getActiveCategories,
 	getCategoryById,
 	createReport,
-	addReportAttachment
+	addReportAttachment,
+	getReporterByTelegramId
 } from '@trak/services';
+import { startReportFlow } from '../conversations/report';
+import { generateTicketNumber } from '../utils/generator';
 import { BotContext } from '../types';
 
 export function registerCallbacks(bot: Bot<BotContext>): void {
@@ -91,8 +94,21 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 
 			await ctx.answerCallbackQuery();
 			await ctx.editMessageText(
-				`✅ Laporan berhasil dikirim!\n\nKode tiket: TKT-${reportId.slice(0, 8).toUpperCase()}\n\nTerima kasih, laporan Anda akan segera diproses.`
+				`✅ Laporan berhasil dikirim!` +
+					`\n\nKode tiket: TKT-${reportId.slice(0, 8).toUpperCase()}` +
+					`\n\nTerima kasih, laporan Anda akan segera diproses.`
 			);
+
+			await ctx.reply('Apa yang ingin Anda lakukan selanjutnya?', {
+				reply_markup: {
+					inline_keyboard: [
+						[
+							{ text: '📝 Buat laporan baru', callback_data: 'new_report' },
+							{ text: '📋 Perintah', callback_data: 'show_commands' }
+						]
+					]
+				}
+			});
 
 			Object.assign(session, {
 				step: undefined,
@@ -114,6 +130,7 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 
 		await ctx.answerCallbackQuery();
 		await ctx.editMessageText('🚫 Laporan dibatalkan.');
+		await ctx.reply('Laporan dibatalkan.', { reply_markup: { remove_keyboard: true } });
 
 		Object.assign(session, {
 			step: undefined,
@@ -137,5 +154,32 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 		await ctx.editMessageText('Pilih kategori laporan:', {
 			reply_markup: { inline_keyboard: keyboard }
 		});
+	});
+
+	bot.callbackQuery('new_report', async (ctx) => {
+		const from = ctx.from;
+		if (!from) return;
+
+		await ctx.answerCallbackQuery();
+
+		const telegramId = BigInt(from.id);
+		const reporter = await getReporterByTelegramId(telegramId);
+
+		if (!reporter) {
+			await ctx.reply('Anda belum terdaftar. Silakan kirim /start.');
+			return;
+		}
+
+		await startReportFlow(ctx, reporter.id);
+	});
+
+	bot.callbackQuery('show_commands', async (ctx) => {
+		await ctx.answerCallbackQuery();
+		await ctx.reply(
+			'Perintah yang tersedia:\n\n' +
+				'/start - Mulai dan daftarkan diri\n' +
+				'/report - Buat laporan baru\n' +
+				'/help - Tampilkan bantuan'
+		);
 	});
 }
