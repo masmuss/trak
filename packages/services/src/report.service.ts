@@ -1,5 +1,5 @@
 import { eq, and, or, count, sql } from 'drizzle-orm';
-import { db, reports, statusHistories } from '@trak/database';
+import { db, reports, reportAttachments, statusHistories } from '@trak/database';
 import type { Ticket, TicketDetails, TicketWithRelations, Category } from '@trak/shared';
 
 export type TicketListItem = TicketWithRelations;
@@ -130,6 +130,60 @@ export type DistributionResult = {
 	distribution: CategoryDistribution[];
 	uncategorized: number;
 };
+
+export type CreateReportInput = {
+	reporterId: string;
+	categoryId?: string | null;
+	title: string;
+	body: string;
+};
+
+export async function createReport(input: CreateReportInput): Promise<string> {
+	const result = await db
+		.insert(reports)
+		.values({
+			reporterId: input.reporterId,
+			categoryId: input.categoryId ?? null,
+			title: input.title.trim(),
+			body: input.body.trim(),
+			status: 'open'
+		})
+		.returning({ id: reports.id });
+
+	return result[0].id;
+}
+
+export type CreateAttachmentInput = {
+	reportId: string;
+	fileId: string;
+	fileType: string;
+	storageUrl: string;
+};
+
+export async function addReportAttachment(input: CreateAttachmentInput): Promise<void> {
+	await db.insert(reportAttachments).values({
+		reportId: input.reportId,
+		fileId: input.fileId,
+		fileType: input.fileType,
+		storageUrl: input.storageUrl
+	});
+}
+
+export async function getTicketByTicketCode(code: string): Promise<TicketDetails | undefined> {
+	const prefix = code.replace(/^TKT-/i, '').toLowerCase();
+	return db.query.reports.findFirst({
+		where: sql`${reports.id}::text LIKE ${prefix + '-%'}`,
+		with: {
+			reporter: true,
+			category: true,
+			attachments: true,
+			statusHistories: {
+				with: { changedByUser: true },
+				orderBy: (statusHistories, { desc }) => [desc(statusHistories.changedAt)]
+			}
+		}
+	}) as Promise<TicketDetails | undefined>;
+}
 
 export async function getCategoryDistribution(): Promise<DistributionResult> {
 	const allReports = await db.query.reports.findMany({

@@ -3,14 +3,18 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"dev": "echo 'TODO: implement Telegram bot'",
-		"build": "echo 'TODO: implement Telegram bot'"
+		"dev": "tsx src/bot.ts",
+		"build": "tsc"
 	},
 	"dependencies": {
-		"@trak/database": "workspace:*",
-		"@trak/shared": "workspace:*"
+		"@trak/services": "workspace:*",
+		"@trak/shared": "workspace:*",
+		"dotenv": "^17.4.2",
+		"grammy": "^1.43.0"
 	},
 	"devDependencies": {
+		"@types/node": "^22.19.19",
+		"tsx": "^4.0.0",
 		"typescript": "^6.0.2"
 	}
 }

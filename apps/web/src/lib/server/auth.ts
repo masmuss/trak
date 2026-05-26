@@ -5,7 +5,7 @@ import { initDb, db } from '@trak/database';
 import { sveltekitCookies } from 'better-auth/svelte-kit';
 import { getRequestEvent } from '$app/server';
 
-initDb(env.DATABASE_URL);
+initDb(process.env.DATABASE_URL);
 
 export const auth = betterAuth({
 	baseURL: env.ORIGIN,

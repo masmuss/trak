@@ -120,3 +120,14 @@ export const statusHistoriesRelations = relations(statusHistories, ({ one }) => 
 		references: [user.id]
 	})
 }));
+
+export const notifications = pgTable('notifications', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	reporterTelegramId: bigint('reporter_telegram_id', { mode: 'bigint' }).notNull(),
+	reportId: uuid('report_id')
+		.notNull()
+		.references(() => reports.id, { onDelete: 'cascade' }),
+	message: text('message').notNull(),
+	isRead: boolean('is_read').notNull().default(false),
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+});
