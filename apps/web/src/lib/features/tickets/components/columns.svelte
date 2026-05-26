@@ -2,6 +2,7 @@
 	/* eslint-disable no-useless-assignment */
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
+	import getInitials from '$lib/utils/initials';
 	import type { ColumnDef, CellContext } from '@tanstack/table-core';
 	import { renderComponent, renderSnippet } from '$lib/components/ui/data-table/index.js';
 	import { DataTableColumnHeader } from '$lib/components/shared/data-table/index.js';
@@ -19,17 +20,6 @@
 			day: 'numeric',
 			year: 'numeric'
 		});
-	}
-
-	function getInitials(name: string) {
-		return (
-			name
-				.split(' ')
-				.map((n) => n[0])
-				.join('')
-				.slice(0, 2)
-				.toUpperCase() || 'U'
-		);
 	}
 
 	$effect(() => {

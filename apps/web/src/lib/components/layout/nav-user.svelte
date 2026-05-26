@@ -17,18 +17,12 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { userPrefersMode, setMode } from 'mode-watcher';
+	import getInitials from '$lib/utils/initials';
 
 	let { user }: { user: { name: string; email: string; image?: string | null } } = $props();
 	const sidebar = useSidebar();
 
-	const initials = $derived(
-		user.name
-			.split(' ')
-			.map((n) => n[0])
-			.join('')
-			.slice(0, 2)
-			.toUpperCase() || 'U'
-	);
+	const initials = $derived(getInitials(user.name));
 
 	async function handleLogout() {
 		await authClient.signOut({

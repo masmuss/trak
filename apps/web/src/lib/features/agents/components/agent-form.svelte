@@ -19,9 +19,14 @@
 		onClose: () => void;
 	} = $props();
 
+	// eslint-disable-next-line svelte/prefer-writable-derived
 	let roleValue = $state<string>(editingAgent?.role ?? 'agent');
 	let showSuccess = $state(false);
 	let generatedPassword = $state('');
+
+	$effect.pre(() => {
+		roleValue = editingAgent?.role ?? 'agent';
+	});
 
 	const formEnhance: SubmitFunction = () => {
 		return async ({ result, update }) => {

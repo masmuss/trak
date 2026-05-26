@@ -35,7 +35,7 @@
 	<Card.Content>
 		<form method="POST" action={changePasswordAction} use:enhance={passwordEnhance}>
 			<Field.Set>
-				<Field.Group class="space-y-4">
+				<Field.Group>
 					<Field.Field>
 						<Field.Label for="currentPassword">Current Password</Field.Label>
 						<Input id="currentPassword" name="currentPassword" type="password" required />
@@ -48,11 +48,11 @@
 						<Field.Label for="confirmPassword">Confirm New Password</Field.Label>
 						<Input id="confirmPassword" name="confirmPassword" type="password" required />
 					</Field.Field>
+					<Field.Field class="flex justify-end" orientation="horizontal">
+						<Button type="submit">Change Password</Button>
+					</Field.Field>
 				</Field.Group>
 			</Field.Set>
-			<div class="mt-4 flex justify-end">
-				<Button type="submit">Change Password</Button>
-			</div>
 		</form>
 	</Card.Content>
 </Card.Root>

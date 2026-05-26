@@ -45,10 +45,10 @@
 						/>
 					</Field.Field>
 				</Field.Group>
+				<Field.Field orientation="horizontal" class="flex justify-end">
+					<Button type="submit">Save Changes</Button>
+				</Field.Field>
 			</Field.Set>
-			<div class="mt-4 flex justify-end">
-				<Button type="submit">Save Changes</Button>
-			</div>
 		</form>
 	</Card.Content>
 </Card.Root>
