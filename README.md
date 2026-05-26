@@ -8,19 +8,105 @@ Ticketing & reporting platform with Telegram bot integration.
 - **Database**: PostgreSQL + [Drizzle ORM](https://orm.drizzle.team)
 - **Auth**: [Better Auth](https://www.better-auth.com)
 - **UI**: [shadcn-svelte](https://shadcn-svelte.com) + Tailwind CSS v4
+- **Bot**: [grammY](https://grammy.dev)
 - **Package Manager**: pnpm 11
 - **Monorepo**: Turborepo + pnpm workspaces
+
+## Arsitektur
+
+```mermaid
+graph TB
+  subgraph User
+    A["👤 Agent (Web)"]
+    B["📱 Pelapor (Telegram)"]
+  end
+
+  subgraph Apps
+    C["🌐 apps/web<br/>SvelteKit Portal"]
+    D["🤖 apps/bot<br/>Telegram Bot"]
+  end
+
+  subgraph Packages
+    E["📦 @trak/services<br/>Domain Logic"]
+    F["🗄️ @trak/database<br/>Schema + Client"]
+    G["🔷 @trak/shared<br/>Types"]
+  end
+
+  subgraph Infrastructure
+    H["🐘 PostgreSQL"]
+    I["📁 .bot-sessions/<br/>File Session"]
+  end
+
+  A -->|"HTTPS"| C
+  B -->|"Telegram API"| D
+
+  C --> E
+  D --> E
+  E --> F
+  F --> H
+  D --> I
+
+  C --> G
+  E --> G
+
+  linkStyle 0,1 stroke:#666
+```
+
+**Alur Data:**
+
+```mermaid
+sequenceDiagram
+    actor P as Pelapor (Telegram)
+    participant B as apps/bot
+    participant S as @trak/services
+    participant D as PostgreSQL
+    participant W as apps/web
+
+    Note over P,W: Registrasi
+    P->>B: /start
+    B->>S: validateInviteCode(code)
+    S->>D: cek invite_codes
+    D-->>S: valid
+    S-->>B: { valid, inviteCodeId }
+    B->>S: createReporter(telegramId, inviteCodeId)
+    S->>D: insert reporters
+    B-->>P: ✅ Selamat datang
+
+    Note over P,W: Laporan
+    P->>B: /report → title → body → kategori → lampiran
+    B->>S: createReport(reporterId, title, body, categoryId)
+    S->>D: insert reports
+    B->>S: addReportAttachment(fileId, storageUrl)
+    S->>D: insert report_attachments
+    B-->>P: ✅ Laporan terkirim (TKT-XXXX)
+
+    Note over P,W: Update Status + Notifikasi
+    W->>S: updateTicketStatus(id, newStatus, userId)
+    S->>D: update reports + insert status_histories
+    W->>S: createNotification(reporterTelegramId, message)
+    S->>D: insert notifications
+    loop setiap 5 detik
+      B->>S: getPendingNotifications()
+      S->>D: select where is_read = false
+      D-->>S: [notifikasi]
+      B-->>P: 🔄 Status tiket diperbarui
+      B->>S: markNotificationRead(id)
+      S->>D: update notifications
+    end
+```
 
 ## Struktur
 
 ```
 trak/
 ├── apps/
-│   ├── web/          # SvelteKit app (ticketing portal)
-│   └── bot/          # Telegram bot (WIP)
+│   ├── web/          # SvelteKit portal (agent dashboard)
+│   └── bot/          # Telegram bot (pelapor)
 ├── packages/
 │   ├── database/     # Drizzle schema, migrations, client
-│   └── shared/       # Types, constants bersama
+│   ├── services/     # Domain logic layer (shared across apps)
+│   └── shared/       # Types, constants
+├── .env              # Global DATABASE_URL
 ├── docs/decisions/   # Architecture Decision Records
 └── ...
 ```
@@ -38,7 +124,8 @@ trak/
 pnpm install
 
 # Setup environment
-cp apps/web/.env.example apps/web/.env
+cp .env.example .env
+cp apps/bot/.env.example apps/bot/.env
 
 # Push database schema
 pnpm db:push
@@ -46,7 +133,7 @@ pnpm db:push
 # (Opsional) Seed data
 pnpm db:seed
 
-# Start development
+# Start development (web + bot)
 pnpm dev
 ```
 
@@ -68,12 +155,25 @@ pnpm dev
 | `pnpm db:studio`   | Buka Drizzle Studio                       |
 | `pnpm db:seed`     | Seed database                             |
 
-## Environment Variables (`apps/web/.env`)
+## Environment Variables
+
+Root `.env` (dibaca oleh semua apps):
 
 ```env
 DATABASE_URL="postgres://root:mysecretpassword@localhost:5432/local"
+```
+
+`apps/web/.env`:
+
+```env
 ORIGIN=http://localhost:5173
 BETTER_AUTH_SECRET=<your-secret>
+```
+
+`apps/bot/.env`:
+
+```env
+TELEGRAM_BOT_TOKEN=<your-bot-token>
 ```
 
 ## Keputusan Arsitektur
