@@ -1,13 +1,10 @@
 <script lang="ts">
 	import * as Table from '$lib/components/ui/table';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import type { Agent } from '$lib/features/agents/types';
 	import { Badge } from '$lib/components/ui/badge';
 	import { PencilIcon, TrashIcon } from 'phosphor-svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { enhance } from '$app/forms';
-	import type { SubmitFunction } from '@sveltejs/kit';
-	import { toast } from 'svelte-sonner';
+	import DeleteConfirmDialog from '$lib/components/shared/delete-confirm-dialog.svelte';
 
 	let {
 		agents,
@@ -28,21 +25,6 @@
 			day: 'numeric'
 		});
 	}
-
-	const deleteEnhance: SubmitFunction = () => {
-		return async ({ result, update }) => {
-			if (result.type === 'success') {
-				toast.success('Agent deleted successfully');
-				await update();
-			} else if (result.type === 'error') {
-				toast.error(result.error?.message ?? 'Something went wrong');
-			} else if (result.type === 'failure') {
-				toast.error((result.data?.error as string) ?? 'Invalid submission');
-			}
-			dialogOpen = false;
-			deleteTarget = null;
-		};
-	};
 
 	function isAdmin(agent: Agent): boolean {
 		return agent.role === 'admin';
@@ -104,20 +86,11 @@
 	</Table.Body>
 </Table.Root>
 
-<AlertDialog.Root bind:open={dialogOpen}>
-	<AlertDialog.Content>
-		<AlertDialog.Header>
-			<AlertDialog.Title>Delete agent "{deleteTarget?.name}"?</AlertDialog.Title>
-			<AlertDialog.Description>
-				This action cannot be undone. The agent will be permanently removed.
-			</AlertDialog.Description>
-		</AlertDialog.Header>
-		<form method="POST" action={deleteTarget?.action ?? ''} use:enhance={deleteEnhance}>
-			<input type="hidden" name="id" value={deleteTarget?.id} />
-			<AlertDialog.Footer>
-				<AlertDialog.Cancel type="button">Cancel</AlertDialog.Cancel>
-				<AlertDialog.Action type="submit" variant="destructive">Delete</AlertDialog.Action>
-			</AlertDialog.Footer>
-		</form>
-	</AlertDialog.Content>
-</AlertDialog.Root>
+<DeleteConfirmDialog
+	bind:open={dialogOpen}
+	title={`Delete agent "${deleteTarget?.name}"?`}
+	description="This action cannot be undone. The agent will be permanently removed."
+	action={deleteTarget?.action ?? ''}
+	id={deleteTarget?.id ?? ''}
+	successMessage="Agent deleted successfully"
+/>

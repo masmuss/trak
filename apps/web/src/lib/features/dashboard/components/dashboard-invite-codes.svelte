@@ -5,6 +5,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { toast } from 'svelte-sonner';
+	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 
 	type InviteCodeRow = {
 		id: string;
@@ -42,38 +43,42 @@
 		<Card.Title>Invite Codes</Card.Title>
 		<Card.Description>Manage organizational access</Card.Description>
 	</Card.Header>
-	<Card.Content class="flex-1 space-y-3">
-		{#each inviteCodes as code (code.id)}
-			<div
-				class="group flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
-				class:opacity-60={!isActive(code)}
-			>
-				<div>
-					<p class="font-mono text-sm font-bold">{code.code}</p>
-					<div class="mt-1 flex items-center gap-2">
-						<span
-							class="h-2 w-2 rounded-full"
-							class:bg-emerald-500={isActive(code)}
-							class:bg-muted-foreground={!isActive(code)}
-						></span>
-						<span class="text-xs text-muted-foreground">{statusLabel(code)}</span>
-					</div>
-				</div>
-				{#if isActive(code)}
-					<Button
-						variant="ghost"
-						size="icon-sm"
-						class="opacity-0 transition-opacity group-hover:opacity-100"
-						onclick={() => copyCode(code.code)}
+	<Card.Content class="flex-1">
+		<ScrollArea class="h-70 pr-4">
+			<div class="space-y-3">
+				{#each inviteCodes as code (code.id)}
+					<div
+						class="group flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+						class:opacity-60={!isActive(code)}
 					>
-						<CopySimpleIcon />
-						<span class="sr-only">Copy</span>
-					</Button>
-				{:else}
-					<LockKeyIcon class="text-muted-foreground" />
-				{/if}
+						<div>
+							<p class="font-mono text-sm font-bold">{code.code}</p>
+							<div class="mt-1 flex items-center gap-2">
+								<span
+									class="h-2 w-2 rounded-full"
+									class:bg-emerald-500={isActive(code)}
+									class:bg-muted-foreground={!isActive(code)}
+								></span>
+								<span class="text-xs text-muted-foreground">{statusLabel(code)}</span>
+							</div>
+						</div>
+						{#if isActive(code)}
+							<Button
+								variant="ghost"
+								size="icon-sm"
+								class="opacity-0 transition-opacity group-hover:opacity-100"
+								onclick={() => copyCode(code.code)}
+							>
+								<CopySimpleIcon />
+								<span class="sr-only">Copy</span>
+							</Button>
+						{:else}
+							<LockKeyIcon class="text-muted-foreground" />
+						{/if}
+					</div>
+				{/each}
 			</div>
-		{/each}
+		</ScrollArea>
 	</Card.Content>
 	<Card.Footer>
 		<Button

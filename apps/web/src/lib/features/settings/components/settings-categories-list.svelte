@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import * as Avatar from '$lib/components/ui/avatar';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import * as Switch from '$lib/components/ui/switch';
 	import { PencilIcon, TrashIcon } from 'phosphor-svelte';
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
 	import type { Category } from '@trak/shared';
+	import DeleteConfirmDialog from '$lib/components/shared/delete-confirm-dialog.svelte';
 
 	let {
 		categories,
@@ -30,19 +30,6 @@
 			} else if (result.type === 'failure') {
 				toast.error((result.data?.error as string) ?? 'Failed to update');
 			}
-		};
-	};
-
-	const deleteEnhance: SubmitFunction = () => {
-		return async ({ result, update }) => {
-			if (result.type === 'success') {
-				toast.success('Category deleted');
-				await update();
-			} else if (result.type === 'failure') {
-				toast.error((result.data?.error as string) ?? 'Failed to delete');
-			}
-			dialogOpen = false;
-			deleteTarget = null;
 		};
 	};
 </script>
@@ -98,20 +85,11 @@
 	{/each}
 </div>
 
-<AlertDialog.Root bind:open={dialogOpen}>
-	<AlertDialog.Content>
-		<AlertDialog.Header>
-			<AlertDialog.Title>Delete "{deleteTarget?.name}"?</AlertDialog.Title>
-			<AlertDialog.Description>
-				This action cannot be undone. The category will be permanently deleted.
-			</AlertDialog.Description>
-		</AlertDialog.Header>
-		<form method="POST" action={deleteTarget?.action ?? ''} use:enhance={deleteEnhance}>
-			<input type="hidden" name="id" value={deleteTarget?.id} />
-			<AlertDialog.Footer>
-				<AlertDialog.Cancel type="button">Cancel</AlertDialog.Cancel>
-				<AlertDialog.Action type="submit" variant="destructive">Delete</AlertDialog.Action>
-			</AlertDialog.Footer>
-		</form>
-	</AlertDialog.Content>
-</AlertDialog.Root>
+<DeleteConfirmDialog
+	bind:open={dialogOpen}
+	title={`Delete "${deleteTarget?.name}"?`}
+	description="This action cannot be undone. The category will be permanently deleted."
+	action={deleteTarget?.action ?? ''}
+	id={deleteTarget?.id ?? ''}
+	successMessage="Category deleted"
+/>

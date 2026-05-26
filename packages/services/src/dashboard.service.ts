@@ -28,6 +28,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 export async function getRecentTickets(limit = 5): Promise<TicketWithRelations[]> {
 	return db.query.reports.findMany({
 		limit,
+		where: (reports, { inArray }) => inArray(reports.status, ['open', 'in_progress']),
 		with: {
 			reporter: true,
 			category: true

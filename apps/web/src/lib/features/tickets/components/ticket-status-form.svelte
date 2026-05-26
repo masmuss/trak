@@ -8,6 +8,7 @@
 	import * as Field from '$lib/components/ui/field';
 	import type { TicketDetails } from '../types.js';
 	import * as Card from '$lib/components/ui/card';
+	import { handleFormError } from '$lib/utils/form';
 
 	let { ticket }: { ticket: TicketDetails } = $props();
 
@@ -29,14 +30,12 @@
 
 	const formEnhance: SubmitFunction = () => {
 		return async ({ result, update }) => {
+			if (handleFormError(result)) return;
+
 			if (result.type === 'success') {
 				noteText = '';
 				toast.success('Status transition applied');
 				await update();
-			} else if (result.type === 'error') {
-				toast.error(result.error?.message ?? 'Something went wrong');
-			} else if (result.type === 'failure') {
-				toast.error((result.data?.error as string) ?? 'Invalid submission');
 			}
 		};
 	};
