@@ -7,6 +7,7 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
 	import type { InviteCode } from '@trak/shared';
+	import { handleFormError } from '$lib/utils/form';
 
 	let {
 		dialogOpen = $bindable(false),
@@ -28,15 +29,13 @@
 
 	const formEnhance: SubmitFunction = () => {
 		return async ({ result, update }) => {
+			if (handleFormError(result)) return;
+
 			if (result.type === 'success') {
 				const label = editingInviteCode ? 'updated' : 'created';
 				toast.success(`Invite code ${label} successfully`);
 				await update();
 				onClose();
-			} else if (result.type === 'error') {
-				toast.error(result.error?.message ?? 'Something went wrong');
-			} else if (result.type === 'failure') {
-				toast.error((result.data?.error as string) ?? 'Invalid submission');
 			}
 		};
 	};

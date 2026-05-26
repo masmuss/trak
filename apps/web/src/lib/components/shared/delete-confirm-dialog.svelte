@@ -3,6 +3,7 @@
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
+	import { handleFormError } from '$lib/utils/form';
 
 	let {
 		open = $bindable(false),
@@ -22,13 +23,14 @@
 
 	const deleteEnhance: SubmitFunction = () => {
 		return async ({ result, update }) => {
+			if (handleFormError(result)) {
+				open = false;
+				return;
+			}
+
 			if (result.type === 'success') {
 				toast.success(successMessage);
 				await update();
-			} else if (result.type === 'error') {
-				toast.error(result.error?.message ?? 'Something went wrong');
-			} else if (result.type === 'failure') {
-				toast.error((result.data?.error as string) ?? 'Invalid submission');
 			}
 			open = false;
 		};

@@ -8,6 +8,7 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
 	import type { Agent } from '$lib/features/agents/types';
+	import { handleFormError } from '$lib/utils/form';
 
 	let {
 		dialogOpen = $bindable(false),
@@ -30,6 +31,8 @@
 
 	const formEnhance: SubmitFunction = () => {
 		return async ({ result, update }) => {
+			if (handleFormError(result)) return;
+
 			if (result.type === 'success') {
 				if (editingAgent) {
 					toast.success('Agent updated successfully');
@@ -40,10 +43,6 @@
 					showSuccess = true;
 					await update();
 				}
-			} else if (result.type === 'error') {
-				toast.error(result.error?.message ?? 'Something went wrong');
-			} else if (result.type === 'failure') {
-				toast.error((result.data?.error as string) ?? 'Invalid submission');
 			}
 		};
 	};
