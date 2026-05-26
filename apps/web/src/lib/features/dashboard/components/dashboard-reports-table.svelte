@@ -4,6 +4,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import StatusBadge from '$lib/features/tickets/components/status-badge.svelte';
 	import type { TicketWithRelations } from '@trak/shared';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	let { reports = [] }: { reports?: TicketWithRelations[] } = $props();
 </script>
@@ -27,7 +29,10 @@
 			</Table.Header>
 			<Table.Body>
 				{#each reports as report (report.id)}
-					<Table.Row class="cursor-pointer hover:bg-muted/50">
+					<Table.Row
+						class="cursor-pointer hover:bg-muted/50"
+						onclick={() => goto(resolve('/(authenticated)/tickets/[id]', { id: report.id }))}
+					>
 						<Table.Cell class="font-mono font-medium text-primary">
 							#{report.id.slice(0, 8)}
 						</Table.Cell>
@@ -50,6 +55,8 @@
 		</Table.Root>
 	</div>
 	<Card.Footer class="justify-center">
-		<Button variant="link">View All Active Reports</Button>
+		<Button variant="link" href={resolve('/(authenticated)/tickets')}>
+			View All Active Tickets
+		</Button>
 	</Card.Footer>
 </Card.Root>
