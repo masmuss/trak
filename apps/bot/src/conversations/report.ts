@@ -2,8 +2,14 @@ import { getActiveCategories } from '@trak/services';
 import type { Context } from 'grammy';
 import { BotContext, BotSession } from '../types';
 
-const reportKeyboard = {
-	keyboard: [[{ text: '✅ Selesai' }, { text: '❌ Batal' }]],
+const cancelKeyboard = {
+	keyboard: [[{ text: '❌ Batal' }]],
+	resize_keyboard: true,
+	one_time_keyboard: true
+};
+
+const doneKeyboard = {
+	keyboard: [[{ text: '✅ Selesai' }, { text: '⏭️ Skip' }, { text: '❌ Batal' }]],
 	resize_keyboard: true,
 	one_time_keyboard: true
 };
@@ -16,7 +22,7 @@ export async function startReportFlow(ctx: BotContext, reporterId: string): Prom
 	session.attachments = [];
 
 	await ctx.reply('Buat Laporan Baru\n\nLangkah 1/3: Masukkan judul laporan.', {
-		reply_markup: reportKeyboard
+		reply_markup: cancelKeyboard
 	});
 }
 
@@ -27,7 +33,7 @@ export async function handleTitleInput(ctx: Context, session: BotSession): Promi
 	session.step = 'body';
 
 	await ctx.reply('Langkah 2/3: Masukkan deskripsi laporan secara detail.', {
-		reply_markup: reportKeyboard
+		reply_markup: cancelKeyboard
 	});
 }
 
@@ -43,9 +49,7 @@ export async function handleBodyInput(ctx: Context, session: BotSession): Promis
 		await ctx.reply(
 			'Tidak ada kategori tersedia.\n\nSekarang kirim lampiran (foto/dokumen) atau gunakan tombol di bawah.',
 			{
-				reply_markup: {
-					inline_keyboard: [[{ text: 'Lewati lampiran', callback_data: 'skip_attachment' }]]
-				}
+				reply_markup: doneKeyboard
 			}
 		);
 		return;

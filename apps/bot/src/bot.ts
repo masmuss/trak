@@ -19,7 +19,7 @@ bot.use(
 registerCommands(bot);
 registerCallbacks(bot);
 
-bot.hears(/^\/cancel$/, async (ctx) => {
+bot.hears(/^(\/cancel|❌ Batal)$/, async (ctx) => {
 	const session = ctx.session;
 	Object.assign(session, {
 		step: undefined,
@@ -33,7 +33,7 @@ bot.hears(/^\/cancel$/, async (ctx) => {
 	await ctx.reply('🚫 Laporan dibatalkan.', { reply_markup: { remove_keyboard: true } });
 });
 
-bot.hears(/^\/done$/, async (ctx) => {
+bot.hears(/^(\/done|✅ Selesai|⏭️ Skip)$/, async (ctx) => {
 	const session = ctx.session;
 	const categoryName = session.categoryName ?? 'Tidak ada';
 
