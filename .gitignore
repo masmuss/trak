@@ -7,6 +7,7 @@ node_modules
 .wrangler
 .svelte-kit
 build
+dist
 
 # OS
 .DS_Store
@@ -26,6 +27,9 @@ test-results
 
 # Turbo
 .turbo
+
+# Bot
+.bot-sessions/
 
 # Misc
 .antigravitycli

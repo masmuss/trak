@@ -36,6 +36,12 @@ export async function getReporterByTelegramId(telegramId: bigint): Promise<Repor
 	});
 }
 
+export async function getReporterById(id: string): Promise<Reporter | undefined> {
+	return db.query.reporters.findFirst({
+		where: eq(reporters.id, id)
+	});
+}
+
 export async function createReporter(input: CreateReporterInput): Promise<void> {
 	await db.insert(reporters).values({
 		telegramId: input.telegramId,

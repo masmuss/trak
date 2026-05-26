@@ -20,16 +20,21 @@ export async function getInviteCodeByCode(code: string): Promise<InviteCode | un
 	});
 }
 
-export async function validateInviteCode(code: string): Promise<boolean> {
+export type InviteCodeValidation = {
+	valid: boolean;
+	inviteCodeId?: string;
+};
+
+export async function validateInviteCode(code: string): Promise<InviteCodeValidation> {
 	const invite = await db.query.inviteCodes.findFirst({
 		where: and(eq(inviteCodes.code, code), eq(inviteCodes.isActive, true))
 	});
 
-	if (!invite) return false;
+	if (!invite) return { valid: false };
 
-	if (invite.expiresAt && invite.expiresAt < new Date()) return false;
+	if (invite.expiresAt && invite.expiresAt < new Date()) return { valid: false };
 
-	return true;
+	return { valid: true, inviteCodeId: invite.id };
 }
 
 export type CreateInviteCodeInput = {

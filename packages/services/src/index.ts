@@ -27,6 +27,7 @@ export {
 	getTicketById,
 	listTickets,
 	getTicketByIdSimple,
+	getTicketByTicketCode,
 	updateTicketStatus,
 	createReport,
 	addReportAttachment,
@@ -52,10 +53,26 @@ export {
 	updateInviteCode,
 	deleteInviteCode
 } from './invite-code.service';
-export type { CreateInviteCodeInput, UpdateInviteCodeInput } from './invite-code.service';
+export type {
+	CreateInviteCodeInput,
+	UpdateInviteCodeInput,
+	InviteCodeValidation
+} from './invite-code.service';
 
-export { getReporters, getReporterByTelegramId, createReporter } from './reporter.service';
+export {
+	getReporters,
+	getReporterById,
+	getReporterByTelegramId,
+	createReporter
+} from './reporter.service';
 export type { ReporterWithRelations, CreateReporterInput } from './reporter.service';
 
 export { getDashboardStats, getRecentTickets, getTopInviteCodes } from './dashboard.service';
 export type { DashboardStats, TopInviteCode } from './dashboard.service';
+
+export {
+	createNotification,
+	getPendingNotifications,
+	markNotificationRead
+} from './notification.service';
+export type { CreateNotificationInput } from './notification.service';

@@ -169,6 +169,22 @@ export async function addReportAttachment(input: CreateAttachmentInput): Promise
 	});
 }
 
+export async function getTicketByTicketCode(code: string): Promise<TicketDetails | undefined> {
+	const prefix = code.replace(/^TKT-/i, '').toLowerCase();
+	return db.query.reports.findFirst({
+		where: sql`${reports.id}::text LIKE ${prefix + '-%'}`,
+		with: {
+			reporter: true,
+			category: true,
+			attachments: true,
+			statusHistories: {
+				with: { changedByUser: true },
+				orderBy: (statusHistories, { desc }) => [desc(statusHistories.changedAt)]
+			}
+		}
+	}) as Promise<TicketDetails | undefined>;
+}
+
 export async function getCategoryDistribution(): Promise<DistributionResult> {
 	const allReports = await db.query.reports.findMany({
 		columns: { categoryId: true }

@@ -7,6 +7,7 @@ export type BotSession = {
 	body?: string;
 	categoryId?: string;
 	categoryName?: string;
+	inviteCode?: string;
 	attachments: { fileId: string; fileType: string; storageUrl: string }[];
 };
 

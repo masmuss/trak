@@ -1,5 +1,5 @@
 import { error, fail } from '@sveltejs/kit';
-import { getTicketById, updateTicketStatus } from '@trak/services';
+import { getTicketById, updateTicketStatus, createNotification } from '@trak/services';
 import type { PageServerLoad, Actions } from './$types';
 
 const validStatuses = ['open', 'in_progress', 'resolved', 'closed'];
@@ -47,6 +47,27 @@ export const actions: Actions = {
 		}
 
 		await updateTicketStatus(id, newStatus, user.id, note || undefined);
+
+		const statusLabels: Record<string, string> = {
+			open: '🔴 Open',
+			in_progress: '🟡 In Progress',
+			resolved: '🟢 Resolved',
+			closed: '⚪ Closed'
+		};
+
+		const ticketCode = `TKT-${id.slice(0, 8).toUpperCase()}`;
+		const oldLabel = statusLabels[ticket.status] ?? ticket.status;
+		const newLabel = statusLabels[newStatus] ?? newStatus;
+
+		await createNotification({
+			reporterTelegramId: ticket.reporter.telegramId,
+			reportId: id,
+			message:
+				`🔄 Status tiket ${ticketCode} diperbarui\n\n` +
+				`Judul: ${ticket.title}\n` +
+				`Status: ${oldLabel} → ${newLabel}` +
+				(note ? `\nCatatan: ${note}` : '')
+		});
 
 		return { success: true };
 	}
