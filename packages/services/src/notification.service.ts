@@ -1,6 +1,7 @@
+import { sql } from 'drizzle-orm';
 import { db } from '@trak/database';
 import { notifications } from '@trak/database/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 export type CreateNotificationInput = {
 	reporterTelegramId: bigint;
@@ -9,11 +10,23 @@ export type CreateNotificationInput = {
 };
 
 export async function createNotification(input: CreateNotificationInput) {
-	await db.insert(notifications).values({
-		reporterTelegramId: input.reporterTelegramId,
-		reportId: input.reportId,
-		message: input.message
+	const result = await db
+		.insert(notifications)
+		.values({
+			reporterTelegramId: input.reporterTelegramId,
+			reportId: input.reportId,
+			message: input.message
+		})
+		.returning({ id: notifications.id });
+
+	const payload = JSON.stringify({
+		notificationId: result[0].id,
+		reporterTelegramId: Number(input.reporterTelegramId),
+		message: input.message,
+		reportId: input.reportId
 	});
+
+	await db.execute(sql`SELECT pg_notify('notifications', ${payload})`);
 }
 
 export async function getPendingNotifications() {
