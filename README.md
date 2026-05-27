@@ -49,6 +49,8 @@ graph TB
   C --> G
   E --> G
 
+  H -.->|"LISTEN/NOTIFY"| D
+
   linkStyle 0,1 stroke:#666
 ```
 
@@ -85,14 +87,12 @@ sequenceDiagram
     S->>D: update reports + insert status_histories
     W->>S: createNotification(reporterTelegramId, message)
     S->>D: insert notifications
-    loop setiap 5 detik
-      B->>S: getPendingNotifications()
-      S->>D: select where is_read = false
-      D-->>S: [notifikasi]
-      B-->>P: 🔄 Status tiket diperbarui
-      B->>S: markNotificationRead(id)
-      S->>D: update notifications
-    end
+    Note over S: pg_notify('notifications', payload)
+    S-->>D: SELECT pg_notify(...)
+    D-->>B: 🔔 LISTEN notifications
+    B->>S: markNotificationRead(notificationId)
+    S->>D: update notifications set is_read = true
+    B-->>P: 🔄 Status tiket diperbarui
 ```
 
 ## Struktur

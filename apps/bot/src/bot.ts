@@ -4,15 +4,10 @@ import { join } from 'path';
 import { config } from './config';
 import { registerCommands } from './handlers/commands';
 import { registerCallbacks } from './handlers/callbacks';
+import { startNotificationListener } from './handlers/notifications';
 import { handleTitleInput, handleBodyInput } from './conversations/report';
 import { processTelegramFile } from './utils/uploader';
-import {
-	validateInviteCode,
-	createReporter,
-	getReporterByTelegramId,
-	getPendingNotifications,
-	markNotificationRead
-} from '@trak/services';
+import { validateInviteCode, createReporter, getReporterByTelegramId } from '@trak/services';
 import { BotContext, BotSession } from './types';
 
 const sessionDir = join(process.cwd(), '.bot-sessions');
@@ -199,20 +194,5 @@ bot.catch((err) => {
 	console.error('Bot error:', err);
 });
 
-setInterval(async () => {
-	try {
-		const pending = await getPendingNotifications();
-		for (const n of pending) {
-			try {
-				await bot.api.sendMessage(Number(n.reporterTelegramId), n.message);
-				await markNotificationRead(n.id);
-			} catch (e) {
-				console.error(`Failed to send notification ${n.id}:`, e);
-			}
-		}
-	} catch (e) {
-		console.error('Notification polling error:', e);
-	}
-}, 5000);
-
+startNotificationListener(bot);
 bot.start();
