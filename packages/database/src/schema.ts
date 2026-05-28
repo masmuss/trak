@@ -8,7 +8,7 @@ import {
 	timestamp,
 	jsonb
 } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import { user } from './auth.schema';
 
 export * from './auth.schema';
@@ -22,7 +22,9 @@ const lifecycleDates = {
 };
 
 export const inviteCodes = pgTable('invite_codes', {
-	id: uuid('id').defaultRandom().primaryKey(),
+	id: uuid('id')
+		.default(sql`uuid_generate_v7()`)
+		.primaryKey(),
 	code: text('code').notNull().unique(),
 	isActive: boolean('is_active').notNull().default(true),
 	expiresAt: timestamp('expires_at', { withTimezone: true }),
@@ -30,7 +32,9 @@ export const inviteCodes = pgTable('invite_codes', {
 });
 
 export const reporters = pgTable('reporters', {
-	id: uuid('id').defaultRandom().primaryKey(),
+	id: uuid('id')
+		.default(sql`uuid_generate_v7()`)
+		.primaryKey(),
 	telegramId: bigint('telegram_id', { mode: 'bigint' }).notNull().unique(),
 	username: text('username'),
 	fullName: text('full_name').notNull(),
@@ -39,7 +43,9 @@ export const reporters = pgTable('reporters', {
 });
 
 export const categories = pgTable('categories', {
-	id: uuid('id').defaultRandom().primaryKey(),
+	id: uuid('id')
+		.default(sql`uuid_generate_v7()`)
+		.primaryKey(),
 	name: text('name').notNull().unique(),
 	description: text('description'),
 	isActive: boolean('is_active').notNull().default(true),
@@ -47,7 +53,9 @@ export const categories = pgTable('categories', {
 });
 
 export const reports = pgTable('reports', {
-	id: uuid('id').defaultRandom().primaryKey(),
+	id: uuid('id')
+		.default(sql`uuid_generate_v7()`)
+		.primaryKey(),
 	ticketCode: varchar('ticket_code', { length: 20 }).notNull().unique(),
 	reporterId: uuid('reporter_id')
 		.notNull()
@@ -60,7 +68,9 @@ export const reports = pgTable('reports', {
 });
 
 export const reportAttachments = pgTable('report_attachments', {
-	id: uuid('id').defaultRandom().primaryKey(),
+	id: uuid('id')
+		.default(sql`uuid_generate_v7()`)
+		.primaryKey(),
 	reportId: uuid('report_id')
 		.notNull()
 		.references(() => reports.id, { onDelete: 'cascade' }),
@@ -71,7 +81,9 @@ export const reportAttachments = pgTable('report_attachments', {
 });
 
 export const statusHistories = pgTable('status_histories', {
-	id: uuid('id').defaultRandom().primaryKey(),
+	id: uuid('id')
+		.default(sql`uuid_generate_v7()`)
+		.primaryKey(),
 	reportId: uuid('report_id')
 		.notNull()
 		.references(() => reports.id, { onDelete: 'cascade' }),
@@ -138,7 +150,9 @@ export const botSessions = pgTable('bot_sessions', {
 });
 
 export const notifications = pgTable('notifications', {
-	id: uuid('id').defaultRandom().primaryKey(),
+	id: uuid('id')
+		.default(sql`uuid_generate_v7()`)
+		.primaryKey(),
 	reporterTelegramId: bigint('reporter_telegram_id', { mode: 'bigint' }).notNull(),
 	reportId: uuid('report_id')
 		.notNull()
