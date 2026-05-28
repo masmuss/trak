@@ -1,6 +1,5 @@
 import { Bot, session } from 'grammy';
-import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'fs';
-import { join } from 'path';
+import { createPgSessionAdapter } from '@trak/database';
 import { config } from './config';
 import { registerCommands } from './handlers/commands';
 import { registerCallbacks } from './handlers/callbacks';
@@ -10,29 +9,6 @@ import { processTelegramFile } from './utils/uploader';
 import { validateInviteCode, createReporter, getReporterByTelegramId } from '@trak/services';
 import { BotContext, BotSession } from './types';
 
-const sessionDir = join(process.cwd(), '.bot-sessions');
-if (!existsSync(sessionDir)) {
-	mkdirSync(sessionDir, { recursive: true });
-}
-
-const fileAdapter = {
-	read: async (key: string) => {
-		const filePath = join(sessionDir, `${key}.json`);
-		if (!existsSync(filePath)) return undefined;
-		return JSON.parse(readFileSync(filePath, 'utf-8'));
-	},
-	write: async (key: string, value: BotSession) => {
-		const filePath = join(sessionDir, `${key}.json`);
-		writeFileSync(filePath, JSON.stringify(value), 'utf-8');
-	},
-	delete: async (key: string) => {
-		const filePath = join(sessionDir, `${key}.json`);
-		if (existsSync(filePath)) {
-			unlinkSync(filePath);
-		}
-	}
-};
-
 const bot = new Bot<BotContext>(config.botToken);
 
 bot.use(
@@ -40,7 +16,7 @@ bot.use(
 		initial: (): BotSession => ({
 			attachments: []
 		}),
-		storage: fileAdapter
+		storage: createPgSessionAdapter<BotSession>()
 	})
 );
 

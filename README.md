@@ -33,8 +33,7 @@ graph TB
   end
 
   subgraph Infrastructure
-    H["🐘 PostgreSQL"]
-    I["📁 .bot-sessions/<br/>File Session"]
+    H["🐘 PostgreSQL<br/>bot_sessions + notifications"]
   end
 
   A -->|"HTTPS"| C
@@ -44,7 +43,7 @@ graph TB
   D --> E
   E --> F
   F --> H
-  D --> I
+  D --> H
 
   C --> G
   E --> G

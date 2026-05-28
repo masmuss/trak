@@ -28,8 +28,5 @@ test-results
 # Turbo
 .turbo
 
-# Bot
-.bot-sessions/
-
 # Misc
 .antigravitycli
