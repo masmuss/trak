@@ -15,6 +15,13 @@
       "when": 1779798770487,
       "tag": "0001_good_butterfly",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779929471320,
+      "tag": "0002_big_sharon_carter",
+      "breakpoints": true
     }
   ]
 }

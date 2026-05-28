@@ -1,4 +1,13 @@
-import { pgTable, uuid, bigint, text, varchar, boolean, timestamp } from 'drizzle-orm/pg-core';
+import {
+	pgTable,
+	uuid,
+	bigint,
+	text,
+	varchar,
+	boolean,
+	timestamp,
+	jsonb
+} from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { user } from './auth.schema';
 
@@ -120,6 +129,12 @@ export const statusHistoriesRelations = relations(statusHistories, ({ one }) => 
 		references: [user.id]
 	})
 }));
+
+export const botSessions = pgTable('bot_sessions', {
+	key: text('key').primaryKey(),
+	data: jsonb('data').notNull(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+});
 
 export const notifications = pgTable('notifications', {
 	id: uuid('id').defaultRandom().primaryKey(),
