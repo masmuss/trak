@@ -7,7 +7,6 @@ import {
 	getReporterByTelegramId
 } from '@trak/services';
 import { startReportFlow } from '../conversations/report';
-import { generateTicketNumber } from '../utils/generator';
 import { BotContext } from '../types';
 
 export function registerCallbacks(bot: Bot<BotContext>): void {
@@ -76,7 +75,7 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 		const session = ctx.session;
 
 		try {
-			const reportId = await createReport({
+			const { id: reportId, ticketCode } = await createReport({
 				reporterId: session.reporterId!,
 				categoryId: session.categoryId,
 				title: session.title!,
@@ -95,7 +94,7 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 			await ctx.answerCallbackQuery();
 			await ctx.editMessageText(
 				`✅ Laporan berhasil dikirim!` +
-					`\n\nKode tiket: TKT-${reportId.slice(0, 8).toUpperCase()}` +
+					`\n\nKode tiket: ${ticketCode}` +
 					`\n\nTerima kasih, laporan Anda akan segera diproses.`
 			);
 

@@ -48,6 +48,7 @@ export const categories = pgTable('categories', {
 
 export const reports = pgTable('reports', {
 	id: uuid('id').defaultRandom().primaryKey(),
+	ticketCode: varchar('ticket_code', { length: 20 }).notNull().unique(),
 	reporterId: uuid('reporter_id')
 		.notNull()
 		.references(() => reporters.id, { onDelete: 'cascade' }),

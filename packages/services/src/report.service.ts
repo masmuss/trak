@@ -138,19 +138,33 @@ export type CreateReportInput = {
 	body: string;
 };
 
-export async function createReport(input: CreateReportInput): Promise<string> {
+function generateTicketCode(): string {
+	const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+	let result = '';
+	for (let i = 0; i < 8; i++) {
+		result += chars.charAt(Math.floor(Math.random() * chars.length));
+	}
+	return `TKT-${result}`;
+}
+
+export async function createReport(
+	input: CreateReportInput
+): Promise<{ id: string; ticketCode: string }> {
+	const ticketCode = generateTicketCode();
+
 	const result = await db
 		.insert(reports)
 		.values({
+			ticketCode,
 			reporterId: input.reporterId,
 			categoryId: input.categoryId ?? null,
 			title: input.title.trim(),
 			body: input.body.trim(),
 			status: 'open'
 		})
-		.returning({ id: reports.id });
+		.returning({ id: reports.id, ticketCode: reports.ticketCode });
 
-	return result[0].id;
+	return result[0];
 }
 
 export type CreateAttachmentInput = {
@@ -170,9 +184,8 @@ export async function addReportAttachment(input: CreateAttachmentInput): Promise
 }
 
 export async function getTicketByTicketCode(code: string): Promise<TicketDetails | undefined> {
-	const prefix = code.replace(/^TKT-/i, '').toLowerCase();
 	return db.query.reports.findFirst({
-		where: sql`${reports.id}::text LIKE ${prefix + '-%'}`,
+		where: eq(reports.ticketCode, code.toUpperCase()),
 		with: {
 			reporter: true,
 			category: true,

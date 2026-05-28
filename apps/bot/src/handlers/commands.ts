@@ -92,12 +92,29 @@ export function registerCommands(bot: Bot<BotContext>): void {
 			closed: '⚪ Closed'
 		};
 
+		const history =
+			ticket.statusHistories.length > 0
+				? '\n\nRiwayat Status:\n' +
+					ticket.statusHistories
+						.map(
+							(h) =>
+								`${h.changedAt.toLocaleString('id-ID')} — ${statusMap[h.oldStatus] ?? h.oldStatus} → ${statusMap[h.newStatus] ?? h.newStatus}` +
+								(h.note ? ` (${h.note})` : '') +
+								` oleh ${h.changedByUser.name}`
+						)
+						.join('\n')
+				: '';
+
 		await ctx.reply(
-			`📋 Informasi Tiket ${ticketCode}\n\n` +
-				`Judul: ${ticket.title}\n` +
-				`Status: ${statusMap[ticket.status] ?? ticket.status}\n` +
-				`Kategori: ${ticket.category?.name ?? '-'}\n` +
-				`Dibuat: ${ticket.createdAt.toLocaleString('id-ID')}`
+			`📋 Tiket ${ticketCode}\n\n` +
+				`${ticket.title}\n\n` +
+				`${ticket.body}\n\n` +
+				`Status: ${statusMap[ticket.status] ?? ticket.status}` +
+				` | Kategori: ${ticket.category?.name ?? '-'}` +
+				` | Lampiran: ${ticket.attachments.length}` +
+				`\nDibuat: ${ticket.createdAt.toLocaleString('id-ID')}` +
+				(ticket.updatedAt ? `\nDiperbarui: ${ticket.updatedAt.toLocaleString('id-ID')}` : '') +
+				history
 		);
 	});
 
