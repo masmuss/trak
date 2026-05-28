@@ -12,12 +12,12 @@ BEGIN
   bytes := gen_random_bytes(16);
 
   -- Set timestamp (big-endian) in bytes 0-5
-  bytes := set_byte(bytes, 0, (timestamp_ms >> 40)::INT & 255);
-  bytes := set_byte(bytes, 1, (timestamp_ms >> 32)::INT & 255);
-  bytes := set_byte(bytes, 2, (timestamp_ms >> 24)::INT & 255);
-  bytes := set_byte(bytes, 3, (timestamp_ms >> 16)::INT & 255);
-  bytes := set_byte(bytes, 4, (timestamp_ms >> 8)::INT & 255);
-  bytes := set_byte(bytes, 5, timestamp_ms::INT & 255);
+  bytes := set_byte(bytes, 0, ((timestamp_ms >> 40) & 255)::INT);
+  bytes := set_byte(bytes, 1, ((timestamp_ms >> 32) & 255)::INT);
+  bytes := set_byte(bytes, 2, ((timestamp_ms >> 24) & 255)::INT);
+  bytes := set_byte(bytes, 3, ((timestamp_ms >> 16) & 255)::INT);
+  bytes := set_byte(bytes, 4, ((timestamp_ms >> 8) & 255)::INT);
+  bytes := set_byte(bytes, 5, (timestamp_ms & 255)::INT);
 
   -- Set version 7 in byte 6 top nibble
   bytes := set_byte(bytes, 6, (get_byte(bytes, 6) & 15) | (7 << 4));
