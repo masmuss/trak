@@ -14,15 +14,6 @@ import {
 	verification
 } from '@trak/database/schema';
 import { hashPassword } from 'better-auth/crypto';
-import { loadEnvFile } from 'process';
-
-try {
-	loadEnvFile();
-} catch {
-	console.warn(
-		'⚠️  No .env file found or failed to load. Make sure DATABASE_URL is set in environment variables.'
-	);
-}
 
 if (!process.env.DATABASE_URL) {
 	throw new Error('DATABASE_URL is not set in environment variables');

@@ -15,7 +15,7 @@
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
 		"test:e2e": "playwright install && playwright test",
-		"db:seed": "node --import tsx/esm src/lib/server/db/seed.ts"
+		"db:seed": "node --import tsx/esm --env-file=../../.env src/lib/server/db/seed.ts"
 	},
 	"devDependencies": {
 		"@better-auth/cli": "^1.4.21",
