@@ -11,6 +11,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import type { TicketWithRelations } from '$lib/features/tickets/types';
 	import StatusBadge from './status-badge.svelte';
+	import PriorityBadge from './priority-badge.svelte';
 
 	let { columns = $bindable() }: { columns: ColumnDef<TicketWithRelations, unknown>[] } = $props();
 
@@ -53,6 +54,13 @@
 					renderComponent(DataTableColumnHeader, { column, title: 'Category' }),
 				cell: (context) => renderSnippet(categoryCell, context),
 				meta: { className: 'w-[130px] min-w-[130px]' }
+			},
+			{
+				accessorKey: 'priority',
+				header: ({ column }) =>
+					renderComponent(DataTableColumnHeader, { column, title: 'Priority' }),
+				cell: (context) => renderSnippet(priorityCell, context),
+				meta: { className: 'w-[100px] min-w-[100px]' }
 			},
 			{
 				accessorKey: 'status',
@@ -112,6 +120,10 @@
 
 {#snippet categoryCell({ row }: CellContext<TicketWithRelations, unknown>)}
 	<span>{row.original.category?.name ?? 'Uncategorized'}</span>
+{/snippet}
+
+{#snippet priorityCell({ row }: CellContext<TicketWithRelations, unknown>)}
+	<PriorityBadge priority={row.original.priority} />
 {/snippet}
 
 {#snippet statusCell({ row }: CellContext<TicketWithRelations, unknown>)}
