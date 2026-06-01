@@ -5,9 +5,11 @@ import type {
 	user,
 	reporters,
 	categories,
-	inviteCodes
+	inviteCodes,
+	priorityEnum
 } from '@trak/database';
 
+export type Priority = (typeof priorityEnum.enumValues)[number];
 export type Ticket = typeof reports.$inferSelect;
 export type Attachment = typeof reportAttachments.$inferSelect;
 export type User = typeof user.$inferSelect;

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import StatusBadge from './status-badge.svelte';
+	import PriorityBadge from './priority-badge.svelte';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import type { TicketDetails } from '../types.js';
 	import { PaperclipIcon, TagIcon } from 'phosphor-svelte';
@@ -23,7 +24,10 @@
 			</div>
 			<h1 class="text-2xl font-bold tracking-tight md:text-3xl">{ticket.title}</h1>
 		</div>
-		<StatusBadge status={ticket.status} />
+		<div class="flex items-center gap-2">
+			<PriorityBadge priority={ticket.priority} />
+			<StatusBadge status={ticket.status} />
+		</div>
 	</div>
 
 	<Separator />

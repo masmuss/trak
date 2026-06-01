@@ -43,6 +43,13 @@
       "when": 1779931882147,
       "tag": "0005_green_spot",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779961829793,
+      "tag": "0006_careful_trauma",
+      "breakpoints": true
     }
   ]
 }

@@ -29,6 +29,8 @@ export {
 	getTicketByIdSimple,
 	getTicketByTicketCode,
 	updateTicketStatus,
+	updateTicketPriority,
+	checkSlaBreach,
 	createReport,
 	addReportAttachment,
 	getCategoryDistribution,

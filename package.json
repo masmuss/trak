@@ -16,7 +16,7 @@
 		"db:generate": "pnpm --filter @trak/database db:generate",
 		"db:migrate": "pnpm --filter @trak/database db:migrate",
 		"db:studio": "pnpm --filter @trak/database db:studio",
-		"db:seed": "node --import tsx/esm apps/web/src/lib/server/db/seed.ts"
+		"db:seed": "pnpm --filter @trak/web db:seed"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.4",

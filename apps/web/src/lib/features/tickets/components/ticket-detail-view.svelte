@@ -3,6 +3,7 @@
 	import TicketDescription from './ticket-description.svelte';
 	import TicketTimeline from './ticket-timeline.svelte';
 	import TicketStatusForm from './ticket-status-form.svelte';
+	import TicketPriorityForm from './ticket-priority-form.svelte';
 	import TicketReporter from './ticket-reporter.svelte';
 
 	let { ticket }: { ticket: TicketDetails } = $props();
@@ -17,6 +18,7 @@
 
 		<div class="space-y-6">
 			<TicketReporter {ticket} />
+			<TicketPriorityForm {ticket} />
 			<TicketStatusForm {ticket} />
 		</div>
 	</div>

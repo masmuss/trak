@@ -1,6 +1,6 @@
 import { eq, and, or, count, sql } from 'drizzle-orm';
 import { db, reports, reportAttachments, statusHistories } from '@trak/database';
-import type { Ticket, TicketDetails, TicketWithRelations, Category } from '@trak/shared';
+import type { Ticket, TicketDetails, TicketWithRelations, Category, Priority } from '@trak/shared';
 
 export type TicketListItem = TicketWithRelations;
 
@@ -147,10 +147,27 @@ function generateTicketCode(): string {
 	return `TKT-${result}`;
 }
 
+const SLA_WINDOWS: Record<Priority, { responseMins: number; resolveMins: number }> = {
+	CRITICAL: { responseMins: 15, resolveMins: 120 },
+	HIGH: { responseMins: 60, resolveMins: 480 },
+	MEDIUM: { responseMins: 240, resolveMins: 1440 },
+	LOW: { responseMins: 1440, resolveMins: 10080 }
+};
+
+function calculateSLA(priority: Priority, from?: Date): { responseDue: Date; resolveDue: Date } {
+	const now = from ?? new Date();
+	const window = SLA_WINDOWS[priority];
+	return {
+		responseDue: new Date(now.getTime() + window.responseMins * 60000),
+		resolveDue: new Date(now.getTime() + window.resolveMins * 60000)
+	};
+}
+
 export async function createReport(
 	input: CreateReportInput
 ): Promise<{ id: string; ticketCode: string }> {
 	const ticketCode = generateTicketCode();
+	const { responseDue, resolveDue } = calculateSLA('MEDIUM');
 
 	const result = await db
 		.insert(reports)
@@ -160,7 +177,10 @@ export async function createReport(
 			categoryId: input.categoryId ?? null,
 			title: input.title.trim(),
 			body: input.body.trim(),
-			status: 'open'
+			status: 'open',
+			priority: 'MEDIUM',
+			slaResponseDue: responseDue,
+			slaResolveDue: resolveDue
 		})
 		.returning({ id: reports.id, ticketCode: reports.ticketCode });
 
@@ -181,6 +201,61 @@ export async function addReportAttachment(input: CreateAttachmentInput): Promise
 		fileType: input.fileType,
 		storageUrl: input.storageUrl
 	});
+}
+
+export async function updateTicketPriority(
+	id: string,
+	priority: Priority,
+	changedByUserId: string
+): Promise<void> {
+	await db.transaction(async (tx) => {
+		const existing = await tx.query.reports.findFirst({
+			where: eq(reports.id, id)
+		});
+
+		if (!existing) {
+			throw new Error('Ticket not found');
+		}
+
+		const { responseDue, resolveDue } = calculateSLA(priority, existing.createdAt);
+
+		await tx
+			.update(reports)
+			.set({
+				priority,
+				slaResponseDue: responseDue,
+				slaResolveDue: resolveDue,
+				isSlaBreached: false
+			})
+			.where(eq(reports.id, id));
+
+		await tx.insert(statusHistories).values({
+			reportId: id,
+			changedBy: changedByUserId,
+			oldStatus: existing.status,
+			newStatus: existing.status,
+			note: `Priority changed from ${existing.priority} to ${priority}`
+		});
+	});
+}
+
+export async function checkSlaBreach(id: string): Promise<boolean> {
+	const ticket = await getTicketByIdSimple(id);
+	if (!ticket) throw new Error('Ticket not found');
+
+	if (ticket.status === 'resolved' || ticket.status === 'closed') return false;
+
+	const now = new Date();
+	const breached = !!(
+		(ticket.slaResponseDue && ticket.slaResponseDue < now && !ticket.firstRespondedAt) ||
+		(ticket.slaResolveDue && ticket.slaResolveDue < now && !ticket.resolvedAt)
+	);
+
+	if (breached && !ticket.isSlaBreached) {
+		await db.update(reports).set({ isSlaBreached: true }).where(eq(reports.id, id));
+	}
+
+	return breached;
 }
 
 export async function getTicketByTicketCode(code: string): Promise<TicketDetails | undefined> {

@@ -1,6 +1,12 @@
 import { error, fail } from '@sveltejs/kit';
-import { getTicketById, updateTicketStatus, createNotification } from '@trak/services';
+import {
+	getTicketById,
+	updateTicketStatus,
+	updateTicketPriority,
+	createNotification
+} from '@trak/services';
 import type { PageServerLoad, Actions } from './$types';
+import { priorityEnum } from '@trak/database';
 
 const validStatuses = ['open', 'in_progress', 'resolved', 'closed'];
 
@@ -67,6 +73,46 @@ export const actions: Actions = {
 				`Judul: ${ticket.title}\n` +
 				`Status: ${oldLabel} → ${newLabel}` +
 				(note ? `\nCatatan: ${note}` : '')
+		});
+
+		return { success: true };
+	},
+
+	updatePriority: async (event) => {
+		const user = event.locals.user;
+		if (!user) {
+			throw error(401, 'Unauthorized');
+		}
+
+		const { id } = event.params;
+		const formData = await event.request.formData();
+		const newPriority = formData.get('priority') as string;
+
+		const validPriorities = priorityEnum.enumValues;
+		if (!newPriority || !validPriorities.includes(newPriority as never)) {
+			return fail(400, { error: 'Invalid priority value' });
+		}
+
+		const ticket = await getTicketById(id);
+		if (!ticket) {
+			throw error(404, 'Ticket not found');
+		}
+
+		if (ticket.priority === newPriority) {
+			return fail(400, { error: 'Priority is already set to ' + newPriority });
+		}
+
+		await updateTicketPriority(id, newPriority as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL', user.id);
+
+		const ticketCode = `TKT-${id.slice(0, 8).toUpperCase()}`;
+
+		await createNotification({
+			reporterTelegramId: ticket.reporter.telegramId,
+			reportId: id,
+			message:
+				`🏷 Prioritas tiket ${ticketCode} diperbarui\n\n` +
+				`Judul: ${ticket.title}\n` +
+				`Prioritas: ${ticket.priority} → ${newPriority}`
 		});
 
 		return { success: true };

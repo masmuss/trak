@@ -6,7 +6,8 @@ import {
 	varchar,
 	boolean,
 	timestamp,
-	jsonb
+	jsonb,
+	pgEnum
 } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 import { user } from './auth.schema';
@@ -52,6 +53,8 @@ export const categories = pgTable('categories', {
 	...lifecycleDates
 });
 
+export const priorityEnum = pgEnum('priority', ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']);
+
 export const reports = pgTable('reports', {
 	id: uuid('id')
 		.default(sql`uuid_generate_v7()`)
@@ -64,6 +67,12 @@ export const reports = pgTable('reports', {
 	title: text('title').notNull(),
 	body: text('body').notNull(),
 	status: varchar('status', { length: 50 }).notNull().default('open'),
+	priority: priorityEnum('priority').notNull().default('MEDIUM'),
+	slaResponseDue: timestamp('sla_response_due', { withTimezone: true }),
+	slaResolveDue: timestamp('sla_resolve_due', { withTimezone: true }),
+	firstRespondedAt: timestamp('first_response_at', { withTimezone: true }),
+	resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+	isSlaBreached: boolean('is_sla_breached').notNull().default(false),
 	...lifecycleDates
 });
 
