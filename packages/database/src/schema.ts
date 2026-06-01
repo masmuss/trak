@@ -11,6 +11,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 import { user } from './auth.schema';
+import { uuidv7 } from 'uuidv7';
 
 export * from './auth.schema';
 
@@ -34,8 +35,8 @@ export const inviteCodes = pgTable('invite_codes', {
 
 export const reporters = pgTable('reporters', {
 	id: uuid('id')
-		.default(sql`uuid_generate_v7()`)
-		.primaryKey(),
+		.primaryKey()
+		.$defaultFn(() => uuidv7()),
 	telegramId: bigint('telegram_id', { mode: 'bigint' }).notNull().unique(),
 	username: text('username'),
 	fullName: text('full_name').notNull(),
@@ -45,8 +46,8 @@ export const reporters = pgTable('reporters', {
 
 export const categories = pgTable('categories', {
 	id: uuid('id')
-		.default(sql`uuid_generate_v7()`)
-		.primaryKey(),
+		.primaryKey()
+		.$defaultFn(() => uuidv7()),
 	name: text('name').notNull().unique(),
 	description: text('description'),
 	isActive: boolean('is_active').notNull().default(true),
@@ -57,8 +58,8 @@ export const priorityEnum = pgEnum('priority', ['LOW', 'MEDIUM', 'HIGH', 'CRITIC
 
 export const reports = pgTable('reports', {
 	id: uuid('id')
-		.default(sql`uuid_generate_v7()`)
-		.primaryKey(),
+		.primaryKey()
+		.$defaultFn(() => uuidv7()),
 	ticketCode: varchar('ticket_code', { length: 20 }).notNull().unique(),
 	reporterId: uuid('reporter_id')
 		.notNull()
@@ -78,8 +79,8 @@ export const reports = pgTable('reports', {
 
 export const reportAttachments = pgTable('report_attachments', {
 	id: uuid('id')
-		.default(sql`uuid_generate_v7()`)
-		.primaryKey(),
+		.primaryKey()
+		.$defaultFn(() => uuidv7()),
 	reportId: uuid('report_id')
 		.notNull()
 		.references(() => reports.id, { onDelete: 'cascade' }),
@@ -91,8 +92,8 @@ export const reportAttachments = pgTable('report_attachments', {
 
 export const statusHistories = pgTable('status_histories', {
 	id: uuid('id')
-		.default(sql`uuid_generate_v7()`)
-		.primaryKey(),
+		.primaryKey()
+		.$defaultFn(() => uuidv7()),
 	reportId: uuid('report_id')
 		.notNull()
 		.references(() => reports.id, { onDelete: 'cascade' }),
