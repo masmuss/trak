@@ -1,6 +1,7 @@
 import { eq, and, or, count, sql } from 'drizzle-orm';
 import { db, reports, reportAttachments, statusHistories } from '@trak/database';
-import type { Ticket, TicketDetails, TicketWithRelations, Category, Priority } from '@trak/shared';
+import type { Ticket, TicketDetails, TicketWithRelations, Priority } from '@trak/shared';
+import { randomBytes } from 'crypto';
 
 export type TicketListItem = TicketWithRelations;
 
@@ -139,12 +140,9 @@ export type CreateReportInput = {
 };
 
 function generateTicketCode(): string {
-	const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-	let result = '';
-	for (let i = 0; i < 8; i++) {
-		result += chars.charAt(Math.floor(Math.random() * chars.length));
-	}
-	return `TKT-${result}`;
+	const dateStr = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+	const randomStr = randomBytes(2).toString('hex').toUpperCase();
+	return `TKT-${dateStr}-${randomStr}`;
 }
 
 const SLA_WINDOWS: Record<Priority, { responseMins: number; resolveMins: number }> = {
