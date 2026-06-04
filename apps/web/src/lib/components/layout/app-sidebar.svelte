@@ -68,6 +68,7 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { page } from '$app/state';
 	import type { ComponentProps } from 'svelte';
+	import AppLogo from '../shared/app-logo.svelte';
 
 	let {
 		ref = $bindable(null),
@@ -80,19 +81,16 @@
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>
 	<Sidebar.Header>
-		<div class="flex items-center gap-2 px-2 py-1.5 text-start">
-			<div
-				class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
-			>
-				<TicketIcon class="size-4" />
-			</div>
-			<div
-				class="grid flex-1 text-start text-sm leading-tight group-data-[collapsible=icon]:hidden"
-			>
-				<span class="truncate font-semibold">Acme Inc.</span>
-				<span class="truncate text-xs text-muted-foreground">Ticketing System</span>
-			</div>
-		</div>
+		<Sidebar.Menu>
+			<Sidebar.MenuItem>
+				<Sidebar.MenuButton
+					size="lg"
+					class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+				>
+					<AppLogo />
+				</Sidebar.MenuButton>
+			</Sidebar.MenuItem>
+		</Sidebar.Menu>
 	</Sidebar.Header>
 	<Sidebar.Content>
 		<NavMain items={data.navMain} />
