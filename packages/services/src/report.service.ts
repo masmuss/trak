@@ -12,6 +12,8 @@ export type TicketListResult = {
 
 export type TicketFilters = {
 	status?: string;
+	priority?: Priority;
+	slaBreached?: string;
 	search?: string;
 	categoryId?: string;
 	limit?: number;
@@ -40,6 +42,16 @@ export async function listTickets(filters: TicketFilters): Promise<TicketListRes
 
 	if (filters.status) {
 		whereConditions.push(eq(reports.status, filters.status));
+	}
+
+	if (filters.priority) {
+		whereConditions.push(eq(reports.priority, filters.priority));
+	}
+
+	if (filters.slaBreached === 'true') {
+		whereConditions.push(eq(reports.isSlaBreached, true));
+	} else if (filters.slaBreached === 'false') {
+		whereConditions.push(eq(reports.isSlaBreached, false));
 	}
 
 	if (filters.categoryId) {
@@ -110,8 +122,28 @@ export async function updateTicketStatus(
 	});
 }
 
-export async function getTicketsForExport(status?: string): Promise<TicketListItem[]> {
-	const whereClause = status ? eq(reports.status, status) : undefined;
+export async function getTicketsForExport(filters: {
+	status?: string;
+	priority?: Priority;
+	slaBreached?: string;
+}): Promise<TicketListItem[]> {
+	const whereConditions = [];
+
+	if (filters.status) {
+		whereConditions.push(eq(reports.status, filters.status));
+	}
+
+	if (filters.priority) {
+		whereConditions.push(eq(reports.priority, filters.priority));
+	}
+
+	if (filters.slaBreached === 'true') {
+		whereConditions.push(eq(reports.isSlaBreached, true));
+	} else if (filters.slaBreached === 'false') {
+		whereConditions.push(eq(reports.isSlaBreached, false));
+	}
+
+	const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined;
 
 	return db.query.reports.findMany({
 		where: whereClause,
@@ -152,7 +184,10 @@ const SLA_WINDOWS: Record<Priority, { responseMins: number; resolveMins: number 
 	LOW: { responseMins: 1440, resolveMins: 10080 }
 };
 
-function calculateSLA(priority: Priority, from?: Date): { responseDue: Date; resolveDue: Date } {
+export function calculateSLA(
+	priority: Priority,
+	from?: Date
+): { responseDue: Date; resolveDue: Date } {
 	const now = from ?? new Date();
 	const window = SLA_WINDOWS[priority];
 	return {

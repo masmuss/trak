@@ -63,6 +63,12 @@
 				meta: { className: 'w-[100px] min-w-[100px]' }
 			},
 			{
+				accessorKey: 'isSlaBreached',
+				header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: 'SLA' }),
+				cell: (context) => renderSnippet(slaCell, context),
+				meta: { className: 'w-[80px] min-w-[80px]' }
+			},
+			{
 				accessorKey: 'status',
 				header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: 'Status' }),
 				cell: (context) => renderSnippet(statusCell, context),
@@ -120,6 +126,22 @@
 
 {#snippet categoryCell({ row }: CellContext<TicketWithRelations, unknown>)}
 	<span>{row.original.category?.name ?? 'Uncategorized'}</span>
+{/snippet}
+
+{#snippet slaCell({ row }: CellContext<TicketWithRelations, unknown>)}
+	{@const breached = row.original.isSlaBreached}
+	{@const hasSla = !!row.original.slaResolveDue}
+	{#if breached}
+		<div class="flex items-center gap-1.5">
+			<span class="size-2 rounded-full bg-red-500"></span>
+			<span class="text-xs text-red-600">Breached</span>
+		</div>
+	{:else if hasSla}
+		<div class="flex items-center gap-1.5">
+			<span class="size-2 rounded-full bg-green-500"></span>
+			<span class="text-xs text-green-600">On Track</span>
+		</div>
+	{/if}
 {/snippet}
 
 {#snippet priorityCell({ row }: CellContext<TicketWithRelations, unknown>)}

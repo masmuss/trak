@@ -31,6 +31,7 @@ export {
 	updateTicketStatus,
 	updateTicketPriority,
 	checkSlaBreach,
+	calculateSLA,
 	createReport,
 	addReportAttachment,
 	getCategoryDistribution,

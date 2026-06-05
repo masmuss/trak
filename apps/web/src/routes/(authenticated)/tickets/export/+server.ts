@@ -1,6 +1,8 @@
 import type { RequestHandler } from './$types';
 import { getTicketsForExport } from '@trak/services';
 import { convertToCSV } from '$lib/utils/csv';
+import { priorityEnum } from '@trak/database';
+import type { Priority } from '@trak/shared';
 
 const validStatuses = ['open', 'in_progress', 'resolved', 'closed'];
 
@@ -8,7 +10,17 @@ export const GET: RequestHandler = async ({ url }) => {
 	const status = url.searchParams.get('status');
 	const isValidStatus = status && validStatuses.includes(status);
 
-	const tickets = await getTicketsForExport(isValidStatus ? status : undefined);
+	const priority = url.searchParams.get('priority');
+	const isValidPriority = priority && priorityEnum.enumValues.includes(priority as never);
+
+	const slaBreached = url.searchParams.get('sla_breached');
+	const isValidSla = slaBreached === 'true' || slaBreached === 'false';
+
+	const tickets = await getTicketsForExport({
+		status: isValidStatus ? status : undefined,
+		priority: isValidPriority ? (priority as Priority) : undefined,
+		slaBreached: isValidSla ? slaBreached : undefined
+	});
 
 	const headers = [
 		'ID',
