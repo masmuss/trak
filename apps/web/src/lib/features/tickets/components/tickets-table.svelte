@@ -50,6 +50,7 @@
 	});
 
 	function navigate(search: string) {
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
 		goto(resolve('/(authenticated)/tickets') + search, {
 			keepFocus: true,
 			noScroll: true
