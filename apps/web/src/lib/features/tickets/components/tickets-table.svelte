@@ -1,18 +1,14 @@
 <script lang="ts">
-	import { X, CloudArrowDownIcon } from 'phosphor-svelte';
+	import { CloudArrowDownIcon, XIcon } from 'phosphor-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
 	import type { ColumnDef } from '@tanstack/table-core';
-	import {
-		DataTable,
-		DataTableViewOptions,
-		DataTableFacetedFilter
-	} from '$lib/components/shared/data-table/index.js';
+	import { DataTable, DataTableViewOptions } from '$lib/components/shared/data-table/index.js';
 	import Columns from './columns.svelte';
 	import type { TicketWithRelations } from '$lib/features/tickets/types';
 	import { goto } from '$app/navigation';
 	import { page as pageState } from '$app/state';
 	import { resolve } from '$app/paths';
+	import * as Select from '$lib/components/ui/select/index.js';
 
 	let {
 		tickets = [],
@@ -32,13 +28,66 @@
 	let pageSize = $state(10);
 	const pageCount = $derived(Math.ceil(totalCount / pageSize));
 
-	// Keep local state in sync when url changes page/limit
+	const url = $derived(pageState.url);
+
+	const activeStatus = $derived(url.searchParams.get('status') || '');
+	const activePriority = $derived(url.searchParams.get('priority') || '');
+	const activeSla = $derived(url.searchParams.get('sla_breached') || '');
+
+	const hasActiveFilters = $derived(!!(activeStatus || activePriority || activeSla));
+
+	let filterStatus = $state('');
+	let filterPriority = $state('');
+	let filterSla = $state('');
+
 	$effect.pre(() => {
+		filterStatus = activeStatus;
+		filterPriority = activePriority;
+		filterSla = activeSla;
+
 		pageIndex = page - 1;
 		pageSize = limit;
 	});
 
-	// Trigger navigation when pagination state changes
+	function navigate(search: string) {
+		goto(resolve('/(authenticated)/tickets') + search, {
+			keepFocus: true,
+			noScroll: true
+		});
+	}
+
+	function applyFilter(key: string, value: string) {
+		const nextUrl = new URL(pageState.url);
+		if (value) {
+			nextUrl.searchParams.set(key, value);
+		} else {
+			nextUrl.searchParams.delete(key);
+		}
+		nextUrl.searchParams.delete('page');
+		navigate(nextUrl.search);
+	}
+
+	function resetFilters() {
+		const nextUrl = new URL(pageState.url);
+		nextUrl.searchParams.delete('status');
+		nextUrl.searchParams.delete('priority');
+		nextUrl.searchParams.delete('sla_breached');
+		nextUrl.searchParams.delete('page');
+		navigate(nextUrl.search);
+	}
+
+	$effect(() => {
+		if (filterStatus !== activeStatus) applyFilter('status', filterStatus);
+	});
+
+	$effect(() => {
+		if (filterPriority !== activePriority) applyFilter('priority', filterPriority);
+	});
+
+	$effect(() => {
+		if (filterSla !== activeSla) applyFilter('sla_breached', filterSla);
+	});
+
 	$effect(() => {
 		const currentUrl = pageState.url;
 		const urlPage = parseInt(currentUrl.searchParams.get('page') || '1');
@@ -48,19 +97,54 @@
 			const nextUrl = new URL(currentUrl);
 			nextUrl.searchParams.set('page', String(pageIndex + 1));
 			nextUrl.searchParams.set('limit', String(pageSize));
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			goto(resolve((nextUrl.pathname + nextUrl.search) as any), {
-				keepFocus: true,
-				noScroll: true
-			});
+			navigate(nextUrl.search);
 		}
 	});
+
+	const statusLabels: Record<string, string> = {
+		open: 'Status: Open',
+		in_progress: 'Status: In Progress',
+		resolved: 'Status: Resolved',
+		closed: 'Status: Closed'
+	};
+
+	const priorityLabels: Record<string, string> = {
+		CRITICAL: 'Priority: Critical',
+		HIGH: 'Priority: High',
+		MEDIUM: 'Priority: Medium',
+		LOW: 'Priority: Low'
+	};
+
+	const slaLabels: Record<string, string> = {
+		true: 'SLA: Breached',
+		false: 'SLA: Safe'
+	};
+
+	const statusLabel = $derived(
+		filterStatus ? (statusLabels[filterStatus] ?? filterStatus) : 'Status'
+	);
+	const priorityLabel = $derived(
+		filterPriority ? (priorityLabels[filterPriority] ?? filterPriority) : 'Priority'
+	);
+	const slaLabel = $derived(filterSla ? (slaLabels[filterSla] ?? filterSla) : 'SLA');
 
 	const statusOptions = [
 		{ label: 'Open', value: 'open' },
 		{ label: 'In Progress', value: 'in_progress' },
 		{ label: 'Resolved', value: 'resolved' },
 		{ label: 'Closed', value: 'closed' }
+	];
+
+	const priorityOptions = [
+		{ label: 'Critical', value: 'CRITICAL' },
+		{ label: 'High', value: 'HIGH' },
+		{ label: 'Medium', value: 'MEDIUM' },
+		{ label: 'Low', value: 'LOW' }
+	];
+
+	const slaOptions = [
+		{ label: 'Breached', value: 'true' },
+		{ label: 'Safe', value: 'false' }
 	];
 </script>
 
@@ -75,34 +159,48 @@
 	manualPagination={true}
 >
 	{#snippet toolbar(table)}
-		{@const isFiltered = table.getState().columnFilters.length > 0}
-		{@const statusCol = table.getColumn('status')}
 		<div class="flex items-center justify-between">
 			<div class="flex flex-1 items-center space-x-2">
-				<Input
-					placeholder="Filter tickets..."
-					value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
-					oninput={(e) => {
-						table.getColumn('title')?.setFilterValue(e.currentTarget.value);
-					}}
-					onchange={(e) => {
-						table.getColumn('title')?.setFilterValue(e.currentTarget.value);
-					}}
-					class="h-8 w-40 lg:w-3xs"
-				/>
+				<Select.Root type="single" bind:value={filterStatus}>
+					<Select.Trigger class="max-w-fit min-w-32">
+						{statusLabel}
+					</Select.Trigger>
+					<Select.Content>
+						<Select.Item value="">All Status</Select.Item>
+						{#each statusOptions as opt (opt.value)}
+							<Select.Item value={opt.value}>{opt.label}</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
 
-				{#if statusCol}
-					<DataTableFacetedFilter column={statusCol} title="Status" options={statusOptions} />
-				{/if}
+				<Select.Root type="single" bind:value={filterPriority}>
+					<Select.Trigger class="max-w-fit min-w-32">
+						{priorityLabel}
+					</Select.Trigger>
+					<Select.Content>
+						<Select.Item value="">All Priority</Select.Item>
+						{#each priorityOptions as opt (opt.value)}
+							<Select.Item value={opt.value}>{opt.label}</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
 
-				{#if isFiltered}
-					<Button
-						variant="ghost"
-						onclick={() => table.resetColumnFilters()}
-						class="h-8 px-2 lg:px-3"
-					>
+				<Select.Root type="single" bind:value={filterSla}>
+					<Select.Trigger class="max-w-fit min-w-32">
+						{slaLabel}
+					</Select.Trigger>
+					<Select.Content>
+						<Select.Item value="">All SLA</Select.Item>
+						{#each slaOptions as opt (opt.value)}
+							<Select.Item value={opt.value}>{opt.label}</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
+
+				{#if hasActiveFilters}
+					<Button variant="ghost" onclick={resetFilters} class="px-2 lg:px-3">
 						Reset
-						<X class="ms-2 size-4" />
+						<XIcon class="ms-2 size-4" />
 					</Button>
 				{/if}
 			</div>
