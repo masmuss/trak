@@ -184,7 +184,10 @@ const SLA_WINDOWS: Record<Priority, { responseMins: number; resolveMins: number 
 	LOW: { responseMins: 1440, resolveMins: 10080 }
 };
 
-function calculateSLA(priority: Priority, from?: Date): { responseDue: Date; resolveDue: Date } {
+export function calculateSLA(
+	priority: Priority,
+	from?: Date
+): { responseDue: Date; resolveDue: Date } {
 	const now = from ?? new Date();
 	const window = SLA_WINDOWS[priority];
 	return {
