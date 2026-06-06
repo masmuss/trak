@@ -1,10 +1,11 @@
 <script lang="ts">
+	import type { Component } from 'svelte';
 	import * as Card from '$lib/components/ui/card';
 
 	type StatItem = {
 		value: number;
 		label: string;
-		icon: any;
+		icon: Component<{ class?: string }>;
 		color: string;
 	};
 
@@ -23,12 +24,14 @@
 			>
 				<item.icon class="size-7" />
 			</div>
-			<Card.Content class="flex flex-col justify-center gap-0 px-0 py-0">
-				<span class="text-title-xs font-semibold text-gray-800 dark:text-white/90">
+			<div class="flex flex-col justify-center">
+				<span class="text-xl font-semibold">
 					{item.value.toLocaleString()}
 				</span>
-				<span class="text-sm text-gray-500 dark:text-gray-400">{item.label}</span>
-			</Card.Content>
+				<span class="text-sm text-muted-foreground">
+					{item.label}
+				</span>
+			</div>
 		</Card.Root>
 	{/each}
 </div>

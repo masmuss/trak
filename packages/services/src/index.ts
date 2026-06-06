@@ -35,12 +35,14 @@ export {
 	createReport,
 	addReportAttachment,
 	getCategoryDistribution,
-	getTicketsForExport
+	getTicketsForExport,
+	getTicketStats
 } from './report.service';
 export type {
 	TicketListItem,
 	TicketListResult,
 	TicketFilters,
+	TicketStats,
 	CategoryDistribution,
 	DistributionResult,
 	CreateReportInput,

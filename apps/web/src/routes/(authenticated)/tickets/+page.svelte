@@ -12,7 +12,7 @@
 			value: data.stats.total,
 			label: 'Total Tickets',
 			icon: TicketIcon,
-			color: 'bg-brand-500/10 text-brand-500'
+			color: 'bg-indigo-500/10 text-indigo-500'
 		},
 		{
 			value: data.stats.pending,
