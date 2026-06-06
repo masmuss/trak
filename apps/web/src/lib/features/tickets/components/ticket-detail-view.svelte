@@ -12,6 +12,8 @@
 	import getInitials from '$lib/utils/initials';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { handleFormError } from '$lib/utils/form';
+	import * as Card from '$lib/components/ui/card';
+	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
 
 	let { ticket }: { ticket: TicketDetails } = $props();
 
@@ -34,12 +36,8 @@
 
 	const statusHistories = $derived(ticket.statusHistories ?? []);
 
-	let selectedStatus = $derived('open');
+	let selectedStatus = $derived(ticket.status);
 	let noteText = $state('');
-
-	$effect.pre(() => {
-		selectedStatus = ticket.status;
-	});
 
 	const statusOptions = [
 		{ label: 'Open', value: 'open' },
@@ -60,16 +58,12 @@
 	};
 </script>
 
-<div class="mx-auto max-w-(--breakpoint-2xl) p-4 pb-20 md:p-6 md:pb-6">
+<div class="mx-auto p-4">
 	<div class="grid grid-cols-1 gap-5 xl:grid-cols-12">
-		<!-- Left: Conversation Thread -->
 		<div class="xl:col-span-8 2xl:col-span-9">
-			<div
-				class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"
-			>
-				<!-- Header -->
-				<div
-					class="flex flex-col justify-between gap-5 border-b border-gray-200 px-5 py-4 sm:flex-row sm:items-center dark:border-gray-800"
+			<Card.Root>
+				<Card.Header
+					class="flex flex-col justify-between gap-5 border-b sm:flex-row sm:items-center"
 				>
 					<div class="min-w-0">
 						<div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
@@ -86,117 +80,114 @@
 						<PriorityBadge priority={ticket.priority} />
 						<StatusBadge status={ticket.status} />
 					</div>
-				</div>
+				</Card.Header>
 
-				<!-- Conversation Thread -->
-				<div
-					class="custom-scrollbar space-y-6 divide-y divide-gray-200 overflow-y-auto px-6 py-7 dark:divide-gray-800"
-					style="max-height: calc(58vh - 162px)"
-				>
-					<!-- Original report message -->
-					<article class="pb-6">
-						<div class="mb-4 flex items-center justify-between">
-							<div class="flex items-center gap-3">
-								<div
-									class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary"
-								>
-									{getInitials(ticket.reporter.fullName)}
-								</div>
-								<div>
-									<p class="text-sm font-medium text-gray-800 dark:text-white/90">
-										{ticket.reporter.fullName}
+				<Card.Content>
+					<ScrollArea class="h-96">
+						<div class="space-y-7">
+							<article class="">
+								<div class="mb-4 flex items-center justify-between">
+									<div class="flex items-center gap-3">
+										<div
+											class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary"
+										>
+											{getInitials(ticket.reporter.fullName)}
+										</div>
+										<div>
+											<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+												{ticket.reporter.fullName}
+											</p>
+											{#if ticket.reporter.username}
+												<p class="text-xs text-gray-500 dark:text-gray-400">
+													@{ticket.reporter.username}
+												</p>
+											{/if}
+										</div>
+									</div>
+									<p class="text-xs text-gray-500 dark:text-gray-400">
+										{formatDateTime(ticket.createdAt)}
 									</p>
-									{#if ticket.reporter.username}
-										<p class="text-xs text-gray-500 dark:text-gray-400">
-											@{ticket.reporter.username}
-										</p>
-									{/if}
 								</div>
-							</div>
-							<p class="text-xs text-gray-500 dark:text-gray-400">
-								{formatDateTime(ticket.createdAt)}
-							</p>
-						</div>
-						<div
-							class="text-sm leading-relaxed whitespace-pre-wrap text-gray-500 dark:text-gray-400"
-						>
-							{ticket.body}
-						</div>
+								<div class="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
+									{ticket.body}
+								</div>
 
-						{#if ticket.attachments && ticket.attachments.length > 0}
-							<div class="mt-4 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-								<PaperclipIcon class="size-4" />
-								<span>{ticket.attachments.length} attachment(s)</span>
-							</div>
-							<div class="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
-								{#each ticket.attachments as attachment (attachment.id)}
-									<a
-										href={attachment.storageUrl}
-										target="_blank"
-										rel="external noopener noreferrer"
-										class="group flex items-center justify-center rounded-lg border p-3 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-									>
-										{#if attachment.fileType.startsWith('image/')}
-											<img
-												src={attachment.storageUrl}
-												alt="Attachment"
-												class="max-h-20 rounded object-contain"
-											/>
-										{:else}
-											<div class="flex flex-col items-center gap-1">
-												<PaperclipIcon class="size-5 text-gray-400" />
-												<span class="max-w-24 truncate text-xs text-gray-500">Download File</span>
-											</div>
-										{/if}
-									</a>
-								{/each}
-							</div>
-						{/if}
-					</article>
-
-					<!-- Status History entries as timeline updates -->
-					{#each statusHistories as history (history.id)}
-						<article class="pt-6">
-							<div class="mb-4 flex items-center justify-between">
-								<div class="flex items-center gap-3">
+								{#if ticket.attachments && ticket.attachments.length > 0}
 									<div
-										class="flex size-10 shrink-0 items-center justify-center rounded-full bg-gray-100 font-semibold text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+										class="mt-4 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400"
 									>
-										{getInitials(history.changedByUser?.name ?? 'System')}
+										<PaperclipIcon class="size-4" />
+										<span>{ticket.attachments.length} attachment(s)</span>
 									</div>
-									<div>
-										<p class="text-sm font-medium text-gray-800 dark:text-white/90">
-											{history.changedByUser?.name ?? 'System Agent'}
-										</p>
-										<p class="text-xs text-gray-500 dark:text-gray-400">Status Update</p>
+									<div class="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
+										{#each ticket.attachments as attachment (attachment.id)}
+											<a
+												href={attachment.storageUrl}
+												target="_blank"
+												rel="external noopener noreferrer"
+												class="group flex items-center justify-center rounded-lg border p-3 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+											>
+												{#if attachment.fileType.startsWith('image/')}
+													<img
+														src={attachment.storageUrl}
+														alt="Attachment"
+														class="max-h-20 rounded object-contain"
+													/>
+												{:else}
+													<div class="flex flex-col items-center gap-1">
+														<PaperclipIcon class="size-5 text-gray-400" />
+														<span class="max-w-24 truncate text-xs text-gray-500"
+															>Download File</span
+														>
+													</div>
+												{/if}
+											</a>
+										{/each}
 									</div>
-								</div>
-								<p class="text-xs text-gray-500 dark:text-gray-400">
-									{formatDateTime(history.changedAt)}
-								</p>
-							</div>
-							<div
-								class="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400"
-							>
-								Status changed from
-								<StatusBadge status={history.oldStatus} />
-								to
-								<StatusBadge status={history.newStatus} />
-							</div>
-							{#if history.note}
-								<div
-									class="mt-3 rounded-lg bg-gray-50 p-3 text-sm text-gray-700 dark:bg-gray-800/50 dark:text-gray-300"
-								>
-									{history.note}
-								</div>
-							{/if}
-						</article>
-					{/each}
-				</div>
+								{/if}
+							</article>
 
-				<!-- Status Update Form -->
-				<div class="border-t border-gray-200 px-6 py-5 dark:border-gray-800">
-					<form method="POST" action="?/updateStatus" use:enhance={statusEnhance}>
+							{#each statusHistories as history (history.id)}
+								<article>
+									<div class="mb-4 flex items-center justify-between">
+										<div class="flex items-center gap-3">
+											<div
+												class="flex size-10 shrink-0 items-center justify-center rounded-full bg-gray-100 font-semibold text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+											>
+												{getInitials(history.changedByUser?.name ?? 'System')}
+											</div>
+											<div>
+												<p class="text-sm font-medium text-gray-800 dark:text-white/90">
+													{history.changedByUser?.name ?? 'System Agent'}
+												</p>
+												<p class="text-xs text-gray-500 dark:text-gray-400">Status Update</p>
+											</div>
+										</div>
+										<p class="text-xs text-gray-500 dark:text-gray-400">
+											{formatDateTime(history.changedAt)}
+										</p>
+									</div>
+									<div
+										class="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400"
+									>
+										Status changed from
+										<StatusBadge status={history.oldStatus} />
+										to
+										<StatusBadge status={history.newStatus} />
+									</div>
+									{#if history.note}
+										<div class="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
+											{history.note}
+										</div>
+									{/if}
+								</article>
+							{/each}
+						</div>
+					</ScrollArea>
+				</Card.Content>
+
+				<Card.Footer>
+					<form method="POST" action="?/updateStatus" use:enhance={statusEnhance} class="w-full">
 						<input type="hidden" name="status" value={selectedStatus} />
 						<Textarea
 							name="note"
@@ -220,19 +211,17 @@
 							</Button>
 						</div>
 					</form>
-				</div>
-			</div>
+				</Card.Footer>
+			</Card.Root>
 		</div>
 
 		<!-- Right: Sidebar -->
 		<div class="xl:col-span-4 2xl:col-span-3">
-			<div
-				class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"
-			>
-				<div class="border-b border-gray-200 px-6 py-5 dark:border-gray-800">
-					<h3 class="text-lg font-medium text-gray-800 dark:text-white/90">Ticket Details</h3>
-				</div>
-				<ul class="divide-y divide-gray-100 px-6 py-3 dark:divide-gray-800">
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>Ticket Details</Card.Title>
+				</Card.Header>
+				<Card.Content class="divide-y">
 					<li class="grid grid-cols-2 gap-4 py-2.5">
 						<span class="text-sm text-gray-500 dark:text-gray-400">Customer</span>
 						<span class="text-right text-sm text-gray-700 dark:text-gray-400"
@@ -245,7 +234,7 @@
 							href="https://t.me/{ticket.reporter.username}"
 							target="_blank"
 							rel="external noopener noreferrer"
-							class="inline-flex items-center gap-1 text-right text-sm text-primary hover:underline"
+							class="inline-flex items-center justify-end gap-1 text-right text-sm text-primary hover:underline"
 						>
 							<TelegramLogoIcon class="size-3" />
 							@{ticket.reporter.username}
@@ -277,8 +266,8 @@
 						<span class="text-sm text-gray-500 dark:text-gray-400">Status</span>
 						<div class="text-right"><StatusBadge status={ticket.status} /></div>
 					</li>
-				</ul>
-			</div>
+				</Card.Content>
+			</Card.Root>
 
 			<div class="mt-5">
 				<TicketPriorityForm {ticket} />
