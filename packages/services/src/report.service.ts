@@ -10,6 +10,12 @@ export type TicketListResult = {
 	total: number;
 };
 
+export type TicketStats = {
+	total: number;
+	pending: number;
+	solved: number;
+};
+
 export type TicketFilters = {
 	status?: string;
 	priority?: Priority;
@@ -304,6 +310,18 @@ export async function getTicketByTicketCode(code: string): Promise<TicketDetails
 			}
 		}
 	}) as Promise<TicketDetails | undefined>;
+}
+
+export async function getTicketStats(): Promise<TicketStats> {
+	const stats = await db
+		.select({
+			total: count(),
+			pending: sql<number>`count(*) FILTER (WHERE status IN ('open', 'in_progress'))`,
+			solved: sql<number>`count(*) FILTER (WHERE status IN ('resolved', 'closed'))`
+		})
+		.from(reports);
+
+	return stats[0] ?? { total: 0, pending: 0, solved: 0 };
 }
 
 export async function getCategoryDistribution(): Promise<DistributionResult> {
