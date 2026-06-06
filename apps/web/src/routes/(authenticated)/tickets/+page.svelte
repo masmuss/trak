@@ -13,7 +13,7 @@
 <div class="flex flex-1 flex-col gap-4 p-4 pt-0">
 	<div class="flex w-full items-center justify-between">
 		<Heading
-			title="Tickets"
+			title="Support Tickets"
 			description="View and manage all organization-wide support incidents and feedback."
 		/>
 	</div>
