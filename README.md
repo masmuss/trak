@@ -174,7 +174,3 @@ BETTER_AUTH_SECRET=<your-secret>
 ```env
 TELEGRAM_BOT_TOKEN=<your-bot-token>
 ```
-
-## Keputusan Arsitektur
-
-Lihat [docs/decisions/monorepo.md](docs/decisions/monorepo.md) untuk penjelasan kenapa pake monorepo + turborepo.
