@@ -1,12 +1,17 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { enhance } from '$app/forms';
+	import type { SubmitFunction } from '@sveltejs/kit';
+	import { toast } from 'svelte-sonner';
+	import { Button } from '$lib/components/ui/button';
+	import * as Select from '$lib/components/ui/select';
 	import PriorityBadge from './priority-badge.svelte';
 	import StatusBadge from './status-badge.svelte';
-	import TicketStatusForm from './ticket-status-form.svelte';
 	import TicketPriorityForm from './ticket-priority-form.svelte';
 	import type { TicketDetails } from '../types.js';
-	import { ArrowLeft, Paperclip, TelegramLogoIcon } from 'phosphor-svelte';
+	import { PaperclipIcon, TelegramLogoIcon } from 'phosphor-svelte';
 	import getInitials from '$lib/utils/initials';
+	import { Textarea } from '$lib/components/ui/textarea';
+	import { handleFormError } from '$lib/utils/form';
 
 	let { ticket }: { ticket: TicketDetails } = $props();
 
@@ -28,20 +33,34 @@
 	}
 
 	const statusHistories = $derived(ticket.statusHistories ?? []);
+
+	let selectedStatus = $derived('open');
+	let noteText = $state('');
+
+	$effect.pre(() => {
+		selectedStatus = ticket.status;
+	});
+
+	const statusOptions = [
+		{ label: 'Open', value: 'open' },
+		{ label: 'In Progress', value: 'in_progress' },
+		{ label: 'Resolved', value: 'resolved' },
+		{ label: 'Closed', value: 'closed' }
+	];
+
+	const statusEnhance: SubmitFunction = () => {
+		return async ({ result, update }) => {
+			if (handleFormError(result)) return;
+			if (result.type === 'success') {
+				noteText = '';
+				toast.success('Status updated');
+				await update();
+			}
+		};
+	};
 </script>
 
 <div class="mx-auto max-w-(--breakpoint-2xl) p-4 pb-20 md:p-6 md:pb-6">
-	<!-- Breadcrumb -->
-	<div class="pb-6">
-		<button
-			onclick={() => goto('/tickets')}
-			class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white/90"
-		>
-			<ArrowLeft class="size-4" />
-			Back to Tickets
-		</button>
-	</div>
-
 	<div class="grid grid-cols-1 gap-5 xl:grid-cols-12">
 		<!-- Left: Conversation Thread -->
 		<div class="xl:col-span-8 2xl:col-span-9">
@@ -106,7 +125,7 @@
 
 						{#if ticket.attachments && ticket.attachments.length > 0}
 							<div class="mt-4 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-								<Paperclip class="size-4" />
+								<PaperclipIcon class="size-4" />
 								<span>{ticket.attachments.length} attachment(s)</span>
 							</div>
 							<div class="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -125,7 +144,7 @@
 											/>
 										{:else}
 											<div class="flex flex-col items-center gap-1">
-												<Paperclip class="size-5 text-gray-400" />
+												<PaperclipIcon class="size-5 text-gray-400" />
 												<span class="max-w-24 truncate text-xs text-gray-500">Download File</span>
 											</div>
 										{/if}
@@ -175,32 +194,32 @@
 					{/each}
 				</div>
 
-				<!-- Reply Area (placeholder) -->
+				<!-- Status Update Form -->
 				<div class="border-t border-gray-200 px-6 py-5 dark:border-gray-800">
-					<div
-						class="rounded-2xl border border-gray-200 shadow-xs dark:border-gray-800 dark:bg-gray-800"
-					>
-						<textarea
-							placeholder="Type your reply here..."
-							disabled
-							class="h-20 w-full resize-none border-none bg-transparent p-5 font-normal text-gray-800 outline-none placeholder:text-gray-400 focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
-						></textarea>
-						<div class="flex items-center justify-between p-3">
-							<button
-								disabled
-								class="flex h-9 cursor-not-allowed items-center gap-1.5 rounded-lg bg-transparent px-2 py-3 text-sm text-gray-400 dark:text-gray-600"
-							>
-								<Paperclip class="size-5" />
-								Attach
-							</button>
-							<button
-								disabled
-								class="inline-flex h-9 cursor-not-allowed items-center justify-center rounded-lg bg-gray-300 px-4 py-3 text-sm font-medium text-white dark:bg-gray-700"
-							>
-								Reply
-							</button>
+					<form method="POST" action="?/updateStatus" use:enhance={statusEnhance}>
+						<input type="hidden" name="status" value={selectedStatus} />
+						<Textarea
+							name="note"
+							placeholder="Add a note about this status change..."
+							bind:value={noteText}
+							class="min-h-24"
+						/>
+						<div class="mt-3 flex items-center justify-between gap-3">
+							<Select.Root type="single" bind:value={selectedStatus}>
+								<Select.Trigger class="w-44">
+									{statusOptions.find((o) => o.value === selectedStatus)?.label ?? 'Select Status'}
+								</Select.Trigger>
+								<Select.Content>
+									{#each statusOptions as option (option.value)}
+										<Select.Item {...option} />
+									{/each}
+								</Select.Content>
+							</Select.Root>
+							<Button type="submit" disabled={selectedStatus === ticket.status}>
+								Update Status
+							</Button>
 						</div>
-					</div>
+					</form>
 				</div>
 			</div>
 		</div>
@@ -261,8 +280,7 @@
 				</ul>
 			</div>
 
-			<div class="mt-5 space-y-5">
-				<TicketStatusForm {ticket} />
+			<div class="mt-5">
 				<TicketPriorityForm {ticket} />
 			</div>
 		</div>
