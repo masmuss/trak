@@ -1,16 +1,12 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
-	import type { SubmitFunction } from '@sveltejs/kit';
-	import { toast } from 'svelte-sonner';
-	import { Button } from '$lib/components/ui/button';
-	import * as Select from '$lib/components/ui/select';
 	import PriorityBadge from './priority-badge.svelte';
 	import StatusBadge from './status-badge.svelte';
+	import TicketStatusForm from './ticket-status-form.svelte';
+	import TicketPriorityForm from './ticket-priority-form.svelte';
 	import type { TicketDetails } from '../types.js';
-	import { ArrowLeft, Paperclip, TelegramLogoIcon, CheckCircle } from 'phosphor-svelte';
+	import { ArrowLeft, Paperclip, TelegramLogoIcon } from 'phosphor-svelte';
 	import getInitials from '$lib/utils/initials';
-	import { handleFormError } from '$lib/utils/form';
 
 	let { ticket }: { ticket: TicketDetails } = $props();
 
@@ -31,56 +27,21 @@
 		});
 	}
 
-	let selectedStatus = $state('open');
-
-	$effect.pre(() => {
-		selectedStatus = ticket.status;
-	});
-
-	const statusOptions = [
-		{ value: 'open', label: 'Open' },
-		{ value: 'in_progress', label: 'In Progress' },
-		{ value: 'resolved', label: 'Resolved' },
-		{ value: 'closed', label: 'Closed' }
-	];
-
-	let selectedPriority = $state('MEDIUM');
-
-	$effect.pre(() => {
-		selectedPriority = ticket.priority;
-	});
-
-	const priorityOptions = [
-		{ label: 'Critical', value: 'CRITICAL' },
-		{ label: 'High', value: 'HIGH' },
-		{ label: 'Medium', value: 'MEDIUM' },
-		{ label: 'Low', value: 'LOW' }
-	];
-
-	const statusEnhance: SubmitFunction = () => {
-		return async ({ result, update }) => {
-			if (handleFormError(result)) return;
-			if (result.type === 'success') {
-				toast.success('Status updated');
-				await update();
-			}
-		};
-	};
-
-	const priorityEnhance: SubmitFunction = () => {
-		return async ({ result, update }) => {
-			if (handleFormError(result)) return;
-			if (result.type === 'success') {
-				toast.success('Priority updated — SLA recalculated');
-				await update();
-			}
-		};
-	};
-
 	const statusHistories = $derived(ticket.statusHistories ?? []);
 </script>
 
 <div class="mx-auto max-w-(--breakpoint-2xl) p-4 pb-20 md:p-6 md:pb-6">
+	<!-- Breadcrumb -->
+	<div class="pb-6">
+		<button
+			onclick={() => goto('/tickets')}
+			class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white/90"
+		>
+			<ArrowLeft class="size-4" />
+			Back to Tickets
+		</button>
+	</div>
+
 	<div class="grid grid-cols-1 gap-5 xl:grid-cols-12">
 		<!-- Left: Conversation Thread -->
 		<div class="xl:col-span-8 2xl:col-span-9">
@@ -241,53 +202,10 @@
 						</div>
 					</div>
 				</div>
-
-				<!-- Status Radio Buttons -->
-				<div class="border-t border-gray-200 px-6 py-5 dark:border-gray-800">
-					<form method="POST" action="?/updateStatus" use:enhance={statusEnhance}>
-						<input type="hidden" name="status" value={selectedStatus} />
-						<input type="hidden" name="note" value="" />
-						<div class="flex flex-wrap items-center gap-4">
-							<span class="text-sm text-gray-500 dark:text-gray-400">Status:</span>
-							<div class="flex items-center gap-5">
-								{#each statusOptions as option (option.value)}
-									<label
-										class="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700 select-none dark:text-gray-400"
-									>
-										<input
-											type="radio"
-											name="status_radio"
-											value={option.value}
-											bind:group={selectedStatus}
-											class="sr-only"
-										/>
-										<div
-											class="flex size-4 items-center justify-center rounded-full border-2 {selectedStatus ===
-											option.value
-												? 'border-primary'
-												: 'border-gray-300 dark:border-gray-600'}"
-										>
-											{#if selectedStatus === option.value}
-												<div class="size-2 rounded-full bg-primary"></div>
-											{/if}
-										</div>
-										{option.label}
-									</label>
-								{/each}
-							</div>
-						</div>
-						<div class="mt-4 flex justify-end">
-							<Button type="submit" size="sm" disabled={selectedStatus === ticket.status}>
-								<CheckCircle class="size-4" />
-								Apply Status
-							</Button>
-						</div>
-					</form>
-				</div>
 			</div>
 		</div>
 
-		<!-- Right: Ticket Details Sidebar -->
+		<!-- Right: Sidebar -->
 		<div class="xl:col-span-4 2xl:col-span-3">
 			<div
 				class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"
@@ -328,7 +246,7 @@
 					</li>
 					<li class="grid grid-cols-2 gap-4 py-2.5">
 						<span class="text-sm text-gray-500 dark:text-gray-400">Priority</span>
-						<span class="text-right text-sm"><PriorityBadge priority={ticket.priority} /></span>
+						<span class="text-right"><PriorityBadge priority={ticket.priority} /></span>
 					</li>
 					<li class="grid grid-cols-2 gap-4 py-2.5">
 						<span class="text-sm text-gray-500 dark:text-gray-400">Created</span>
@@ -343,62 +261,9 @@
 				</ul>
 			</div>
 
-			<!-- Priority Form -->
-			<div
-				class="mt-5 rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"
-			>
-				<div class="border-b border-gray-200 px-6 py-5 dark:border-gray-800">
-					<h3 class="text-lg font-medium text-gray-800 dark:text-white/90">Priority & SLA</h3>
-				</div>
-				<div class="px-6 py-5">
-					<form method="POST" action="?/updatePriority" use:enhance={priorityEnhance}>
-						<input type="hidden" name="priority" value={selectedPriority} />
-						<Select.Root type="single" bind:value={selectedPriority}>
-							<Select.Trigger class="w-full">
-								{priorityOptions.find((o) => o.value === selectedPriority)?.label ??
-									'Select Priority'}
-							</Select.Trigger>
-							<Select.Content>
-								{#each priorityOptions as option (option.value)}
-									<Select.Item {...option} />
-								{/each}
-							</Select.Content>
-						</Select.Root>
-						<Button
-							type="submit"
-							class="mt-3 w-full"
-							size="sm"
-							disabled={selectedPriority === ticket.priority}
-						>
-							Update Priority
-						</Button>
-					</form>
-
-					{#if ticket.slaResponseDue || ticket.slaResolveDue}
-						<div class="mt-4 space-y-1.5 text-xs text-gray-500 dark:text-gray-400">
-							{#if ticket.slaResponseDue}
-								<div class="flex justify-between">
-									<span>Response due:</span>
-									<span class="font-medium">{new Date(ticket.slaResponseDue).toLocaleString()}</span
-									>
-								</div>
-							{/if}
-							{#if ticket.slaResolveDue}
-								<div class="flex justify-between">
-									<span>Resolve due:</span>
-									<span class="font-medium">{new Date(ticket.slaResolveDue).toLocaleString()}</span>
-								</div>
-							{/if}
-							{#if ticket.isSlaBreached}
-								<div
-									class="mt-2 rounded bg-red-50 p-2 text-center text-xs font-medium text-red-700 dark:bg-red-950/30 dark:text-red-400"
-								>
-									SLA BREACHED
-								</div>
-							{/if}
-						</div>
-					{/if}
-				</div>
+			<div class="mt-5 space-y-5">
+				<TicketStatusForm {ticket} />
+				<TicketPriorityForm {ticket} />
 			</div>
 		</div>
 	</div>
