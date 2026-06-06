@@ -55,19 +55,23 @@ jobs:
       - run: pnpm test:unit
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/trak_test
+          BETTER_AUTH_SECRET: ci-secret-do-not-use-in-production
 
       - name: Set up environment
         run: |
-          echo "DATABASE_URL exists: $([ -n \"$DATABASE_URL\" ] && echo yes || echo no)"
           echo "DATABASE_URL=$DATABASE_URL" > .env
+          echo "BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET" >> .env
           mkdir -p apps/web/.svelte-kit
           echo "DATABASE_URL=$DATABASE_URL" > apps/web/.svelte-kit/.env
+          echo "BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET" >> apps/web/.svelte-kit/.env
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/trak_test
+          BETTER_AUTH_SECRET: ci-secret-do-not-use-in-production
 
       - run: pnpm build
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/trak_test
+          BETTER_AUTH_SECRET: ci-secret-do-not-use-in-production
 
   release:
     needs: quality
@@ -119,16 +123,19 @@ jobs:
 
       - name: Set up environment
         run: |
-          echo "DATABASE_URL exists: $([ -n \"$DATABASE_URL\" ] && echo yes || echo no)"
           echo "DATABASE_URL=$DATABASE_URL" > .env
+          echo "BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET" >> .env
           mkdir -p apps/web/.svelte-kit
           echo "DATABASE_URL=$DATABASE_URL" > apps/web/.svelte-kit/.env
+          echo "BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET" >> apps/web/.svelte-kit/.env
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/trak_test
+          BETTER_AUTH_SECRET: ci-secret-do-not-use-in-production
 
       - run: pnpm build
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/trak_test
+          BETTER_AUTH_SECRET: ci-secret-do-not-use-in-production
 
       - run: pnpm semantic-release
         env:
