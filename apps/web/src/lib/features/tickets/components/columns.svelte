@@ -26,11 +26,11 @@
 	$effect(() => {
 		columns = [
 			{
-				accessorKey: 'id',
+				accessorKey: 'ticketCode',
 				header: ({ column }) =>
 					renderComponent(DataTableColumnHeader, { column, title: 'Ticket ID' }),
 				cell: (context) => renderSnippet(idCell, context),
-				meta: { className: 'w-[100px] min-w-[100px]' }
+				meta: { className: 'w-[110px] min-w-[110px]' }
 			},
 			{
 				accessorKey: 'title',
@@ -43,17 +43,9 @@
 				id: 'reporter',
 				accessorFn: (row) => row.reporter.fullName,
 				header: ({ column }) =>
-					renderComponent(DataTableColumnHeader, { column, title: 'Reporter' }),
+					renderComponent(DataTableColumnHeader, { column, title: 'Requested By' }),
 				cell: (context) => renderSnippet(reporterCell, context),
-				meta: { className: 'w-[160px] min-w-[160px]' }
-			},
-			{
-				id: 'category',
-				accessorFn: (row) => row.category?.name ?? 'Uncategorized',
-				header: ({ column }) =>
-					renderComponent(DataTableColumnHeader, { column, title: 'Category' }),
-				cell: (context) => renderSnippet(categoryCell, context),
-				meta: { className: 'w-[130px] min-w-[130px]' }
+				meta: { className: 'w-[150px] min-w-[150px]' }
 			},
 			{
 				accessorKey: 'priority',
@@ -63,23 +55,23 @@
 				meta: { className: 'w-[100px] min-w-[100px]' }
 			},
 			{
-				accessorKey: 'isSlaBreached',
-				header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: 'SLA' }),
-				cell: (context) => renderSnippet(slaCell, context),
-				meta: { className: 'w-[80px] min-w-[80px]' }
-			},
-			{
 				accessorKey: 'status',
 				header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: 'Status' }),
 				cell: (context) => renderSnippet(statusCell, context),
 				meta: { className: 'w-[120px] min-w-[120px]' }
 			},
 			{
+				accessorKey: 'isSlaBreached',
+				header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: 'SLA' }),
+				cell: (context) => renderSnippet(slaCell, context),
+				meta: { className: 'w-[80px] min-w-[80px]' }
+			},
+			{
 				accessorKey: 'createdAt',
 				header: ({ column }) =>
-					renderComponent(DataTableColumnHeader, { column, title: 'Date Created' }),
+					renderComponent(DataTableColumnHeader, { column, title: 'Created' }),
 				cell: (context) => renderSnippet(dateCell, context),
-				meta: { className: 'w-[140px] min-w-[140px]' }
+				meta: { className: 'w-[130px] min-w-[130px]' }
 			},
 			{
 				id: 'actions',
@@ -91,8 +83,8 @@
 </script>
 
 {#snippet idCell({ row }: CellContext<TicketWithRelations, unknown>)}
-	<span class="font-mono text-xs">
-		#TK-{row.original.id.slice(0, 8).toUpperCase()}
+	<span class="font-mono text-xs font-medium">
+		{row.original.ticketCode}
 	</span>
 {/snippet}
 
@@ -115,17 +107,8 @@
 		>
 			{getInitials(row.original.reporter.fullName)}
 		</div>
-		<div class="flex flex-col">
-			<span class="text-sm leading-none font-medium">{row.original.reporter.fullName}</span>
-			{#if row.original.reporter.username}
-				<span class="text-xs text-muted-foreground">@{row.original.reporter.username}</span>
-			{/if}
-		</div>
+		<span class="text-sm font-medium">{row.original.reporter.fullName}</span>
 	</div>
-{/snippet}
-
-{#snippet categoryCell({ row }: CellContext<TicketWithRelations, unknown>)}
-	<span>{row.original.category?.name ?? 'Uncategorized'}</span>
 {/snippet}
 
 {#snippet slaCell({ row }: CellContext<TicketWithRelations, unknown>)}
