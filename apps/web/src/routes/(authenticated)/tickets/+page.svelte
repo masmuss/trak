@@ -1,11 +1,32 @@
 <script lang="ts">
 	import { TicketIcon, ClockCountdownIcon, CheckCircleIcon } from 'phosphor-svelte';
-	import * as Card from '$lib/components/ui/card';
 	import Heading from '$lib/components/shared/heading.svelte';
 	import TicketsTable from '$lib/features/tickets/components/tickets-table.svelte';
+	import TicketStats from '$lib/features/tickets/components/ticket-stats.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+
+	let statsItems = $derived([
+		{
+			value: data.stats.total,
+			label: 'Total Tickets',
+			icon: TicketIcon,
+			color: 'bg-brand-500/10 text-brand-500'
+		},
+		{
+			value: data.stats.pending,
+			label: 'Pending',
+			icon: ClockCountdownIcon,
+			color: 'bg-amber-500/10 text-amber-500'
+		},
+		{
+			value: data.stats.solved,
+			label: 'Solved',
+			icon: CheckCircleIcon,
+			color: 'bg-emerald-500/10 text-emerald-500'
+		}
+	]);
 </script>
 
 <svelte:head>
@@ -20,41 +41,7 @@
 		/>
 	</div>
 
-	<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-		<Card.Root>
-			<Card.Header>
-				<div class="flex items-center gap-2">
-					<TicketIcon class="size-5 text-muted-foreground" />
-					<Card.Title>Total Tickets</Card.Title>
-				</div>
-			</Card.Header>
-			<Card.Content class="text-2xl font-semibold">
-				{data.stats.total.toLocaleString()}
-			</Card.Content>
-		</Card.Root>
-		<Card.Root>
-			<Card.Header>
-				<div class="flex items-center gap-2">
-					<ClockCountdownIcon class="size-5 text-amber-500" />
-					<Card.Title>Pending</Card.Title>
-				</div>
-			</Card.Header>
-			<Card.Content class="text-2xl font-semibold">
-				{data.stats.pending.toLocaleString()}
-			</Card.Content>
-		</Card.Root>
-		<Card.Root>
-			<Card.Header>
-				<div class="flex items-center gap-2">
-					<CheckCircleIcon class="size-5 text-emerald-500" />
-					<Card.Title>Solved</Card.Title>
-				</div>
-			</Card.Header>
-			<Card.Content class="text-2xl font-semibold">
-				{data.stats.solved.toLocaleString()}
-			</Card.Content>
-		</Card.Root>
-	</div>
+	<TicketStats items={statsItems} />
 
 	<TicketsTable
 		tickets={data.tickets}
