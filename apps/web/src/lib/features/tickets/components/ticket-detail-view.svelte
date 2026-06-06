@@ -7,8 +7,9 @@
 	import PriorityBadge from './priority-badge.svelte';
 	import StatusBadge from './status-badge.svelte';
 	import TicketPriorityForm from './ticket-priority-form.svelte';
+	import TicketDetailsSidebar from './ticket-details-sidebar.svelte';
 	import type { TicketDetails } from '../types.js';
-	import { PaperclipIcon, TelegramLogoIcon } from 'phosphor-svelte';
+	import { PaperclipIcon } from 'phosphor-svelte';
 	import getInitials from '$lib/utils/initials';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { handleFormError } from '$lib/utils/form';
@@ -23,14 +24,6 @@
 			day: 'numeric',
 			hour: '2-digit',
 			minute: '2-digit'
-		});
-	}
-
-	function formatDate(dateStr: string | Date) {
-		return new Date(dateStr).toLocaleDateString('en-US', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric'
 		});
 	}
 
@@ -60,6 +53,7 @@
 
 <div class="mx-auto p-4">
 	<div class="grid grid-cols-1 gap-5 xl:grid-cols-12">
+		<!-- Left: Conversation & Status Update -->
 		<div class="xl:col-span-8 2xl:col-span-9">
 			<Card.Root>
 				<Card.Header
@@ -73,7 +67,7 @@
 							{ticket.title}
 						</h3>
 						<p class="text-sm text-gray-500 dark:text-gray-400">
-							{formatDate(ticket.createdAt)}
+							{formatDateTime(ticket.createdAt)}
 						</p>
 					</div>
 					<div class="flex shrink-0 items-center gap-2">
@@ -85,29 +79,13 @@
 				<Card.Content>
 					<ScrollArea class="h-96">
 						<div class="space-y-7">
-							<article class="">
-								<div class="mb-4 flex items-center justify-between">
-									<div class="flex items-center gap-3">
-										<div
-											class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary"
-										>
-											{getInitials(ticket.reporter.fullName)}
-										</div>
-										<div>
-											<p class="text-sm font-medium text-gray-800 dark:text-white/90">
-												{ticket.reporter.fullName}
-											</p>
-											{#if ticket.reporter.username}
-												<p class="text-xs text-gray-500 dark:text-gray-400">
-													@{ticket.reporter.username}
-												</p>
-											{/if}
-										</div>
-									</div>
-									<p class="text-xs text-gray-500 dark:text-gray-400">
-										{formatDateTime(ticket.createdAt)}
-									</p>
-								</div>
+							<article>
+								<TicketMessageHeader
+									initials={getInitials(ticket.reporter.fullName)}
+									name={ticket.reporter.fullName}
+									subtitle={ticket.reporter.username ? '@{ticket.reporter.username}' : ''}
+									timestamp={formatDateTime(ticket.createdAt)}
+								/>
 								<div class="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
 									{ticket.body}
 								</div>
@@ -149,24 +127,13 @@
 
 							{#each statusHistories as history (history.id)}
 								<article>
-									<div class="mb-4 flex items-center justify-between">
-										<div class="flex items-center gap-3">
-											<div
-												class="flex size-10 shrink-0 items-center justify-center rounded-full bg-gray-100 font-semibold text-gray-500 dark:bg-gray-800 dark:text-gray-400"
-											>
-												{getInitials(history.changedByUser?.name ?? 'System')}
-											</div>
-											<div>
-												<p class="text-sm font-medium text-gray-800 dark:text-white/90">
-													{history.changedByUser?.name ?? 'System Agent'}
-												</p>
-												<p class="text-xs text-gray-500 dark:text-gray-400">Status Update</p>
-											</div>
-										</div>
-										<p class="text-xs text-gray-500 dark:text-gray-400">
-											{formatDateTime(history.changedAt)}
-										</p>
-									</div>
+									<TicketMessageHeader
+										initials={getInitials(history.changedByUser?.name ?? 'System')}
+										name={history.changedByUser?.name ?? 'System Agent'}
+										subtitle="Status Update"
+										timestamp={formatDateTime(history.changedAt)}
+										avatarClass="bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+									/>
 									<div
 										class="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400"
 									>
@@ -176,7 +143,9 @@
 										<StatusBadge status={history.newStatus} />
 									</div>
 									{#if history.note}
-										<div class="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
+										<div
+											class="mt-3 text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground"
+										>
 											{history.note}
 										</div>
 									{/if}
@@ -217,58 +186,7 @@
 
 		<!-- Right: Sidebar -->
 		<div class="xl:col-span-4 2xl:col-span-3">
-			<Card.Root>
-				<Card.Header>
-					<Card.Title>Ticket Details</Card.Title>
-				</Card.Header>
-				<Card.Content class="divide-y">
-					<li class="grid grid-cols-2 gap-4 py-2.5">
-						<span class="text-sm text-gray-500 dark:text-gray-400">Customer</span>
-						<span class="text-right text-sm text-gray-700 dark:text-gray-400"
-							>{ticket.reporter.fullName}</span
-						>
-					</li>
-					<li class="grid grid-cols-2 gap-4 py-2.5">
-						<span class="text-sm text-gray-500 dark:text-gray-400">Telegram</span>
-						<a
-							href="https://t.me/{ticket.reporter.username}"
-							target="_blank"
-							rel="external noopener noreferrer"
-							class="inline-flex items-center justify-end gap-1 text-right text-sm text-primary hover:underline"
-						>
-							<TelegramLogoIcon class="size-3" />
-							@{ticket.reporter.username}
-						</a>
-					</li>
-					<li class="grid grid-cols-2 gap-4 py-2.5">
-						<span class="text-sm text-gray-500 dark:text-gray-400">Ticket ID</span>
-						<span class="text-right text-sm text-gray-700 dark:text-gray-400"
-							>{ticket.ticketCode}</span
-						>
-					</li>
-					<li class="grid grid-cols-2 gap-4 py-2.5">
-						<span class="text-sm text-gray-500 dark:text-gray-400">Category</span>
-						<span class="text-right text-sm text-gray-700 dark:text-gray-400"
-							>{ticket.category?.name ?? 'Uncategorized'}</span
-						>
-					</li>
-					<li class="grid grid-cols-2 gap-4 py-2.5">
-						<span class="text-sm text-gray-500 dark:text-gray-400">Priority</span>
-						<span class="text-right"><PriorityBadge priority={ticket.priority} /></span>
-					</li>
-					<li class="grid grid-cols-2 gap-4 py-2.5">
-						<span class="text-sm text-gray-500 dark:text-gray-400">Created</span>
-						<span class="text-right text-sm text-gray-700 dark:text-gray-400"
-							>{formatDate(ticket.createdAt)}</span
-						>
-					</li>
-					<li class="grid grid-cols-2 gap-4 py-2.5">
-						<span class="text-sm text-gray-500 dark:text-gray-400">Status</span>
-						<div class="text-right"><StatusBadge status={ticket.status} /></div>
-					</li>
-				</Card.Content>
-			</Card.Root>
-
+			<TicketDetailsSidebar {ticket} />
 			<div class="mt-5">
 				<TicketPriorityForm {ticket} />
 			</div>
