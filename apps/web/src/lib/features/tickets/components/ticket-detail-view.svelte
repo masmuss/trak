@@ -7,6 +7,7 @@
 	import PriorityBadge from './priority-badge.svelte';
 	import StatusBadge from './status-badge.svelte';
 	import TicketPriorityForm from './ticket-priority-form.svelte';
+	import TicketMessageHeader from './ticket-message-header.svelte';
 	import TicketDetailsSidebar from './ticket-details-sidebar.svelte';
 	import type { TicketDetails } from '../types.js';
 	import { PaperclipIcon } from 'phosphor-svelte';
