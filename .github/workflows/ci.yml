@@ -56,6 +56,15 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/trak_test
 
+      - name: Set up environment
+        run: |
+          echo "DATABASE_URL exists: $([ -n \"$DATABASE_URL\" ] && echo yes || echo no)"
+          echo "DATABASE_URL=$DATABASE_URL" > .env
+          mkdir -p apps/web/.svelte-kit
+          echo "DATABASE_URL=$DATABASE_URL" > apps/web/.svelte-kit/.env
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/trak_test
+
       - run: pnpm build
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/trak_test
@@ -107,6 +116,15 @@ jobs:
             ${{ runner.os }}-pnpm-
 
       - run: pnpm install --frozen-lockfile
+
+      - name: Set up environment
+        run: |
+          echo "DATABASE_URL exists: $([ -n \"$DATABASE_URL\" ] && echo yes || echo no)"
+          echo "DATABASE_URL=$DATABASE_URL" > .env
+          mkdir -p apps/web/.svelte-kit
+          echo "DATABASE_URL=$DATABASE_URL" > apps/web/.svelte-kit/.env
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/trak_test
 
       - run: pnpm build
         env:
