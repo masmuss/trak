@@ -3,6 +3,8 @@ import type { PageServerLoad } from './$types';
 import { parsePaginationParams } from '$lib/utils/pagination';
 import { priorityEnum } from '@trak/database';
 import type { Priority } from '@trak/shared';
+import { db, reports } from '@trak/database';
+import { count, sql } from 'drizzle-orm';
 
 const validStatuses = ['open', 'in_progress', 'resolved', 'closed'];
 
@@ -26,6 +28,14 @@ export const load: PageServerLoad = async ({ url }) => {
 		offset
 	});
 
+	const stats = await db
+		.select({
+			total: count(),
+			pending: sql<number>`count(*) FILTER (WHERE status IN ('open', 'in_progress'))`,
+			solved: sql<number>`count(*) FILTER (WHERE status IN ('resolved', 'closed'))`
+		})
+		.from(reports);
+
 	return {
 		tickets,
 		totalCount: total,
@@ -35,6 +45,7 @@ export const load: PageServerLoad = async ({ url }) => {
 			status: isValidStatus ? status : undefined,
 			priority: isValidPriority ? (priority as Priority) : undefined,
 			slaBreached: isValidSla ? slaBreached : undefined
-		}
+		},
+		stats: stats[0] ?? { total: 0, pending: 0, solved: 0 }
 	};
 };
