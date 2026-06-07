@@ -7,8 +7,20 @@ import {
 } from '@trak/services';
 import type { PageServerLoad, Actions } from './$types';
 import { priorityEnum } from '@trak/database';
+import { requireAuth, requireExists } from '$lib/server/helpers';
 
-const validStatuses = ['open', 'in_progress', 'resolved', 'closed'];
+const validStatuses = ['open', 'in_progress', 'resolved', 'closed'] as const;
+
+function ticketCode(id: string) {
+	return `TKT-${id.slice(0, 8).toUpperCase()}`;
+}
+
+const statusLabels: Record<string, string> = {
+	open: '🔴 Open',
+	in_progress: '🟡 In Progress',
+	resolved: '🟢 Resolved',
+	closed: '⚪ Closed'
+};
 
 export const load: PageServerLoad = async (event) => {
 	const ticket = await getTicketById(event.params.id);
@@ -21,32 +33,25 @@ export const load: PageServerLoad = async (event) => {
 		ticket,
 		breadcrumbs: [
 			{ label: 'Tickets', href: '/tickets' },
-			{ label: `Ticket #TK-${ticket.id.slice(0, 8).toUpperCase()}` }
+			{ label: `Ticket #${ticketCode(ticket.id)}` }
 		]
 	};
 };
 
 export const actions: Actions = {
 	updateStatus: async (event) => {
-		const user = event.locals.user;
-		if (!user) {
-			throw error(401, 'Unauthorized');
-		}
-
+		const user = requireAuth(event);
 		const { id } = event.params;
 		const formData = await event.request.formData();
 		const newStatus = formData.get('status') as string;
 		const note = formData.get('note') as string;
 
-		if (!newStatus || !validStatuses.includes(newStatus)) {
+		if (!newStatus || !validStatuses.includes(newStatus as never)) {
 			return fail(400, { error: 'Invalid status' });
 		}
 
 		const ticket = await getTicketById(id);
-
-		if (!ticket) {
-			throw error(404, 'Ticket not found');
-		}
+		requireExists(ticket, 'Ticket');
 
 		if (ticket.status === newStatus) {
 			return fail(400, { error: 'Status is already set to ' + newStatus });
@@ -54,24 +59,13 @@ export const actions: Actions = {
 
 		await updateTicketStatus(id, newStatus, user.id, note || undefined);
 
-		const statusLabels: Record<string, string> = {
-			open: '🔴 Open',
-			in_progress: '🟡 In Progress',
-			resolved: '🟢 Resolved',
-			closed: '⚪ Closed'
-		};
-
-		const ticketCode = `TKT-${id.slice(0, 8).toUpperCase()}`;
-		const oldLabel = statusLabels[ticket.status] ?? ticket.status;
-		const newLabel = statusLabels[newStatus] ?? newStatus;
-
 		await createNotification({
 			reporterTelegramId: ticket.reporter.telegramId,
 			reportId: id,
 			message:
-				`🔄 Status tiket ${ticketCode} diperbarui\n\n` +
+				`🔄 Status tiket ${ticketCode(ticket.id)} diperbarui\n\n` +
 				`Judul: ${ticket.title}\n` +
-				`Status: ${oldLabel} → ${newLabel}` +
+				`Status: ${statusLabels[ticket.status]} → ${statusLabels[newStatus]}` +
 				(note ? `\nCatatan: ${note}` : '')
 		});
 
@@ -79,11 +73,7 @@ export const actions: Actions = {
 	},
 
 	updatePriority: async (event) => {
-		const user = event.locals.user;
-		if (!user) {
-			throw error(401, 'Unauthorized');
-		}
-
+		const user = requireAuth(event);
 		const { id } = event.params;
 		const formData = await event.request.formData();
 		const newPriority = formData.get('priority') as string;
@@ -94,9 +84,7 @@ export const actions: Actions = {
 		}
 
 		const ticket = await getTicketById(id);
-		if (!ticket) {
-			throw error(404, 'Ticket not found');
-		}
+		requireExists(ticket, 'Ticket');
 
 		if (ticket.priority === newPriority) {
 			return fail(400, { error: 'Priority is already set to ' + newPriority });
@@ -104,13 +92,11 @@ export const actions: Actions = {
 
 		await updateTicketPriority(id, newPriority as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL', user.id);
 
-		const ticketCode = `TKT-${id.slice(0, 8).toUpperCase()}`;
-
 		await createNotification({
 			reporterTelegramId: ticket.reporter.telegramId,
 			reportId: id,
 			message:
-				`🏷 Prioritas tiket ${ticketCode} diperbarui\n\n` +
+				`🏷 Prioritas tiket ${ticketCode(ticket.id)} diperbarui\n\n` +
 				`Judul: ${ticket.title}\n` +
 				`Prioritas: ${ticket.priority} → ${newPriority}`
 		});

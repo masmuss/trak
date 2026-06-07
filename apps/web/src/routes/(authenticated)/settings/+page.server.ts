@@ -5,15 +5,17 @@ import {
 	getUserById,
 	getCategories,
 	getCategoryDistribution,
-	getCategoryById,
-	createCategory,
-	updateCategory,
-	deleteCategory,
 	updateProfile,
 	getPasswordAccount,
 	updateAccountPassword
 } from '@trak/services';
-import { requireAuth, getFormString, getFormBool, requireExists } from '$lib/server/helpers';
+import { requireAuth, getFormString } from '$lib/server/helpers';
+import {
+	createCategoryAction,
+	updateCategoryAction,
+	deleteCategoryAction,
+	toggleCategoryAction
+} from '$lib/features/category/category.actions.server';
 
 export const load: PageServerLoad = async (event) => {
 	const session = requireAuth(event);
@@ -94,84 +96,8 @@ export const actions: Actions = {
 		return { passwordSuccess: true };
 	},
 
-	'category/create': async (event) => {
-		requireAuth(event);
-		const formData = await event.request.formData();
-		const name = getFormString(formData, 'name');
-		const description = getFormString(formData, 'description');
-
-		if (!name.trim()) {
-			return fail(400, { error: 'Category name is required' });
-		}
-
-		await createCategory({ name, description });
-
-		return { success: true };
-	},
-
-	'category/update': async (event) => {
-		requireAuth(event);
-		const formData = await event.request.formData();
-		const id = getFormString(formData, 'id');
-		const name = getFormString(formData, 'name');
-		const description = getFormString(formData, 'description');
-		const isActive = getFormBool(formData, 'isActive');
-
-		if (!id) {
-			return fail(400, { error: 'Category ID is required' });
-		}
-
-		if (!name.trim()) {
-			return fail(400, { error: 'Category name is required' });
-		}
-
-		const existing = await getCategoryById(id);
-		requireExists(existing, 'Category');
-
-		await updateCategory(id, {
-			name: name.trim(),
-			description: description.trim() || null,
-			isActive
-		});
-
-		return { success: true };
-	},
-
-	'category/toggle': async (event) => {
-		requireAuth(event);
-		const formData = await event.request.formData();
-		const id = getFormString(formData, 'id');
-
-		if (!id) {
-			return fail(400, { error: 'Category ID is required' });
-		}
-
-		const existing = await getCategoryById(id);
-		requireExists(existing, 'Category');
-
-		await updateCategory(id, {
-			name: existing.name,
-			description: existing.description,
-			isActive: !existing.isActive
-		});
-
-		return { success: true };
-	},
-
-	'category/delete': async (event) => {
-		requireAuth(event);
-		const formData = await event.request.formData();
-		const id = getFormString(formData, 'id');
-
-		if (!id) {
-			return fail(400, { error: 'Category ID is required' });
-		}
-
-		const existing = await getCategoryById(id);
-		requireExists(existing, 'Category');
-
-		await deleteCategory(id);
-
-		return { success: true };
-	}
+	'category/create': createCategoryAction,
+	'category/update': updateCategoryAction,
+	'category/toggle': toggleCategoryAction,
+	'category/delete': deleteCategoryAction
 };
