@@ -13,12 +13,10 @@ import {
 	getPasswordAccount,
 	updateAccountPassword
 } from '@trak/services';
+import { requireAuth, getFormString, getFormBool, requireExists } from '$lib/server/helpers';
 
 export const load: PageServerLoad = async (event) => {
-	const session = event.locals.user;
-	if (!session) {
-		throw error(401, 'Unauthorized');
-	}
+	const session = requireAuth(event);
 
 	const [currentUser, categoriesList, distributionData] = await Promise.all([
 		getUserById(session.id),
@@ -46,15 +44,11 @@ export const load: PageServerLoad = async (event) => {
 
 export const actions: Actions = {
 	updateProfile: async (event) => {
-		const session = event.locals.user;
-		if (!session) {
-			throw error(401, 'Unauthorized');
-		}
-
+		const session = requireAuth(event);
 		const formData = await event.request.formData();
-		const name = formData.get('name') as string;
+		const name = getFormString(formData, 'name');
 
-		if (!name || name.trim().length === 0) {
+		if (!name.trim()) {
 			return fail(400, { profileError: 'Name is required' });
 		}
 
@@ -64,15 +58,11 @@ export const actions: Actions = {
 	},
 
 	changePassword: async (event) => {
-		const session = event.locals.user;
-		if (!session) {
-			throw error(401, 'Unauthorized');
-		}
-
+		const session = requireAuth(event);
 		const formData = await event.request.formData();
-		const currentPassword = formData.get('currentPassword') as string;
-		const newPassword = formData.get('newPassword') as string;
-		const confirmPassword = formData.get('confirmPassword') as string;
+		const currentPassword = getFormString(formData, 'currentPassword');
+		const newPassword = getFormString(formData, 'newPassword');
+		const confirmPassword = getFormString(formData, 'confirmPassword');
 
 		if (!currentPassword || !newPassword || !confirmPassword) {
 			return fail(400, { passwordError: 'All password fields are required' });
@@ -105,16 +95,12 @@ export const actions: Actions = {
 	},
 
 	'category/create': async (event) => {
-		const user = event.locals.user;
-		if (!user) {
-			throw error(401, 'Unauthorized');
-		}
-
+		requireAuth(event);
 		const formData = await event.request.formData();
-		const name = formData.get('name') as string;
-		const description = formData.get('description') as string;
+		const name = getFormString(formData, 'name');
+		const description = getFormString(formData, 'description');
 
-		if (!name || name.trim().length === 0) {
+		if (!name.trim()) {
 			return fail(400, { error: 'Category name is required' });
 		}
 
@@ -124,58 +110,44 @@ export const actions: Actions = {
 	},
 
 	'category/update': async (event) => {
-		const user = event.locals.user;
-		if (!user) {
-			throw error(401, 'Unauthorized');
-		}
-
+		requireAuth(event);
 		const formData = await event.request.formData();
-		const id = formData.get('id') as string;
-		const name = formData.get('name') as string;
-		const description = formData.get('description') as string;
-		const isActive = formData.get('isActive') as string;
+		const id = getFormString(formData, 'id');
+		const name = getFormString(formData, 'name');
+		const description = getFormString(formData, 'description');
+		const isActive = getFormBool(formData, 'isActive');
 
 		if (!id) {
 			return fail(400, { error: 'Category ID is required' });
 		}
 
-		if (!name || name.trim().length === 0) {
+		if (!name.trim()) {
 			return fail(400, { error: 'Category name is required' });
 		}
 
 		const existing = await getCategoryById(id);
-
-		if (!existing) {
-			throw error(404, 'Category not found');
-		}
+		requireExists(existing, 'Category');
 
 		await updateCategory(id, {
 			name: name.trim(),
-			description: description?.trim() || null,
-			isActive: isActive === 'true'
+			description: description.trim() || null,
+			isActive
 		});
 
 		return { success: true };
 	},
 
 	'category/toggle': async (event) => {
-		const user = event.locals.user;
-		if (!user) {
-			throw error(401, 'Unauthorized');
-		}
-
+		requireAuth(event);
 		const formData = await event.request.formData();
-		const id = formData.get('id') as string;
+		const id = getFormString(formData, 'id');
 
 		if (!id) {
 			return fail(400, { error: 'Category ID is required' });
 		}
 
 		const existing = await getCategoryById(id);
-
-		if (!existing) {
-			throw error(404, 'Category not found');
-		}
+		requireExists(existing, 'Category');
 
 		await updateCategory(id, {
 			name: existing.name,
@@ -187,23 +159,16 @@ export const actions: Actions = {
 	},
 
 	'category/delete': async (event) => {
-		const user = event.locals.user;
-		if (!user) {
-			throw error(401, 'Unauthorized');
-		}
-
+		requireAuth(event);
 		const formData = await event.request.formData();
-		const id = formData.get('id') as string;
+		const id = getFormString(formData, 'id');
 
 		if (!id) {
 			return fail(400, { error: 'Category ID is required' });
 		}
 
 		const existing = await getCategoryById(id);
-
-		if (!existing) {
-			throw error(404, 'Category not found');
-		}
+		requireExists(existing, 'Category');
 
 		await deleteCategory(id);
 

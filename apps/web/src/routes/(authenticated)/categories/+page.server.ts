@@ -1,4 +1,4 @@
-import { fail, error } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import {
 	createCategory,
@@ -7,91 +7,71 @@ import {
 	getCategoryById,
 	updateCategory
 } from '@trak/services';
+import { requireAuth, getFormString, getFormBool, requireExists } from '$lib/server/helpers';
 
 export const load: PageServerLoad = async () => {
 	const allCategories = await getCategories();
-
-	return {
-		categories: allCategories
-	};
+	return { categories: allCategories };
 };
 
 export const actions: Actions = {
 	create: async (event) => {
-		const user = event.locals.user;
-		if (!user) {
-			throw error(401, 'Unauthorized');
-		}
-
+		requireAuth(event);
 		const formData = await event.request.formData();
-		const name = formData.get('name') as string;
-		const description = formData.get('description') as string;
+		const name = getFormString(formData, 'name');
+		const description = getFormString(formData, 'description');
 
-		if (!name || name.trim().length === 0) {
+		if (!name.trim()) {
 			return fail(400, { error: 'Category name is required' });
 		}
 
 		await createCategory({
 			name: name.trim(),
-			description: description?.trim() || null
+			description: description.trim() || null
 		});
 
 		return { success: true };
 	},
 
 	update: async (event) => {
-		const user = event.locals.user;
-		if (!user) {
-			throw error(401, 'Unauthorized');
-		}
-
+		requireAuth(event);
 		const formData = await event.request.formData();
-		const id = formData.get('id') as string;
-		const name = formData.get('name') as string;
-		const description = formData.get('description') as string;
-		const isActive = formData.get('isActive') as string;
+		const id = getFormString(formData, 'id');
+		const name = getFormString(formData, 'name');
+		const description = getFormString(formData, 'description');
+		const isActive = getFormBool(formData, 'isActive');
 
 		if (!id) {
 			return fail(400, { error: 'Category ID is required' });
 		}
 
-		if (!name || name.trim().length === 0) {
+		if (!name.trim()) {
 			return fail(400, { error: 'Category name is required' });
 		}
 
 		const existing = await getCategoryById(id);
-
-		if (!existing) {
-			throw error(404, 'Category not found');
-		}
+		requireExists(existing, 'Category');
 
 		await updateCategory(id, {
 			name: name.trim(),
-			description: description?.trim() || null,
-			isActive: isActive === 'true'
+			description: description.trim() || null,
+			isActive
 		});
 
 		return { success: true };
 	},
 
 	delete: async (event) => {
-		const user = event.locals.user;
-		if (!user) {
-			throw error(401, 'Unauthorized');
-		}
-
+		requireAuth(event);
 		const formData = await event.request.formData();
-		const id = formData.get('id') as string;
+		const id = getFormString(formData, 'id');
 
 		if (!id) {
 			return fail(400, { error: 'Category ID is required' });
 		}
 
 		const existing = await getCategoryById(id);
-
-		if (!existing) {
-			throw error(404, 'Category not found');
-		}
+		requireExists(existing, 'Category');
 
 		await deleteCategory(id);
 

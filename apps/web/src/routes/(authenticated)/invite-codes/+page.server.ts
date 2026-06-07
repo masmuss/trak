@@ -1,4 +1,4 @@
-import { fail, error } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import {
 	createInviteCode,
@@ -7,92 +7,74 @@ import {
 	getInviteCodes,
 	updateInviteCode
 } from '@trak/services';
+import {
+	requireAuth,
+	getFormString,
+	getFormNullableString,
+	getFormBool,
+	requireExists
+} from '$lib/server/helpers';
 
 export const load: PageServerLoad = async () => {
 	const all = await getInviteCodes();
-
-	return {
-		inviteCodes: all
-	};
+	return { inviteCodes: all };
 };
 
 export const actions: Actions = {
 	create: async (event) => {
-		const user = event.locals.user;
-		if (!user) {
-			throw error(401, 'Unauthorized');
-		}
-
+		requireAuth(event);
 		const formData = await event.request.formData();
-		const code = formData.get('code') as string;
-		const expiresAtRaw = formData.get('expiresAt') as string | null;
+		const code = getFormString(formData, 'code');
+		const expiresAt = getFormNullableString(formData, 'expiresAt');
 
-		if (!code || code.trim().length === 0) {
+		if (!code.trim()) {
 			return fail(400, { error: 'Code is required' });
 		}
 
-		const expiresAt = expiresAtRaw && expiresAtRaw.trim() ? new Date(expiresAtRaw) : null;
-
-		await createInviteCode({ code, expiresAt });
+		await createInviteCode({ code, expiresAt: expiresAt ? new Date(expiresAt) : null });
 
 		return { success: true };
 	},
 
 	update: async (event) => {
-		const user = event.locals.user;
-		if (!user) {
-			throw error(401, 'Unauthorized');
-		}
-
+		requireAuth(event);
 		const formData = await event.request.formData();
-		const id = formData.get('id') as string;
-		const code = formData.get('code') as string;
-		const isActive = formData.get('isActive') as string;
-		const expiresAtRaw = formData.get('expiresAt') as string | null;
+		const id = getFormString(formData, 'id');
+		const code = getFormString(formData, 'code');
+		const isActive = getFormBool(formData, 'isActive');
+		const expiresAt = getFormNullableString(formData, 'expiresAt');
 
 		if (!id) {
 			return fail(400, { error: 'Invite code ID is required' });
 		}
 
-		if (!code || code.trim().length === 0) {
+		if (!code.trim()) {
 			return fail(400, { error: 'Code is required' });
 		}
 
 		const existing = await getInviteCodeById(id);
-
-		if (!existing) {
-			throw error(404, 'Invite code not found');
-		}
-
-		const expiresAt = expiresAtRaw && expiresAtRaw.trim() ? new Date(expiresAtRaw) : null;
+		requireExists(existing, 'Invite code');
 
 		await updateInviteCode(id, {
 			code,
-			isActive: isActive === 'true',
-			expiresAt
+			isActive,
+			expiresAt: expiresAt ? new Date(expiresAt) : null
 		});
 
 		return { success: true };
 	},
 
 	delete: async (event) => {
-		const user = event.locals.user;
-		if (!user) {
-			throw error(401, 'Unauthorized');
-		}
-
+		requireAuth(event);
 		const formData = await event.request.formData();
-		const id = formData.get('id') as string;
+		const id = getFormString(formData, 'id');
 
 		if (!id) {
 			return fail(400, { error: 'Invite code ID is required' });
 		}
 
 		const existing = await getInviteCodeById(id);
-
-		if (!existing) {
-			throw error(404, 'Invite code not found');
-		}
+		requireExists(existing, 'Invite code');
 
 		await deleteInviteCode(id);
 
