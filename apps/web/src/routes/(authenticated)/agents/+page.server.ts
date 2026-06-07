@@ -1,4 +1,4 @@
-import { fail, error } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import { hashPassword } from 'better-auth/crypto';
 import type { PageServerLoad, Actions } from './$types';
 import {
@@ -11,6 +11,7 @@ import {
 	getUsers,
 	updateUser
 } from '@trak/services';
+import { requireAuth, getFormString, getFormBool, requireExists } from '$lib/server/helpers';
 
 const CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
@@ -22,34 +23,25 @@ function generatePassword(length: number): string {
 
 export const load: PageServerLoad = async () => {
 	const allUsers = await getUsers();
-
-	return {
-		agents: allUsers
-	};
+	return { agents: allUsers };
 };
 
 export const actions: Actions = {
 	create: async (event) => {
-		const currentUser = event.locals.user;
-		if (!currentUser) {
-			throw error(401, 'Unauthorized');
-		}
-
 		const formData = await event.request.formData();
-		const name = formData.get('name') as string;
-		const email = formData.get('email') as string;
-		const role = (formData.get('role') as string) || 'agent';
+		const name = getFormString(formData, 'name');
+		const email = getFormString(formData, 'email');
+		const role = getFormString(formData, 'role') || 'agent';
 
-		if (!name || name.trim().length === 0) {
+		if (!name.trim()) {
 			return fail(400, { error: 'Name is required' });
 		}
 
-		if (!email || email.trim().length === 0) {
+		if (!email.trim()) {
 			return fail(400, { error: 'Email is required' });
 		}
 
 		const existingEmail = await findUserByEmail(email.trim());
-
 		if (existingEmail) {
 			return fail(400, { error: 'Email already in use' });
 		}
@@ -77,38 +69,30 @@ export const actions: Actions = {
 	},
 
 	update: async (event) => {
-		const currentUser = event.locals.user;
-		if (!currentUser) {
-			throw error(401, 'Unauthorized');
-		}
-
+		requireAuth(event);
 		const formData = await event.request.formData();
-		const id = formData.get('id') as string;
-		const name = formData.get('name') as string;
-		const email = formData.get('email') as string;
-		const role = (formData.get('role') as string) || 'agent';
-		const isActive = formData.get('isActive') as string;
+		const id = getFormString(formData, 'id');
+		const name = getFormString(formData, 'name');
+		const email = getFormString(formData, 'email');
+		const role = getFormString(formData, 'role') || 'agent';
+		const isActive = getFormBool(formData, 'isActive');
 
 		if (!id) {
 			return fail(400, { error: 'Agent ID is required' });
 		}
 
-		if (!name || name.trim().length === 0) {
+		if (!name.trim()) {
 			return fail(400, { error: 'Name is required' });
 		}
 
-		if (!email || email.trim().length === 0) {
+		if (!email.trim()) {
 			return fail(400, { error: 'Email is required' });
 		}
 
 		const existing = await getUserById(id);
-
-		if (!existing) {
-			throw error(404, 'Agent not found');
-		}
+		requireExists(existing, 'Agent');
 
 		const emailConflict = await findUserByEmailExcluding(email.trim(), id);
-
 		if (emailConflict) {
 			return fail(400, { error: 'Email already in use by another agent' });
 		}
@@ -117,20 +101,16 @@ export const actions: Actions = {
 			name: name.trim(),
 			email: email.trim(),
 			role,
-			isActive: isActive === 'true'
+			isActive
 		});
 
 		return { success: true };
 	},
 
 	delete: async (event) => {
-		const currentUser = event.locals.user;
-		if (!currentUser) {
-			throw error(401, 'Unauthorized');
-		}
-
+		const currentUser = requireAuth(event);
 		const formData = await event.request.formData();
-		const id = formData.get('id') as string;
+		const id = getFormString(formData, 'id');
 
 		if (!id) {
 			return fail(400, { error: 'Agent ID is required' });
@@ -141,10 +121,7 @@ export const actions: Actions = {
 		}
 
 		const existing = await getUserById(id);
-
-		if (!existing) {
-			throw error(404, 'Agent not found');
-		}
+		requireExists(existing, 'Agent');
 
 		await deleteUser(id);
 

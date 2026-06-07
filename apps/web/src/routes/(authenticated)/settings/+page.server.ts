@@ -5,20 +5,20 @@ import {
 	getUserById,
 	getCategories,
 	getCategoryDistribution,
-	getCategoryById,
-	createCategory,
-	updateCategory,
-	deleteCategory,
 	updateProfile,
 	getPasswordAccount,
 	updateAccountPassword
 } from '@trak/services';
+import { requireAuth, getFormString } from '$lib/server/helpers';
+import {
+	createCategoryAction,
+	updateCategoryAction,
+	deleteCategoryAction,
+	toggleCategoryAction
+} from '$lib/features/category/category.actions.server';
 
 export const load: PageServerLoad = async (event) => {
-	const session = event.locals.user;
-	if (!session) {
-		throw error(401, 'Unauthorized');
-	}
+	const session = requireAuth(event);
 
 	const [currentUser, categoriesList, distributionData] = await Promise.all([
 		getUserById(session.id),
@@ -46,15 +46,11 @@ export const load: PageServerLoad = async (event) => {
 
 export const actions: Actions = {
 	updateProfile: async (event) => {
-		const session = event.locals.user;
-		if (!session) {
-			throw error(401, 'Unauthorized');
-		}
-
+		const session = requireAuth(event);
 		const formData = await event.request.formData();
-		const name = formData.get('name') as string;
+		const name = getFormString(formData, 'name');
 
-		if (!name || name.trim().length === 0) {
+		if (!name.trim()) {
 			return fail(400, { profileError: 'Name is required' });
 		}
 
@@ -64,15 +60,11 @@ export const actions: Actions = {
 	},
 
 	changePassword: async (event) => {
-		const session = event.locals.user;
-		if (!session) {
-			throw error(401, 'Unauthorized');
-		}
-
+		const session = requireAuth(event);
 		const formData = await event.request.formData();
-		const currentPassword = formData.get('currentPassword') as string;
-		const newPassword = formData.get('newPassword') as string;
-		const confirmPassword = formData.get('confirmPassword') as string;
+		const currentPassword = getFormString(formData, 'currentPassword');
+		const newPassword = getFormString(formData, 'newPassword');
+		const confirmPassword = getFormString(formData, 'confirmPassword');
 
 		if (!currentPassword || !newPassword || !confirmPassword) {
 			return fail(400, { passwordError: 'All password fields are required' });
@@ -104,109 +96,8 @@ export const actions: Actions = {
 		return { passwordSuccess: true };
 	},
 
-	'category/create': async (event) => {
-		const user = event.locals.user;
-		if (!user) {
-			throw error(401, 'Unauthorized');
-		}
-
-		const formData = await event.request.formData();
-		const name = formData.get('name') as string;
-		const description = formData.get('description') as string;
-
-		if (!name || name.trim().length === 0) {
-			return fail(400, { error: 'Category name is required' });
-		}
-
-		await createCategory({ name, description });
-
-		return { success: true };
-	},
-
-	'category/update': async (event) => {
-		const user = event.locals.user;
-		if (!user) {
-			throw error(401, 'Unauthorized');
-		}
-
-		const formData = await event.request.formData();
-		const id = formData.get('id') as string;
-		const name = formData.get('name') as string;
-		const description = formData.get('description') as string;
-		const isActive = formData.get('isActive') as string;
-
-		if (!id) {
-			return fail(400, { error: 'Category ID is required' });
-		}
-
-		if (!name || name.trim().length === 0) {
-			return fail(400, { error: 'Category name is required' });
-		}
-
-		const existing = await getCategoryById(id);
-
-		if (!existing) {
-			throw error(404, 'Category not found');
-		}
-
-		await updateCategory(id, {
-			name: name.trim(),
-			description: description?.trim() || null,
-			isActive: isActive === 'true'
-		});
-
-		return { success: true };
-	},
-
-	'category/toggle': async (event) => {
-		const user = event.locals.user;
-		if (!user) {
-			throw error(401, 'Unauthorized');
-		}
-
-		const formData = await event.request.formData();
-		const id = formData.get('id') as string;
-
-		if (!id) {
-			return fail(400, { error: 'Category ID is required' });
-		}
-
-		const existing = await getCategoryById(id);
-
-		if (!existing) {
-			throw error(404, 'Category not found');
-		}
-
-		await updateCategory(id, {
-			name: existing.name,
-			description: existing.description,
-			isActive: !existing.isActive
-		});
-
-		return { success: true };
-	},
-
-	'category/delete': async (event) => {
-		const user = event.locals.user;
-		if (!user) {
-			throw error(401, 'Unauthorized');
-		}
-
-		const formData = await event.request.formData();
-		const id = formData.get('id') as string;
-
-		if (!id) {
-			return fail(400, { error: 'Category ID is required' });
-		}
-
-		const existing = await getCategoryById(id);
-
-		if (!existing) {
-			throw error(404, 'Category not found');
-		}
-
-		await deleteCategory(id);
-
-		return { success: true };
-	}
+	'category/create': createCategoryAction,
+	'category/update': updateCategoryAction,
+	'category/toggle': toggleCategoryAction,
+	'category/delete': deleteCategoryAction
 };
