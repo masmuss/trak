@@ -28,7 +28,6 @@ export const load: PageServerLoad = async () => {
 
 export const actions: Actions = {
 	create: async (event) => {
-		const currentUser = requireAuth(event);
 		const formData = await event.request.formData();
 		const name = getFormString(formData, 'name');
 		const email = getFormString(formData, 'email');
