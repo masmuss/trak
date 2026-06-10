@@ -1,22 +1,37 @@
 import { priorityEnum } from '@trak/database';
-import type { Priority } from '@trak/shared';
-import type { RequestEvent } from '@sveltejs/kit';
 
-const validStatuses = ['open', 'in_progress', 'resolved', 'closed'] as const;
+const validStatusValues = new Set(['open', 'in_progress', 'resolved', 'closed']);
+const validPriorityValues = new Set(priorityEnum.enumValues);
 
-export function parseTicketFilters(url: RequestEvent['url']) {
-	const status = url.searchParams.get('status');
-	const isValidStatus = status && validStatuses.includes(status as never);
+export function parseTicketFilters(url: URL) {
+	const rawStatus = url.searchParams.get('status');
+	const status = rawStatus
+		? rawStatus
+				.split(',')
+				.filter((v) => validStatusValues.has(v))
+				.join(',')
+		: undefined;
 
-	const priority = url.searchParams.get('priority');
-	const isValidPriority = priority && priorityEnum.enumValues.includes(priority as never);
+	const rawPriority = url.searchParams.get('priority');
+	const priority = rawPriority
+		? rawPriority
+				.split(',')
+				.filter((v) => validPriorityValues.has(v as never))
+				.join(',')
+		: undefined;
 
 	const slaBreached = url.searchParams.get('sla_breached');
 	const isValidSla = slaBreached === 'true' || slaBreached === 'false';
 
+	const categoryId = url.searchParams.get('categoryId');
+
+	const search = url.searchParams.get('search');
+
 	return {
-		status: isValidStatus ? status : undefined,
-		priority: isValidPriority ? (priority as Priority) : undefined,
-		slaBreached: isValidSla ? slaBreached : undefined
+		status: status || undefined,
+		priority: priority || undefined,
+		slaBreached: isValidSla ? slaBreached : undefined,
+		categoryId: categoryId || undefined,
+		search: search || undefined
 	};
 }

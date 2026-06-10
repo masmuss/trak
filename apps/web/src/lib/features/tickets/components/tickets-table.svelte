@@ -1,25 +1,31 @@
 <script lang="ts">
-	import { CloudArrowDownIcon, XIcon } from 'phosphor-svelte';
+	import { CloudArrowDownIcon, XIcon, MagnifyingGlassIcon } from 'phosphor-svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
 	import type { ColumnDef } from '@tanstack/table-core';
-	import { DataTable, DataTableViewOptions } from '$lib/components/shared/data-table/index.js';
+	import {
+		DataTable,
+		DataTableViewOptions,
+		DataTableFacetedFilter
+	} from '$lib/components/shared/data-table/index.js';
 	import Columns from './columns.svelte';
-	import type { TicketWithRelations } from '$lib/features/tickets/types';
+	import type { TicketWithRelations, Category } from '$lib/features/tickets/types';
 	import { goto } from '$app/navigation';
 	import { page as pageState } from '$app/state';
 	import { resolve } from '$app/paths';
-	import * as Select from '$lib/components/ui/select/index.js';
 
 	let {
 		tickets = [],
 		totalCount = 0,
 		page = 1,
-		limit = 10
+		limit = 10,
+		categories = []
 	}: {
 		tickets?: TicketWithRelations[];
 		totalCount?: number;
 		page?: number;
 		limit?: number;
+		categories?: Category[];
 	} = $props();
 
 	let columns: ColumnDef<TicketWithRelations, unknown>[] = $state([]);
@@ -27,27 +33,6 @@
 	let pageIndex = $state(0);
 	let pageSize = $state(10);
 	const pageCount = $derived(Math.ceil(totalCount / pageSize));
-
-	const url = $derived(pageState.url);
-
-	const activeStatus = $derived(url.searchParams.get('status') || '');
-	const activePriority = $derived(url.searchParams.get('priority') || '');
-	const activeSla = $derived(url.searchParams.get('sla_breached') || '');
-
-	const hasActiveFilters = $derived(!!(activeStatus || activePriority || activeSla));
-
-	let filterStatus = $state('');
-	let filterPriority = $state('');
-	let filterSla = $state('');
-
-	$effect.pre(() => {
-		filterStatus = activeStatus;
-		filterPriority = activePriority;
-		filterSla = activeSla;
-
-		pageIndex = page - 1;
-		pageSize = limit;
-	});
 
 	function navigate(search: string) {
 		// eslint-disable-next-line svelte/no-navigation-without-resolve
@@ -57,36 +42,9 @@
 		});
 	}
 
-	function applyFilter(key: string, value: string) {
-		const nextUrl = new URL(pageState.url);
-		if (value) {
-			nextUrl.searchParams.set(key, value);
-		} else {
-			nextUrl.searchParams.delete(key);
-		}
-		nextUrl.searchParams.delete('page');
-		navigate(nextUrl.search);
-	}
-
-	function resetFilters() {
-		const nextUrl = new URL(pageState.url);
-		nextUrl.searchParams.delete('status');
-		nextUrl.searchParams.delete('priority');
-		nextUrl.searchParams.delete('sla_breached');
-		nextUrl.searchParams.delete('page');
-		navigate(nextUrl.search);
-	}
-
-	$effect(() => {
-		if (filterStatus !== activeStatus) applyFilter('status', filterStatus);
-	});
-
-	$effect(() => {
-		if (filterPriority !== activePriority) applyFilter('priority', filterPriority);
-	});
-
-	$effect(() => {
-		if (filterSla !== activeSla) applyFilter('sla_breached', filterSla);
+	$effect.pre(() => {
+		pageIndex = page - 1;
+		pageSize = limit;
 	});
 
 	$effect(() => {
@@ -101,33 +59,6 @@
 			navigate(nextUrl.search);
 		}
 	});
-
-	const statusLabels: Record<string, string> = {
-		open: 'Status: Open',
-		in_progress: 'Status: In Progress',
-		resolved: 'Status: Resolved',
-		closed: 'Status: Closed'
-	};
-
-	const priorityLabels: Record<string, string> = {
-		CRITICAL: 'Priority: Critical',
-		HIGH: 'Priority: High',
-		MEDIUM: 'Priority: Medium',
-		LOW: 'Priority: Low'
-	};
-
-	const slaLabels: Record<string, string> = {
-		true: 'SLA: Breached',
-		false: 'SLA: Safe'
-	};
-
-	const statusLabel = $derived(
-		filterStatus ? (statusLabels[filterStatus] ?? filterStatus) : 'Status'
-	);
-	const priorityLabel = $derived(
-		filterPriority ? (priorityLabels[filterPriority] ?? filterPriority) : 'Priority'
-	);
-	const slaLabel = $derived(filterSla ? (slaLabels[filterSla] ?? filterSla) : 'SLA');
 
 	const statusOptions = [
 		{ label: 'Open', value: 'open' },
@@ -147,6 +78,76 @@
 		{ label: 'Breached', value: 'true' },
 		{ label: 'Safe', value: 'false' }
 	];
+
+	const categoryOptions = $derived(categories.map((c) => ({ label: c.name, value: c.id })));
+
+	let searchValue = $state(pageState.url.searchParams.get('search') || '');
+
+	function applySearch() {
+		const nextUrl = new URL(pageState.url);
+		if (searchValue.trim()) {
+			nextUrl.searchParams.set('search', searchValue.trim());
+		} else {
+			nextUrl.searchParams.delete('search');
+		}
+		nextUrl.searchParams.delete('page');
+		navigate(nextUrl.search);
+	}
+
+	function onKeyDown(e: KeyboardEvent) {
+		if (e.key === 'Enter') {
+			applySearch();
+		}
+	}
+
+	function toggleFilter(key: string, value: string) {
+		const current = pageState.url.searchParams.get(key)?.split(',').filter(Boolean) ?? [];
+		const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
+		const nextUrl = new URL(pageState.url);
+		if (next.length > 0) {
+			nextUrl.searchParams.set(key, next.join(','));
+		} else {
+			nextUrl.searchParams.delete(key);
+		}
+		nextUrl.searchParams.delete('page');
+		navigate(nextUrl.search);
+	}
+
+	function clearFilter(key: string) {
+		const nextUrl = new URL(pageState.url);
+		nextUrl.searchParams.delete(key);
+		nextUrl.searchParams.delete('page');
+		navigate(nextUrl.search);
+	}
+
+	function resetFilters() {
+		const nextUrl = new URL(pageState.url);
+		for (const key of ['status', 'priority', 'sla_breached', 'categoryId', 'search', 'page']) {
+			nextUrl.searchParams.delete(key);
+		}
+		navigate(nextUrl.search);
+	}
+
+	const filterStatus = $derived(
+		new Set(pageState.url.searchParams.get('status')?.split(',').filter(Boolean) ?? [])
+	);
+	const filterPriority = $derived(
+		new Set(pageState.url.searchParams.get('priority')?.split(',').filter(Boolean) ?? [])
+	);
+	const filterSla = $derived(
+		new Set(pageState.url.searchParams.get('sla_breached')?.split(',').filter(Boolean) ?? [])
+	);
+	const filterCategory = $derived(
+		new Set(pageState.url.searchParams.get('categoryId')?.split(',').filter(Boolean) ?? [])
+	);
+
+	const hasActiveFilters = $derived(
+		pageState.url.searchParams.has('status') ||
+			pageState.url.searchParams.has('priority') ||
+			pageState.url.searchParams.has('sla_breached') ||
+			pageState.url.searchParams.has('categoryId') ||
+			pageState.url.searchParams.has('search')
+	);
 </script>
 
 <Columns bind:columns />
@@ -160,63 +161,71 @@
 	manualPagination={true}
 >
 	{#snippet toolbar(table)}
-		<div class="flex items-center justify-between">
-			<div class="flex flex-1 items-center space-x-2">
-				<Select.Root type="single" bind:value={filterStatus}>
-					<Select.Trigger class="max-w-fit min-w-32">
-						{statusLabel}
-					</Select.Trigger>
-					<Select.Content>
-						<Select.Item value="">All Status</Select.Item>
-						{#each statusOptions as opt (opt.value)}
-							<Select.Item value={opt.value}>{opt.label}</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
-
-				<Select.Root type="single" bind:value={filterPriority}>
-					<Select.Trigger class="max-w-fit min-w-32">
-						{priorityLabel}
-					</Select.Trigger>
-					<Select.Content>
-						<Select.Item value="">All Priority</Select.Item>
-						{#each priorityOptions as opt (opt.value)}
-							<Select.Item value={opt.value}>{opt.label}</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
-
-				<Select.Root type="single" bind:value={filterSla}>
-					<Select.Trigger class="max-w-fit min-w-32">
-						{slaLabel}
-					</Select.Trigger>
-					<Select.Content>
-						<Select.Item value="">All SLA</Select.Item>
-						{#each slaOptions as opt (opt.value)}
-							<Select.Item value={opt.value}>{opt.label}</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
-
-				{#if hasActiveFilters}
-					<Button variant="ghost" onclick={resetFilters} class="px-2 lg:px-3">
-						Reset
-						<XIcon class="ms-2 size-4" />
-					</Button>
-				{/if}
+		<div class="flex flex-row justify-between gap-4">
+			<div class="flex items-center gap-4">
+				<div class="relative w-full max-w-sm">
+					<MagnifyingGlassIcon
+						class="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+					/>
+					<Input
+						bind:value={searchValue}
+						placeholder="Search tickets..."
+						onkeydown={onKeyDown}
+						class="h-8 pl-9"
+					/>
+				</div>
+				<div class="flex items-center gap-2">
+					<DataTableFacetedFilter
+						title="Status"
+						options={statusOptions}
+						selectedValues={filterStatus}
+						onSelect={(v) => toggleFilter('status', v)}
+						onclear={() => clearFilter('status')}
+					/>
+					<DataTableFacetedFilter
+						title="Priority"
+						options={priorityOptions}
+						selectedValues={filterPriority}
+						onSelect={(v) => toggleFilter('priority', v)}
+						onclear={() => clearFilter('priority')}
+					/>
+					<DataTableFacetedFilter
+						title="SLA"
+						options={slaOptions}
+						selectedValues={filterSla}
+						onSelect={(v) => toggleFilter('sla_breached', v)}
+						onclear={() => clearFilter('sla_breached')}
+					/>
+					<DataTableFacetedFilter
+						title="Category"
+						options={categoryOptions}
+						selectedValues={filterCategory}
+						onSelect={(v) => toggleFilter('categoryId', v)}
+						onclear={() => clearFilter('categoryId')}
+					/>
+					{#if hasActiveFilters}
+						<Button variant="ghost" onclick={resetFilters} class="px-2 lg:px-3">
+							Reset
+							<XIcon class="ms-2 size-4" />
+						</Button>
+					{/if}
+				</div>
 			</div>
-			<div class="flex items-center gap-2">
-				<Button
-					variant="outline"
-					size="sm"
-					class="h-8"
-					href={resolve('/tickets/export') + pageState.url.search}
-					download="tickets-export.csv"
-				>
-					<CloudArrowDownIcon />
-					Export
-				</Button>
-				<DataTableViewOptions {table} />
+			<div class="flex items-center justify-between">
+				<div></div>
+				<div class="flex items-center gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						class="h-8"
+						href={resolve('/tickets/export') + pageState.url.search}
+						download="tickets-export.csv"
+					>
+						<CloudArrowDownIcon />
+						Export
+					</Button>
+					<DataTableViewOptions {table} />
+				</div>
 			</div>
 		</div>
 	{/snippet}

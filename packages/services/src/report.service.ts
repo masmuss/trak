@@ -1,4 +1,4 @@
-import { eq, and, or, count, sql } from 'drizzle-orm';
+import { eq, and, inArray, count, sql } from 'drizzle-orm';
 import { db, reports, reportAttachments, statusHistories } from '@trak/database';
 import type { Ticket, TicketDetails, TicketWithRelations, Priority } from '@trak/shared';
 import { randomBytes } from 'crypto';
@@ -18,7 +18,7 @@ export type TicketStats = {
 
 export type TicketFilters = {
 	status?: string;
-	priority?: Priority;
+	priority?: string;
 	slaBreached?: string;
 	search?: string;
 	categoryId?: string;
@@ -47,11 +47,13 @@ export async function listTickets(filters: TicketFilters): Promise<TicketListRes
 	const whereConditions = [];
 
 	if (filters.status) {
-		whereConditions.push(eq(reports.status, filters.status));
+		const statuses = filters.status.split(',');
+		whereConditions.push(inArray(reports.status, statuses));
 	}
 
 	if (filters.priority) {
-		whereConditions.push(eq(reports.priority, filters.priority));
+		const priorities = filters.priority.split(',');
+		whereConditions.push(inArray(reports.priority, priorities as any));
 	}
 
 	if (filters.slaBreached === 'true') {
@@ -61,15 +63,13 @@ export async function listTickets(filters: TicketFilters): Promise<TicketListRes
 	}
 
 	if (filters.categoryId) {
-		whereConditions.push(eq(reports.categoryId, filters.categoryId));
+		const categoryIds = filters.categoryId.split(',');
+		whereConditions.push(inArray(reports.categoryId, categoryIds));
 	}
 
 	if (filters.search) {
 		whereConditions.push(
-			or(
-				sql`${reports.title} ILIKE ${'%' + filters.search + '%'}`,
-				sql`${reports.body} ILIKE ${'%' + filters.search + '%'}`
-			)
+			sql`(${reports.title} ILIKE ${'%' + filters.search + '%'} OR ${reports.body} ILIKE ${'%' + filters.search + '%'})`
 		);
 	}
 
@@ -130,17 +130,19 @@ export async function updateTicketStatus(
 
 export async function getTicketsForExport(filters: {
 	status?: string;
-	priority?: Priority;
+	priority?: string;
 	slaBreached?: string;
 }): Promise<TicketListItem[]> {
 	const whereConditions = [];
 
 	if (filters.status) {
-		whereConditions.push(eq(reports.status, filters.status));
+		const statuses = filters.status.split(',');
+		whereConditions.push(inArray(reports.status, statuses));
 	}
 
 	if (filters.priority) {
-		whereConditions.push(eq(reports.priority, filters.priority));
+		const priorities = filters.priority.split(',');
+		whereConditions.push(inArray(reports.priority, priorities as any));
 	}
 
 	if (filters.slaBreached === 'true') {
