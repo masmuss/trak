@@ -161,9 +161,9 @@
 	manualPagination={true}
 >
 	{#snippet toolbar(table)}
-		<div class="flex flex-row justify-between gap-4">
-			<div class="flex items-center gap-4">
-				<div class="relative w-full max-w-sm">
+		<div class="space-y-4">
+			<div class="flex flex-wrap items-center gap-4">
+				<div class="relative w-full max-w-sm shrink-0">
 					<MagnifyingGlassIcon
 						class="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
 					/>
@@ -174,7 +174,7 @@
 						class="h-8 pl-9"
 					/>
 				</div>
-				<div class="flex items-center gap-2">
+				<div class="flex flex-wrap items-center gap-2">
 					<DataTableFacetedFilter
 						title="Status"
 						options={statusOptions}
@@ -211,21 +211,18 @@
 					{/if}
 				</div>
 			</div>
-			<div class="flex items-center justify-between">
-				<div></div>
-				<div class="flex items-center gap-2">
-					<Button
-						variant="outline"
-						size="sm"
-						class="h-8"
-						href={resolve('/tickets/export') + pageState.url.search}
-						download="tickets-export.csv"
-					>
-						<CloudArrowDownIcon />
-						Export
-					</Button>
-					<DataTableViewOptions {table} />
-				</div>
+			<div class="flex items-center justify-end gap-2">
+				<Button
+					variant="outline"
+					size="sm"
+					class="h-8"
+					href={resolve('/tickets/export') + pageState.url.search}
+					download="tickets-export.csv"
+				>
+					<CloudArrowDownIcon />
+					Export
+				</Button>
+				<DataTableViewOptions {table} />
 			</div>
 		</div>
 	{/snippet}
