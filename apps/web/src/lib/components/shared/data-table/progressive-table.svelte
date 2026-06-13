@@ -39,7 +39,8 @@
 		enableSorting = true,
 		enableRowSelection = true,
 		enableColumnVisibility = true,
-		initialColumnVisibility = undefined
+		initialColumnVisibility = undefined,
+		onPaginationChange
 	}: {
 		data: TData[];
 		columns: ColumnDef<TData, TValue>[];
@@ -52,6 +53,7 @@
 		enableRowSelection?: boolean;
 		enableColumnVisibility?: boolean;
 		initialColumnVisibility?: Record<string, boolean>;
+		onPaginationChange?: (state: { pageIndex: number; pageSize: number }) => void;
 	} = $props();
 
 	let rowSelection = $state<RowSelectionState>({});
@@ -131,13 +133,15 @@
 			}
 		},
 		onPaginationChange: (updater) => {
+			let next: { pageIndex: number; pageSize: number };
 			if (typeof updater === 'function') {
-				const next = updater({ pageIndex, pageSize });
-				pageIndex = next.pageIndex;
-				pageSize = next.pageSize;
+				next = updater({ pageIndex, pageSize });
 			} else {
-				pageIndex = updater.pageIndex;
-				pageSize = updater.pageSize;
+				next = updater;
+			}
+
+			if (onPaginationChange) {
+				onPaginationChange(next);
 			}
 		},
 		getCoreRowModel: getCoreRowModel(),
@@ -166,7 +170,7 @@
 						table.setPageSize(Number(value));
 					}}
 				>
-					<Select.Trigger class="h-8 w-[70px]">
+					<Select.Trigger class="h-8 w-16">
 						{String(table.getState().pagination.pageSize)}
 					</Select.Trigger>
 					<Select.Content side="top">
@@ -178,7 +182,7 @@
 					</Select.Content>
 				</Select.Root>
 			</div>
-			<div class="flex w-[100px] items-center justify-center text-sm font-medium">
+			<div class="flex w-25 items-center justify-center text-sm font-medium">
 				Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
 			</div>
 			<div class="flex items-center space-x-2">

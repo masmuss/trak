@@ -1,5 +1,4 @@
 <script lang="ts" generics="TData">
-	import { untrack } from 'svelte';
 	import ProgressiveTable from './progressive-table.svelte';
 	import type { TableConfig, SelectFilterConfig } from './types';
 	import { createTableState, createSimpleTableState } from './table-state.svelte.js';
@@ -16,8 +15,8 @@
 		config,
 		data,
 		totalCount = 0,
-		pageIndex = $bindable(0),
-		pageSize = $bindable(10),
+		pageIndex = 0,
+		pageSize = 10,
 		manualPagination = false,
 		urlSync = true
 	}: {
@@ -74,21 +73,17 @@
 		}
 	});
 
-	$effect(() => {
-		// Sync local bindings -> tableState (user interactions)
-		// Use untrack to prevent cyclic effect dependencies which halt Svelte reactivity
-		const newPage = pageIndex + 1;
-		const newSize = pageSize;
-
-		untrack(() => {
-			if (newPage !== tableState.pagination.page) {
-				tableState.setPage(newPage);
-			}
-			if (newSize !== tableState.pagination.pageSize) {
-				tableState.setPageSize(newSize);
-			}
-		});
-	});
+	// We no longer sync from local bindable to tableState via $effect.
+	// Instead, we pass an explicit onPaginationChange callback down to ProgressiveTable.
+	function handlePaginationChange(state: { pageIndex: number; pageSize: number }) {
+		const newPage = state.pageIndex + 1;
+		if (newPage !== tableState.pagination.page) {
+			tableState.setPage(newPage);
+		}
+		if (state.pageSize !== tableState.pagination.pageSize) {
+			tableState.setPageSize(state.pageSize);
+		}
+	}
 
 	const pageCount = $derived(Math.ceil(totalCount / pageSize));
 
@@ -157,10 +152,11 @@
 <ProgressiveTable
 	{data}
 	columns={config.columns}
-	bind:pageIndex
-	bind:pageSize
+	{pageIndex}
+	{pageSize}
 	{pageCount}
 	{manualPagination}
+	onPaginationChange={handlePaginationChange}
 	enableSorting={config.features?.sorting !== false}
 	enableRowSelection={config.features?.rowSelection !== false}
 	enableColumnVisibility={config.features?.columnVisibility !== false}
