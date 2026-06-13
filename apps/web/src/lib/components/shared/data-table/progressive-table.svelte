@@ -55,9 +55,13 @@
 	} = $props();
 
 	let rowSelection = $state<RowSelectionState>({});
-	let columnVisibility = $state<VisibilityState>(initialColumnVisibility || {});
+	let columnVisibility = $derived<VisibilityState>(initialColumnVisibility || {});
 	let columnFilters = $state<ColumnFiltersState>([]);
 	let sorting = $state<SortingState>([]);
+
+	// Sorting model based on enableSorting prop
+	const sortingModel = (table: TableType<TData>) =>
+		enableSorting ? getSortedRowModel<TData>()(table) : getCoreRowModel<TData>()(table);
 
 	const table = createSvelteTable({
 		get data() {
@@ -139,7 +143,7 @@
 		getCoreRowModel: getCoreRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
-		getSortedRowModel: enableSorting ? getSortedRowModel() : getCoreRowModel(),
+		getSortedRowModel: (table) => sortingModel(table),
 		getFacetedRowModel: getFacetedRowModel(),
 		getFacetedUniqueValues: getFacetedUniqueValues()
 	});

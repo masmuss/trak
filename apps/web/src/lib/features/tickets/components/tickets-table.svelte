@@ -21,21 +21,14 @@
 
 	let columns: ColumnDef<TicketWithRelations, unknown>[] = $state([]);
 
-	// Create table configuration without columns
-	let tableConfig = $state(createTicketsTableConfig(categories));
+	// svelte-ignore state_referenced_locally
+	const initialCategories = categories;
+	// Table configuration (state because it needs to be mutated)
+	let tableConfig = $state(createTicketsTableConfig(initialCategories));
 
 	// Update columns in config when columns change
 	$effect(() => {
 		tableConfig.columns = columns;
-	});
-
-	let pageIndex = $state(0);
-	let pageSize = $state(10);
-
-	// Sync with page prop
-	$effect.pre(() => {
-		pageIndex = page - 1;
-		pageSize = limit;
 	});
 </script>
 
@@ -46,7 +39,7 @@
 	data={tickets}
 	{totalCount}
 	manualPagination={true}
-	bind:pageIndex
-	bind:pageSize
+	pageIndex={page - 1}
+	pageSize={limit}
 	urlSync={true}
 />

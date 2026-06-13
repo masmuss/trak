@@ -1,4 +1,5 @@
 <script lang="ts" generics="TData">
+	import { untrack } from 'svelte';
 	import ProgressiveTable from './progressive-table.svelte';
 	import type { TableConfig, SelectFilterConfig } from './types';
 	import { createTableState, createSimpleTableState } from './table-state.svelte.js';
@@ -29,42 +30,64 @@
 		urlSync?: boolean;
 	} = $props();
 
+	// svelte-ignore state_referenced_locally
+	const initialConfig = config;
+	// svelte-ignore state_referenced_locally
+	const isUrlSync = urlSync;
 	// Initialize filter manager and table state
-	let filterManager = $state(new FilterManager(config.filters || []));
+	let filterManager = $state(new FilterManager(initialConfig.filters || []));
 	let tableState = $state(
-		urlSync
+		isUrlSync
 			? createTableState({
 					filterManager,
 					urlSync: { enabled: true },
 					defaultState: {
 						pagination: {
 							page: 1,
-							pageSize: config.defaults?.pageSize || 10
+							pageSize: initialConfig.defaults?.pageSize || 10
 						},
-						sorting: config.defaults?.sorting || [],
-						columnVisibility: config.defaults?.columnVisibility || {}
+						sorting: initialConfig.defaults?.sorting || [],
+						columnVisibility: initialConfig.defaults?.columnVisibility || {}
 					}
 				})
 			: createSimpleTableState({
 					pagination: {
 						page: 1,
-						pageSize: config.defaults?.pageSize || 10
+						pageSize: initialConfig.defaults?.pageSize || 10
 					},
-					sorting: config.defaults?.sorting || [],
-					columnVisibility: config.defaults?.columnVisibility || {}
+					sorting: initialConfig.defaults?.sorting || [],
+					columnVisibility: initialConfig.defaults?.columnVisibility || {}
 				})
 	);
 
 	// Reactive sync with external data
 	$effect(() => {
-		// Sync pageIndex with state
-		if (tableState.pagination.page !== undefined) {
+		// Sync tableState -> local bindings
+		if (tableState.pagination.page !== undefined && tableState.pagination.page - 1 !== pageIndex) {
 			pageIndex = tableState.pagination.page - 1;
 		}
-		// Sync pageSize with state
-		if (tableState.pagination.pageSize !== undefined) {
+		if (
+			tableState.pagination.pageSize !== undefined &&
+			tableState.pagination.pageSize !== pageSize
+		) {
 			pageSize = tableState.pagination.pageSize;
 		}
+	});
+
+	$effect(() => {
+		// Sync local bindings -> tableState (user interactions)
+		// Use untrack to prevent cyclic effect dependencies which halt Svelte reactivity
+		const newPage = pageIndex + 1;
+		const newSize = pageSize;
+
+		untrack(() => {
+			if (newPage !== tableState.pagination.page) {
+				tableState.setPage(newPage);
+			}
+			if (newSize !== tableState.pagination.pageSize) {
+				tableState.setPageSize(newSize);
+			}
+		});
 	});
 
 	const pageCount = $derived(Math.ceil(totalCount / pageSize));
