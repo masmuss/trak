@@ -38,7 +38,8 @@
 		manualPagination = false,
 		enableSorting = true,
 		enableRowSelection = true,
-		enableColumnVisibility = true
+		enableColumnVisibility = true,
+		initialColumnVisibility = undefined
 	}: {
 		data: TData[];
 		columns: ColumnDef<TData, TValue>[];
@@ -50,10 +51,11 @@
 		enableSorting?: boolean;
 		enableRowSelection?: boolean;
 		enableColumnVisibility?: boolean;
+		initialColumnVisibility?: Record<string, boolean>;
 	} = $props();
 
 	let rowSelection = $state<RowSelectionState>({});
-	let columnVisibility = $state<VisibilityState>({});
+	let columnVisibility = $state<VisibilityState>(initialColumnVisibility || {});
 	let columnFilters = $state<ColumnFiltersState>([]);
 	let sorting = $state<SortingState>([]);
 

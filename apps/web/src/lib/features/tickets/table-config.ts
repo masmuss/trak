@@ -1,5 +1,9 @@
 import type { TableConfig } from '$lib/components/shared/data-table';
-import { createMultiSelectFilter, createSearchFilter } from '$lib/components/shared/data-table';
+import {
+	createMultiSelectFilter,
+	createSelectFilter,
+	createSearchFilter
+} from '$lib/components/shared/data-table';
 import type { TicketWithRelations, Category } from '../tickets/types';
 
 export function createTicketsTableConfig(categories: Category[]): TableConfig<TicketWithRelations> {
@@ -34,7 +38,7 @@ export function createTicketsTableConfig(categories: Category[]): TableConfig<Ti
 					{ label: 'Low', value: 'LOW' }
 				]
 			}),
-			createMultiSelectFilter({
+			createSelectFilter({
 				key: 'sla_breached',
 				title: 'SLA',
 				serverKey: 'sla_breached',
@@ -74,7 +78,10 @@ export function createTicketsTableConfig(categories: Category[]): TableConfig<Ti
 		defaults: {
 			pageSize: 10,
 			sorting: [],
-			columnVisibility: {}
+			columnVisibility: {
+				isSlaBreached: false,
+				reporter: false
+			}
 		}
 	};
 }

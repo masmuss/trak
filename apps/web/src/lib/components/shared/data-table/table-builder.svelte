@@ -141,10 +141,11 @@
 	enableSorting={config.features?.sorting !== false}
 	enableRowSelection={config.features?.rowSelection !== false}
 	enableColumnVisibility={config.features?.columnVisibility !== false}
+	initialColumnVisibility={config.defaults?.columnVisibility}
 >
 	{#snippet toolbar(table)}
 		<TableToolbar>
-			<div class="flex flex-wrap items-center gap-4">
+			<div class="flex w-full flex-row items-center gap-2">
 				{#if config.features?.search !== false}
 					<SearchBar
 						value={tableState.search}

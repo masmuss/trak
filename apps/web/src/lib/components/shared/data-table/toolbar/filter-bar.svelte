@@ -21,7 +21,7 @@
 	} = $props();
 </script>
 
-<div class="flex flex-wrap items-center gap-2">
+<div class="flex flex-row flex-wrap items-center gap-2">
 	{#each configs as config (config.key)}
 		<FilterDropdown
 			title={config.title}
