@@ -1,3 +1,18 @@
+# [1.1.0](https://github.com/masmuss/trak/compare/v1.0.0...v1.1.0) (2026-06-13)
+
+
+### Bug Fixes
+
+* **web:** prevent toolbar overflow with flex-wrap ([1d598f1](https://github.com/masmuss/trak/commit/1d598f1441635b1f5842eb810446d06a604f705e))
+* **web:** use explicit onPaginationChange callback to resolve Svelte 5 bindable loop issue ([9822222](https://github.com/masmuss/trak/commit/9822222a150783ffefb5094cc22e13d04595bf89))
+
+
+### Features
+
+* **checkbox:** add Checkbox component with customizable props and icons ([791740c](https://github.com/masmuss/trak/commit/791740c9487369aa8768f8c21aeef2ee7b764290))
+* **web:** implement progressive table system with modular components ([d7e4908](https://github.com/masmuss/trak/commit/d7e490895bfeca6189f95533babcf3c32ad423b3))
+* **web:** implement ticket list filtering and table toolbar controls ([37720ac](https://github.com/masmuss/trak/commit/37720ac37957f0a3cc7da79f3bc9166cff2afdbf))
+
 # 1.0.0 (2026-06-06)
 
 ### Bug Fixes
