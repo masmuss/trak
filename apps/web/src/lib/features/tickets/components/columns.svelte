@@ -8,6 +8,7 @@
 	import type { TicketWithRelations } from '$lib/features/tickets/types';
 	import StatusBadge from './status-badge.svelte';
 	import PriorityBadge from './priority-badge.svelte';
+	import { Badge } from '$lib/components/ui/badge';
 
 	let { columns = $bindable() }: { columns: ColumnDef<TicketWithRelations, unknown>[] } = $props();
 
@@ -26,14 +27,16 @@
 				header: ({ column }) =>
 					renderComponent(DataTableColumnHeader, { column, title: 'Ticket ID' }),
 				cell: (context) => renderSnippet(idCell, context),
-				meta: { className: 'w-[110px] min-w-[110px]' }
+				meta: { label: 'Ticket ID' }
 			},
 			{
 				accessorKey: 'title',
 				header: ({ column }) =>
 					renderComponent(DataTableColumnHeader, { column, title: 'Subject' }),
 				cell: (context) => renderSnippet(subjectCell, context),
-				meta: { className: 'max-w-[300px] md:max-w-[400px] lg:max-w-[500px] truncate' }
+				meta: {
+					label: 'Subject'
+				}
 			},
 			{
 				id: 'reporter',
@@ -41,33 +44,33 @@
 				header: ({ column }) =>
 					renderComponent(DataTableColumnHeader, { column, title: 'Requested By' }),
 				cell: (context) => renderSnippet(reporterCell, context),
-				meta: { className: 'w-[150px] min-w-[150px]' }
+				meta: { label: 'Requested By' }
 			},
 			{
 				accessorKey: 'priority',
 				header: ({ column }) =>
 					renderComponent(DataTableColumnHeader, { column, title: 'Priority' }),
 				cell: (context) => renderSnippet(priorityCell, context),
-				meta: { className: 'w-[100px] min-w-[100px]' }
+				meta: { label: 'Priority' }
 			},
 			{
 				accessorKey: 'status',
 				header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: 'Status' }),
 				cell: (context) => renderSnippet(statusCell, context),
-				meta: { className: 'w-[120px] min-w-[120px]' }
+				meta: { label: 'Status' }
 			},
 			{
 				accessorKey: 'isSlaBreached',
 				header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: 'SLA' }),
 				cell: (context) => renderSnippet(slaCell, context),
-				meta: { className: 'w-[40px] min-w-[40px] text-center' }
+				meta: { label: 'SLA Status' }
 			},
 			{
 				accessorKey: 'createdAt',
 				header: ({ column }) =>
 					renderComponent(DataTableColumnHeader, { column, title: 'Created' }),
 				cell: (context) => renderSnippet(dateCell, context),
-				meta: { className: 'w-[130px] min-w-[130px]' }
+				meta: { label: 'Created Date' }
 			}
 		];
 	});
@@ -80,15 +83,18 @@
 {/snippet}
 
 {#snippet subjectCell({ row }: CellContext<TicketWithRelations, unknown>)}
-	<a
-		href={resolve(`/(authenticated)/tickets/[id]`, {
-			id: row.original.id
-		})}
-		class="block truncate font-medium hover:text-primary hover:underline"
-		title={row.original.title}
-	>
-		{row.original.title}
-	</a>
+	<span class="flex flex-row items-center gap-2">
+		<Badge variant="outline">{row.original.category?.name}</Badge>
+		<a
+			href={resolve(`/(authenticated)/tickets/[id]`, {
+				id: row.original.id
+			})}
+			class="truncate font-medium hover:text-primary hover:underline"
+			title={row.original.title}
+		>
+			{row.original.title}
+		</a>
+	</span>
 {/snippet}
 
 {#snippet reporterCell({ row }: CellContext<TicketWithRelations, unknown>)}

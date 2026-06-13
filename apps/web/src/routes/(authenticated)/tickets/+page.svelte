@@ -48,5 +48,6 @@
 		totalCount={data.totalCount}
 		page={data.page}
 		limit={data.limit}
+		categories={data.categories}
 	/>
 </div>
