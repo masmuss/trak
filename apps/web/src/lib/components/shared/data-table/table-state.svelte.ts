@@ -4,6 +4,39 @@ import type { FilterManager } from './filter-config';
 import type { TableState, TableQuery, URLSyncOptions, FilterValue, ExportFormat } from './types';
 import { SvelteURL, SvelteURLSearchParams } from 'svelte/reactivity';
 
+function buildQuery(state: TableState): TableQuery {
+	return {
+		filters: state.filters,
+		search: state.search || undefined,
+		pagination: {
+			page: state.pagination.page,
+			limit: state.pagination.pageSize
+		},
+		sorting: state.sorting[0]
+			? {
+					field: state.sorting[0].id,
+					direction: state.sorting[0].desc ? 'desc' : 'asc'
+				}
+			: undefined
+	};
+}
+
+function toggleSortInPlace(state: TableState, columnId: string): void {
+	if (state.sorting[0]?.id === columnId) {
+		state.sorting = [{ id: columnId, desc: !state.sorting[0].desc }];
+	} else {
+		state.sorting = [{ id: columnId, desc: false }];
+	}
+}
+
+/** Returns a snapshot of state for simple tables (no filterManager) */
+function hasSimpleFilters(state: TableState): boolean {
+	return (
+		Object.values(state.filters).some((v) => v !== undefined && v !== null && v !== '') ||
+		state.search !== ''
+	);
+}
+
 /**
  * Generic Table State Management
  * Handles URL sync, filter state, search, pagination, and sorting
@@ -171,13 +204,7 @@ export function createTableState(options: {
 	}
 
 	function toggleSort(columnId: string): void {
-		if (state.sorting[0]?.id === columnId) {
-			// Toggle direction
-			state.sorting = [{ id: columnId, desc: !state.sorting[0].desc }];
-		} else {
-			// New sort
-			state.sorting = [{ id: columnId, desc: false }];
-		}
+		toggleSortInPlace(state, columnId);
 		syncToURL();
 	}
 
@@ -229,32 +256,10 @@ export function createTableState(options: {
 	}
 
 	// ============================================================================
-	// Query Builder
-	// ============================================================================
-
-	function buildQuery(): TableQuery {
-		return {
-			filters: state.filters,
-			search: state.search || undefined,
-			pagination: {
-				page: state.pagination.page,
-				limit: state.pagination.pageSize
-			},
-			sorting: state.sorting[0]
-				? {
-						field: state.sorting[0].id,
-						direction: state.sorting[0].desc ? 'desc' : 'asc'
-					}
-				: undefined
-		};
-	}
-
-	// ============================================================================
 	// Return API
 	// ============================================================================
 
 	return {
-		// State (readonly)
 		get state() {
 			return state;
 		},
@@ -276,48 +281,30 @@ export function createTableState(options: {
 		get rowSelection() {
 			return state.rowSelection;
 		},
-
-		// Derived state
 		get hasActiveFilters() {
 			return hasActiveFilters();
 		},
 		get query() {
-			return buildQuery();
+			return buildQuery(state);
 		},
 
-		// Filter methods
 		setFilter,
 		toggleFilter,
 		clearFilter,
 		clearAllFilters,
-
-		// Search methods
 		setSearch,
-
-		// Pagination methods
 		setPage,
 		setPageSize,
-
-		// Sorting methods
 		setSorting,
 		toggleSort,
-
-		// Column visibility methods
 		setColumnVisibility,
 		toggleColumnVisibility,
-
-		// Row selection methods
 		setRowSelection,
 		toggleRowSelection,
 		clearRowSelection,
-
-		// Export methods
 		getExportURL,
+		buildQuery: () => buildQuery(state),
 
-		// Query builder
-		buildQuery,
-
-		// Utilities
 		syncToURL,
 		reset: () => {
 			state = parseInitialState();
@@ -342,30 +329,6 @@ export function createSimpleTableState(defaultState?: Partial<TableState>) {
 		...defaultState
 	});
 
-	function hasActiveFilters(): boolean {
-		return (
-			Object.values(state.filters).some((v) => v !== undefined && v !== null && v !== '') ||
-			state.search !== ''
-		);
-	}
-
-	function buildQuery(): TableQuery {
-		return {
-			filters: state.filters,
-			search: state.search || undefined,
-			pagination: {
-				page: state.pagination.page,
-				limit: state.pagination.pageSize
-			},
-			sorting: state.sorting[0]
-				? {
-						field: state.sorting[0].id,
-						direction: state.sorting[0].desc ? 'desc' : 'asc'
-					}
-				: undefined
-		};
-	}
-
 	return {
 		get state() {
 			return state;
@@ -388,16 +351,13 @@ export function createSimpleTableState(defaultState?: Partial<TableState>) {
 		get rowSelection() {
 			return state.rowSelection;
 		},
-
-		// Derived state
 		get hasActiveFilters() {
-			return hasActiveFilters();
+			return hasSimpleFilters(state);
 		},
 		get query() {
-			return buildQuery();
+			return buildQuery(state);
 		},
 
-		// Filter methods
 		setFilter: (key: string, value: FilterValue) => {
 			state.filters = { ...state.filters, [key]: value };
 		},
@@ -418,12 +378,10 @@ export function createSimpleTableState(defaultState?: Partial<TableState>) {
 			state.search = '';
 		},
 
-		// Search methods
 		setSearch: (value: string) => {
 			state.search = value;
 		},
 
-		// Pagination methods
 		setPage: (page: number) => {
 			state.pagination.page = page;
 		},
@@ -431,19 +389,13 @@ export function createSimpleTableState(defaultState?: Partial<TableState>) {
 			state.pagination.pageSize = pageSize;
 		},
 
-		// Sorting methods
 		setSorting: (sorting: { id: string; desc: boolean }[]) => {
 			state.sorting = sorting;
 		},
 		toggleSort: (columnId: string) => {
-			if (state.sorting[0]?.id === columnId) {
-				state.sorting = [{ id: columnId, desc: !state.sorting[0].desc }];
-			} else {
-				state.sorting = [{ id: columnId, desc: false }];
-			}
+			toggleSortInPlace(state, columnId);
 		},
 
-		// Column visibility methods
 		setColumnVisibility: (columnId: string, visible: boolean) => {
 			state.columnVisibility = { ...state.columnVisibility, [columnId]: visible };
 		},
@@ -454,7 +406,6 @@ export function createSimpleTableState(defaultState?: Partial<TableState>) {
 			};
 		},
 
-		// Row selection methods
 		setRowSelection: (selection: Record<string, boolean>) => {
 			state.rowSelection = selection;
 		},
@@ -468,15 +419,11 @@ export function createSimpleTableState(defaultState?: Partial<TableState>) {
 			state.rowSelection = {};
 		},
 
-		// Export methods (placeholder for simple state)
 		getExportURL: (format: ExportFormat = 'csv') => {
 			return `?format=${format}`;
 		},
+		buildQuery: () => buildQuery(state),
 
-		// Query builder
-		buildQuery,
-
-		// Utilities
 		reset: () => {
 			Object.assign(state, defaultState || {});
 		}
