@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Table from '$lib/components/ui/table';
-	import type { Category } from '$lib/features/category/types';
+	import type { Category } from '@trak/shared';
 	import { PencilIcon, TrashIcon } from 'phosphor-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import DeleteConfirmDialog from '$lib/components/shared/delete-confirm-dialog.svelte';

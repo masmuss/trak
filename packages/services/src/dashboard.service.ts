@@ -1,13 +1,7 @@
 import { eq, count } from 'drizzle-orm';
 import { db, reports, reporters, inviteCodes } from '@trak/database';
 import type { TicketWithRelations } from '@trak/shared';
-
-export type DashboardStats = {
-	totalTickets: number;
-	openTickets: number;
-	totalReporters: number;
-	activeInviteCodes: number;
-};
+import type { DashboardStats, TopInviteCode } from './dashboard.types';
 
 export async function getDashboardStats(): Promise<DashboardStats> {
 	const [totalTickets, openTickets, totalReporters, activeInviteCodes] = await Promise.all([
@@ -36,14 +30,6 @@ export async function getRecentTickets(limit = 5): Promise<TicketWithRelations[]
 		orderBy: (reports, { desc }) => [desc(reports.createdAt)]
 	}) as Promise<TicketWithRelations[]>;
 }
-
-export type TopInviteCode = {
-	id: string;
-	code: string;
-	isActive: boolean;
-	expiresAt: Date | null;
-	reporters: { id: string }[];
-};
 
 export async function getTopInviteCodes(limit = 5): Promise<TopInviteCode[]> {
 	return db.query.inviteCodes.findMany({

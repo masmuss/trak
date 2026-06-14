@@ -9,7 +9,7 @@
 	import TicketPriorityForm from './ticket-priority-form.svelte';
 	import TicketMessageHeader from './ticket-message-header.svelte';
 	import TicketDetailsSidebar from './ticket-details-sidebar.svelte';
-	import type { TicketDetails } from '../types.js';
+	import type { TicketDetails } from '@trak/shared';
 	import { PaperclipIcon } from 'phosphor-svelte';
 	import getInitials from '$lib/utils/initials';
 	import { Textarea } from '$lib/components/ui/textarea';

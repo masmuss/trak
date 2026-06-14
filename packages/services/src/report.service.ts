@@ -1,30 +1,51 @@
-import { eq, and, inArray, count, sql } from 'drizzle-orm';
+import { eq, and, inArray, count, sql, type SQL } from 'drizzle-orm';
 import { db, reports, reportAttachments, statusHistories } from '@trak/database';
-import type { Ticket, TicketDetails, TicketWithRelations, Priority } from '@trak/shared';
+import type { Ticket, TicketDetails, Priority } from '@trak/shared';
 import { randomBytes } from 'crypto';
+import type {
+	TicketListItem,
+	TicketListResult,
+	TicketFilters,
+	TicketStats,
+	DistributionResult,
+	CreateReportInput,
+	CreateAttachmentInput
+} from './report.types';
 
-export type TicketListItem = TicketWithRelations;
+type ReportFilterInput = Pick<
+	TicketFilters,
+	'status' | 'priority' | 'slaBreached' | 'search' | 'categoryId'
+>;
 
-export type TicketListResult = {
-	tickets: TicketListItem[];
-	total: number;
-};
+function buildReportFilters(filters: ReportFilterInput): SQL | undefined {
+	const conditions: SQL[] = [];
 
-export type TicketStats = {
-	total: number;
-	pending: number;
-	solved: number;
-};
+	if (filters.status) {
+		conditions.push(inArray(reports.status, filters.status.split(',')));
+	}
 
-export type TicketFilters = {
-	status?: string;
-	priority?: string;
-	slaBreached?: string;
-	search?: string;
-	categoryId?: string;
-	limit?: number;
-	offset?: number;
-};
+	if (filters.priority) {
+		conditions.push(inArray(reports.priority, filters.priority.split(',') as any));
+	}
+
+	if (filters.slaBreached === 'true') {
+		conditions.push(eq(reports.isSlaBreached, true));
+	} else if (filters.slaBreached === 'false') {
+		conditions.push(eq(reports.isSlaBreached, false));
+	}
+
+	if (filters.categoryId) {
+		conditions.push(inArray(reports.categoryId, filters.categoryId.split(',')));
+	}
+
+	if (filters.search) {
+		conditions.push(
+			sql`(${reports.title} ILIKE ${'%' + filters.search + '%'} OR ${reports.body} ILIKE ${'%' + filters.search + '%'})`
+		);
+	}
+
+	return conditions.length > 0 ? and(...conditions) : undefined;
+}
 
 export async function getTicketById(id: string): Promise<TicketDetails | undefined> {
 	return db.query.reports.findFirst({
@@ -44,36 +65,7 @@ export async function getTicketById(id: string): Promise<TicketDetails | undefin
 }
 
 export async function listTickets(filters: TicketFilters): Promise<TicketListResult> {
-	const whereConditions = [];
-
-	if (filters.status) {
-		const statuses = filters.status.split(',');
-		whereConditions.push(inArray(reports.status, statuses));
-	}
-
-	if (filters.priority) {
-		const priorities = filters.priority.split(',');
-		whereConditions.push(inArray(reports.priority, priorities as any));
-	}
-
-	if (filters.slaBreached === 'true') {
-		whereConditions.push(eq(reports.isSlaBreached, true));
-	} else if (filters.slaBreached === 'false') {
-		whereConditions.push(eq(reports.isSlaBreached, false));
-	}
-
-	if (filters.categoryId) {
-		const categoryIds = filters.categoryId.split(',');
-		whereConditions.push(inArray(reports.categoryId, categoryIds));
-	}
-
-	if (filters.search) {
-		whereConditions.push(
-			sql`(${reports.title} ILIKE ${'%' + filters.search + '%'} OR ${reports.body} ILIKE ${'%' + filters.search + '%'})`
-		);
-	}
-
-	const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined;
+	const whereClause = buildReportFilters(filters);
 
 	const [totalResult, tickets] = await Promise.all([
 		db
@@ -133,25 +125,7 @@ export async function getTicketsForExport(filters: {
 	priority?: string;
 	slaBreached?: string;
 }): Promise<TicketListItem[]> {
-	const whereConditions = [];
-
-	if (filters.status) {
-		const statuses = filters.status.split(',');
-		whereConditions.push(inArray(reports.status, statuses));
-	}
-
-	if (filters.priority) {
-		const priorities = filters.priority.split(',');
-		whereConditions.push(inArray(reports.priority, priorities as any));
-	}
-
-	if (filters.slaBreached === 'true') {
-		whereConditions.push(eq(reports.isSlaBreached, true));
-	} else if (filters.slaBreached === 'false') {
-		whereConditions.push(eq(reports.isSlaBreached, false));
-	}
-
-	const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined;
+	const whereClause = buildReportFilters(filters);
 
 	return db.query.reports.findMany({
 		where: whereClause,
@@ -159,25 +133,6 @@ export async function getTicketsForExport(filters: {
 		orderBy: (reports, { desc }) => [desc(reports.createdAt)]
 	}) as Promise<TicketListItem[]>;
 }
-
-export type CategoryDistribution = {
-	categoryId: string;
-	categoryName: string;
-	count: number;
-	percentage: number;
-};
-
-export type DistributionResult = {
-	distribution: CategoryDistribution[];
-	uncategorized: number;
-};
-
-export type CreateReportInput = {
-	reporterId: string;
-	categoryId?: string | null;
-	title: string;
-	body: string;
-};
 
 function generateTicketCode(): string {
 	const dateStr = new Date().toISOString().slice(2, 10).replace(/-/g, '');
@@ -227,13 +182,6 @@ export async function createReport(
 
 	return result[0];
 }
-
-export type CreateAttachmentInput = {
-	reportId: string;
-	fileId: string;
-	fileType: string;
-	storageUrl: string;
-};
 
 export async function addReportAttachment(input: CreateAttachmentInput): Promise<void> {
 	await db.insert(reportAttachments).values({

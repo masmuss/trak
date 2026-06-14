@@ -7,7 +7,7 @@
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
-	import type { Agent } from '$lib/features/agents/types';
+	import type { User as Agent } from '@trak/shared';
 	import { handleFormError } from '$lib/utils/form';
 
 	let {

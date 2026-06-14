@@ -1,7 +1,7 @@
 <script lang="ts">
 	import PriorityBadge from './priority-badge.svelte';
 	import StatusBadge from './status-badge.svelte';
-	import type { TicketDetails } from '../types.js';
+	import type { TicketDetails } from '@trak/shared';
 	import { TelegramLogoIcon } from 'phosphor-svelte';
 	import * as Card from '$lib/components/ui/card';
 

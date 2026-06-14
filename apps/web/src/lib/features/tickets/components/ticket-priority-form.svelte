@@ -6,7 +6,7 @@
 	import * as Select from '$lib/components/ui/select';
 	import * as Field from '$lib/components/ui/field';
 	import * as Card from '$lib/components/ui/card';
-	import type { TicketDetails } from '../types.js';
+	import type { TicketDetails } from '@trak/shared';
 	import { handleFormError } from '$lib/utils/form';
 
 	let { ticket }: { ticket: TicketDetails } = $props();

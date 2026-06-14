@@ -1,10 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { db, account } from '@trak/database';
-
-export type PasswordAccount = {
-	id: string;
-	password: string | null;
-};
+import type { PasswordAccount, CreateAccountInput } from './account.types';
 
 export async function getPasswordAccount(userId: string): Promise<PasswordAccount | undefined> {
 	const result = await db.query.account.findFirst({
@@ -17,14 +13,6 @@ export async function getPasswordAccount(userId: string): Promise<PasswordAccoun
 export async function updateAccountPassword(userId: string, hashedPassword: string): Promise<void> {
 	await db.update(account).set({ password: hashedPassword }).where(eq(account.userId, userId));
 }
-
-export type CreateAccountInput = {
-	id: string;
-	userId: string;
-	accountId: string;
-	providerId: string;
-	password: string;
-};
 
 export async function createAccount(input: CreateAccountInput): Promise<void> {
 	await db.insert(account).values({

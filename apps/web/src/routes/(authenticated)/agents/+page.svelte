@@ -3,7 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { PlusIcon } from 'phosphor-svelte';
 	import type { PageData } from './$types';
-	import type { Agent } from '$lib/features/agents/types';
+	import type { User as Agent } from '@trak/shared';
 	import AgentsTable from '$lib/features/agents/components/agents-table.svelte';
 	import AgentForm from '$lib/features/agents/components/agent-form.svelte';
 
