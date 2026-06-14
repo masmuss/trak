@@ -89,10 +89,16 @@ export function createTableState(options: {
 		const nextUrl = new SvelteURL(currentUrl);
 		const excludeKeys = urlSync.excludeKeys || [];
 
-		// Sync filters
+		// Sync filters: delete stale params first, then set active ones
+		for (const config of filterManager.getAllConfigs()) {
+			if (!excludeKeys.includes(config.key)) {
+				nextUrl.searchParams.delete(config.key);
+			}
+		}
+
 		const filterParams = filterManager.serializeToURL(state.filters);
 		for (const [key, value] of filterParams) {
-			if (!excludeKeys.includes(key)) {
+			if (value && !excludeKeys.includes(key)) {
 				nextUrl.searchParams.set(key, value);
 			}
 		}
