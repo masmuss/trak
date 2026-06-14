@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/masmuss/trak/compare/v1.1.0...v1.2.0) (2026-06-14)
+
+
+### Features
+
+* **bot:** add stale session cleanup with daily cron ([d288198](https://github.com/masmuss/trak/commit/d288198262c2955d7d560747ff0bc1d1f2bf6362))
+
 # [1.1.0](https://github.com/masmuss/trak/compare/v1.0.0...v1.1.0) (2026-06-13)
 
 
