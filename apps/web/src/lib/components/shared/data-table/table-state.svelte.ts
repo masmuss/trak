@@ -37,6 +37,32 @@ function hasSimpleFilters(state: TableState): boolean {
 	);
 }
 
+function stateGetters(state: TableState) {
+	return {
+		get state() {
+			return state;
+		},
+		get filters() {
+			return state.filters;
+		},
+		get search() {
+			return state.search;
+		},
+		get pagination() {
+			return state.pagination;
+		},
+		get sorting() {
+			return state.sorting;
+		},
+		get columnVisibility() {
+			return state.columnVisibility;
+		},
+		get rowSelection() {
+			return state.rowSelection;
+		}
+	};
+}
+
 /**
  * Generic Table State Management
  * Handles URL sync, filter state, search, pagination, and sorting
@@ -260,27 +286,7 @@ export function createTableState(options: {
 	// ============================================================================
 
 	return {
-		get state() {
-			return state;
-		},
-		get filters() {
-			return state.filters;
-		},
-		get search() {
-			return state.search;
-		},
-		get pagination() {
-			return state.pagination;
-		},
-		get sorting() {
-			return state.sorting;
-		},
-		get columnVisibility() {
-			return state.columnVisibility;
-		},
-		get rowSelection() {
-			return state.rowSelection;
-		},
+		...stateGetters(state),
 		get hasActiveFilters() {
 			return hasActiveFilters();
 		},
@@ -330,27 +336,7 @@ export function createSimpleTableState(defaultState?: Partial<TableState>) {
 	});
 
 	return {
-		get state() {
-			return state;
-		},
-		get filters() {
-			return state.filters;
-		},
-		get search() {
-			return state.search;
-		},
-		get pagination() {
-			return state.pagination;
-		},
-		get sorting() {
-			return state.sorting;
-		},
-		get columnVisibility() {
-			return state.columnVisibility;
-		},
-		get rowSelection() {
-			return state.rowSelection;
-		},
+		...stateGetters(state),
 		get hasActiveFilters() {
 			return hasSimpleFilters(state);
 		},
