@@ -156,7 +156,10 @@ export const statusHistoriesRelations = relations(statusHistories, ({ one }) => 
 export const botSessions = pgTable('bot_sessions', {
 	key: text('key').primaryKey(),
 	data: jsonb('data').notNull(),
-	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+	updatedAt: timestamp('updated_at', { withTimezone: true })
+		.notNull()
+		.defaultNow()
+		.$onUpdate(() => new Date())
 });
 
 export const notifications = pgTable('notifications', {

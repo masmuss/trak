@@ -1,3 +1,5 @@
+export { cleanUpStaleSessions } from './bot.service';
+
 export {
 	getCategories,
 	getCategoryById,
