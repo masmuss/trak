@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/masmuss/trak/compare/v1.2.0...v1.2.1) (2026-06-14)
+
+
+### Bug Fixes
+
+* revert stateGetters spread to inline getters, add syncCount guard, replace SvelteURL with URL ([f6ca70a](https://github.com/masmuss/trak/commit/f6ca70a8792b6681ec6b61bda9b4a33fe26f5f56))
+
 # [1.2.0](https://github.com/masmuss/trak/compare/v1.1.0...v1.2.0) (2026-06-14)
 
 
