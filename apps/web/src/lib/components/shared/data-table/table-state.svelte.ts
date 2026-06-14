@@ -37,32 +37,6 @@ function hasSimpleFilters(state: TableState): boolean {
 	);
 }
 
-function stateGetters(state: TableState) {
-	return {
-		get state() {
-			return state;
-		},
-		get filters() {
-			return state.filters;
-		},
-		get search() {
-			return state.search;
-		},
-		get pagination() {
-			return state.pagination;
-		},
-		get sorting() {
-			return state.sorting;
-		},
-		get columnVisibility() {
-			return state.columnVisibility;
-		},
-		get rowSelection() {
-			return state.rowSelection;
-		}
-	};
-}
-
 /**
  * Generic Table State Management
  * Handles URL sync, filter state, search, pagination, and sorting
@@ -105,6 +79,9 @@ export function createTableState(options: {
 	// Reactive state
 	let state = $state<TableState>(parseInitialState());
 
+	// Guard against the URL-watch $effect reverting state while goto is pending
+	let syncCount = 0;
+
 	// Sync state back to URL
 	function syncToURL(): void {
 		if (!urlSync.enabled) return;
@@ -146,18 +123,21 @@ export function createTableState(options: {
 
 		// Navigate if URL changed
 		if (nextUrl.search !== currentUrl.search) {
+			syncCount++;
 			const basePath = urlSync.basePath || currentUrl.pathname;
 			// eslint-disable-next-line svelte/no-navigation-without-resolve
 			goto(basePath + nextUrl.search, {
 				keepFocus: true,
 				noScroll: true
+			}).finally(() => {
+				syncCount--;
 			});
 		}
 	}
 
 	// Watch for URL changes and update state
 	$effect(() => {
-		if (urlSync.enabled) {
+		if (urlSync.enabled && syncCount === 0) {
 			const newState = parseInitialState();
 			if (JSON.stringify(newState) !== JSON.stringify(state)) {
 				state = newState;
@@ -285,8 +265,29 @@ export function createTableState(options: {
 	// Return API
 	// ============================================================================
 
-	return {
-		...stateGetters(state),
+	const api = {
+		get state() {
+			return state;
+		},
+		get filters() {
+			return state.filters;
+		},
+		get search() {
+			return state.search;
+		},
+		get pagination() {
+			return state.pagination;
+		},
+		get sorting() {
+			return state.sorting;
+		},
+		get columnVisibility() {
+			return state.columnVisibility;
+		},
+		get rowSelection() {
+			return state.rowSelection;
+		},
+
 		get hasActiveFilters() {
 			return hasActiveFilters();
 		},
@@ -316,6 +317,7 @@ export function createTableState(options: {
 			state = parseInitialState();
 		}
 	};
+	return api;
 }
 
 /**
@@ -335,8 +337,29 @@ export function createSimpleTableState(defaultState?: Partial<TableState>) {
 		...defaultState
 	});
 
-	return {
-		...stateGetters(state),
+	const api = {
+		get state() {
+			return state;
+		},
+		get filters() {
+			return state.filters;
+		},
+		get search() {
+			return state.search;
+		},
+		get pagination() {
+			return state.pagination;
+		},
+		get sorting() {
+			return state.sorting;
+		},
+		get columnVisibility() {
+			return state.columnVisibility;
+		},
+		get rowSelection() {
+			return state.rowSelection;
+		},
+
 		get hasActiveFilters() {
 			return hasSimpleFilters(state);
 		},
@@ -414,4 +437,5 @@ export function createSimpleTableState(defaultState?: Partial<TableState>) {
 			Object.assign(state, defaultState || {});
 		}
 	};
+	return api;
 }
