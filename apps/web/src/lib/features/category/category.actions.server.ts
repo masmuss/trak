@@ -1,7 +1,16 @@
-import { fail } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
 import type { RequestEvent } from '@sveltejs/kit';
 import { createCategory, deleteCategory, getCategoryById, updateCategory } from '@trak/services';
 import { requireAuth, getFormString, getFormBool, requireExists } from '$lib/server/helpers';
+
+async function getCategoryFromForm(event: RequestEvent) {
+	const formData = await event.request.formData();
+	const id = getFormString(formData, 'id');
+	if (!id) throw error(400, 'Category ID is required');
+	const existing = await getCategoryById(id);
+	requireExists(existing, 'Category');
+	return { id, existing };
+}
 
 export async function createCategoryAction(event: RequestEvent) {
 	requireAuth(event);
@@ -51,38 +60,18 @@ export async function updateCategoryAction(event: RequestEvent) {
 
 export async function deleteCategoryAction(event: RequestEvent) {
 	requireAuth(event);
-	const formData = await event.request.formData();
-	const id = getFormString(formData, 'id');
-
-	if (!id) {
-		return fail(400, { error: 'Category ID is required' });
-	}
-
-	const existing = await getCategoryById(id);
-	requireExists(existing, 'Category');
-
+	const { id } = await getCategoryFromForm(event);
 	await deleteCategory(id);
-
 	return { success: true };
 }
 
 export async function toggleCategoryAction(event: RequestEvent) {
 	requireAuth(event);
-	const formData = await event.request.formData();
-	const id = getFormString(formData, 'id');
-
-	if (!id) {
-		return fail(400, { error: 'Category ID is required' });
-	}
-
-	const existing = await getCategoryById(id);
-	requireExists(existing, 'Category');
-
-	await updateCategory(id, {
+	const { existing } = await getCategoryFromForm(event);
+	await updateCategory(existing.id, {
 		name: existing.name,
 		description: existing.description,
 		isActive: !existing.isActive
 	});
-
 	return { success: true };
 }

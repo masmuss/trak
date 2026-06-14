@@ -8,6 +8,21 @@ import {
 import { startReportFlow } from '../conversations/report';
 import { BotContext } from '../types';
 
+async function requireReporter(ctx: BotContext): Promise<string | null> {
+	const from = ctx.from;
+	if (!from) return null;
+
+	const telegramId = BigInt(from.id);
+	const reporter = await getReporterByTelegramId(telegramId);
+
+	if (!reporter) {
+		await ctx.reply('Anda belum terdaftar. Silakan kirim /start untuk mendaftar terlebih dahulu.');
+		return null;
+	}
+
+	return reporter.id;
+}
+
 export function registerCommands(bot: Bot<BotContext>): void {
 	bot.command('start', async (ctx) => {
 		const from = ctx.from;
@@ -56,18 +71,8 @@ export function registerCommands(bot: Bot<BotContext>): void {
 	});
 
 	bot.command('status', async (ctx) => {
-		const from = ctx.from;
-		if (!from) return;
-
-		const telegramId = BigInt(from.id);
-		const reporter = await getReporterByTelegramId(telegramId);
-
-		if (!reporter) {
-			await ctx.reply(
-				'Anda belum terdaftar. Silakan kirim /start untuk mendaftar terlebih dahulu.'
-			);
-			return;
-		}
+		const reporterId = await requireReporter(ctx);
+		if (!reporterId) return;
 
 		const text = ctx.message?.text?.trim();
 		const parts = text?.split(' ');
@@ -119,19 +124,9 @@ export function registerCommands(bot: Bot<BotContext>): void {
 	});
 
 	bot.command('report', async (ctx) => {
-		const from = ctx.from;
-		if (!from) return;
+		const reporterId = await requireReporter(ctx);
+		if (!reporterId) return;
 
-		const telegramId = BigInt(from.id);
-		const reporter = await getReporterByTelegramId(telegramId);
-
-		if (!reporter) {
-			await ctx.reply(
-				'Anda belum terdaftar. Silakan kirim /start untuk mendaftar terlebih dahulu.'
-			);
-			return;
-		}
-
-		await startReportFlow(ctx, reporter.id);
+		await startReportFlow(ctx, reporterId);
 	});
 }

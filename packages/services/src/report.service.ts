@@ -12,6 +12,16 @@ import type {
 	CreateAttachmentInput
 } from './report.types';
 
+const ticketDetailsWith = {
+	reporter: true,
+	category: true,
+	attachments: true,
+	statusHistories: {
+		with: { changedByUser: true },
+		orderBy: (statusHistories: any, { desc }: any) => [desc(statusHistories.changedAt)]
+	}
+} as const;
+
 type ReportFilterInput = Pick<
 	TicketFilters,
 	'status' | 'priority' | 'slaBreached' | 'search' | 'categoryId'
@@ -47,20 +57,18 @@ function buildReportFilters(filters: ReportFilterInput): SQL | undefined {
 	return conditions.length > 0 ? and(...conditions) : undefined;
 }
 
+async function requireTicket(tx: any, id: string) {
+	const existing = await tx.query.reports.findFirst({
+		where: eq(reports.id, id)
+	});
+	if (!existing) throw new Error('Ticket not found');
+	return existing;
+}
+
 export async function getTicketById(id: string): Promise<TicketDetails | undefined> {
 	return db.query.reports.findFirst({
 		where: eq(reports.id, id),
-		with: {
-			reporter: true,
-			category: true,
-			attachments: true,
-			statusHistories: {
-				with: {
-					changedByUser: true
-				},
-				orderBy: (statusHistories, { desc }) => [desc(statusHistories.changedAt)]
-			}
-		}
+		with: ticketDetailsWith
 	}) as Promise<TicketDetails | undefined>;
 }
 
@@ -100,13 +108,7 @@ export async function updateTicketStatus(
 	note?: string
 ): Promise<void> {
 	await db.transaction(async (tx) => {
-		const existing = await tx.query.reports.findFirst({
-			where: eq(reports.id, id)
-		});
-
-		if (!existing) {
-			throw new Error('Ticket not found');
-		}
+		const existing = await requireTicket(tx, id);
 
 		await tx.update(reports).set({ status: newStatus }).where(eq(reports.id, id));
 
@@ -198,13 +200,7 @@ export async function updateTicketPriority(
 	changedByUserId: string
 ): Promise<void> {
 	await db.transaction(async (tx) => {
-		const existing = await tx.query.reports.findFirst({
-			where: eq(reports.id, id)
-		});
-
-		if (!existing) {
-			throw new Error('Ticket not found');
-		}
+		const existing = await requireTicket(tx, id);
 
 		const { responseDue, resolveDue } = calculateSLA(priority, existing.createdAt);
 
@@ -250,15 +246,7 @@ export async function checkSlaBreach(id: string): Promise<boolean> {
 export async function getTicketByTicketCode(code: string): Promise<TicketDetails | undefined> {
 	return db.query.reports.findFirst({
 		where: eq(reports.ticketCode, code.toUpperCase()),
-		with: {
-			reporter: true,
-			category: true,
-			attachments: true,
-			statusHistories: {
-				with: { changedByUser: true },
-				orderBy: (statusHistories, { desc }) => [desc(statusHistories.changedAt)]
-			}
-		}
+		with: ticketDetailsWith
 	}) as Promise<TicketDetails | undefined>;
 }
 
