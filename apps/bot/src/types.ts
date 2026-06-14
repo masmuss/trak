@@ -1,7 +1,9 @@
 import { Context, SessionFlavor } from 'grammy';
 
+export type SessionStep = 'awaiting_invite' | 'title' | 'body' | 'category' | 'attachment' | 'idle';
+
 export type BotSession = {
-	step?: string;
+	step?: SessionStep;
 	reporterId?: string;
 	title?: string;
 	body?: string;
