@@ -8,7 +8,7 @@ export {
 	updateCategory,
 	deleteCategory
 } from './category.service';
-export type { CreateCategoryInput, UpdateCategoryInput } from './category.service';
+export type { CreateCategoryInput, UpdateCategoryInput } from './category.types';
 
 export {
 	getUsers,
@@ -20,10 +20,10 @@ export {
 	updateProfile,
 	deleteUser
 } from './user.service';
-export type { CreateUserInput, UpdateUserInput } from './user.service';
+export type { CreateUserInput, UpdateUserInput } from './user.types';
 
 export { getPasswordAccount, updateAccountPassword, createAccount } from './account.service';
-export type { PasswordAccount, CreateAccountInput } from './account.service';
+export type { PasswordAccount, CreateAccountInput } from './account.types';
 
 export {
 	getTicketById,
@@ -49,7 +49,7 @@ export type {
 	DistributionResult,
 	CreateReportInput,
 	CreateAttachmentInput
-} from './report.service';
+} from './report.types';
 
 export {
 	getInviteCodes,
@@ -64,7 +64,7 @@ export type {
 	CreateInviteCodeInput,
 	UpdateInviteCodeInput,
 	InviteCodeValidation
-} from './invite-code.service';
+} from './invite-code.types';
 
 export {
 	getReporters,
@@ -72,14 +72,14 @@ export {
 	getReporterByTelegramId,
 	createReporter
 } from './reporter.service';
-export type { ReporterWithRelations, CreateReporterInput } from './reporter.service';
+export type { ReporterWithRelations, CreateReporterInput } from './reporter.types';
 
 export { getDashboardStats, getRecentTickets, getTopInviteCodes } from './dashboard.service';
-export type { DashboardStats, TopInviteCode } from './dashboard.service';
+export type { DashboardStats, TopInviteCode } from './dashboard.types';
 
 export {
 	createNotification,
 	getPendingNotifications,
 	markNotificationRead
 } from './notification.service';
-export type { CreateNotificationInput } from './notification.service';
+export type { CreateNotificationInput } from './notification.types';

@@ -1,30 +1,16 @@
 import { eq, and, inArray, count, sql, type SQL } from 'drizzle-orm';
 import { db, reports, reportAttachments, statusHistories } from '@trak/database';
-import type { Ticket, TicketDetails, TicketWithRelations, Priority } from '@trak/shared';
+import type { Ticket, TicketDetails, Priority } from '@trak/shared';
 import { randomBytes } from 'crypto';
-
-export type TicketListItem = TicketWithRelations;
-
-export type TicketListResult = {
-	tickets: TicketListItem[];
-	total: number;
-};
-
-export type TicketStats = {
-	total: number;
-	pending: number;
-	solved: number;
-};
-
-export type TicketFilters = {
-	status?: string;
-	priority?: string;
-	slaBreached?: string;
-	search?: string;
-	categoryId?: string;
-	limit?: number;
-	offset?: number;
-};
+import type {
+	TicketListItem,
+	TicketListResult,
+	TicketFilters,
+	TicketStats,
+	DistributionResult,
+	CreateReportInput,
+	CreateAttachmentInput
+} from './report.types';
 
 type ReportFilterInput = Pick<
 	TicketFilters,
@@ -148,25 +134,6 @@ export async function getTicketsForExport(filters: {
 	}) as Promise<TicketListItem[]>;
 }
 
-export type CategoryDistribution = {
-	categoryId: string;
-	categoryName: string;
-	count: number;
-	percentage: number;
-};
-
-export type DistributionResult = {
-	distribution: CategoryDistribution[];
-	uncategorized: number;
-};
-
-export type CreateReportInput = {
-	reporterId: string;
-	categoryId?: string | null;
-	title: string;
-	body: string;
-};
-
 function generateTicketCode(): string {
 	const dateStr = new Date().toISOString().slice(2, 10).replace(/-/g, '');
 	const randomStr = randomBytes(2).toString('hex').toUpperCase();
@@ -215,13 +182,6 @@ export async function createReport(
 
 	return result[0];
 }
-
-export type CreateAttachmentInput = {
-	reportId: string;
-	fileId: string;
-	fileType: string;
-	storageUrl: string;
-};
 
 export async function addReportAttachment(input: CreateAttachmentInput): Promise<void> {
 	await db.insert(reportAttachments).values({

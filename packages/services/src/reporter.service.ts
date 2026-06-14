@@ -1,20 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { db, reporters } from '@trak/database';
 import type { Reporter } from '@trak/shared';
-
-export type ReporterWithRelations = Reporter & {
-	inviteCode: {
-		code: string;
-	} | null;
-	reports: { id: string }[];
-};
-
-export type CreateReporterInput = {
-	telegramId: bigint;
-	username?: string | null;
-	fullName: string;
-	inviteCodeId?: string | null;
-};
+import type { ReporterWithRelations, CreateReporterInput } from './reporter.types';
 
 export async function getReporters(): Promise<ReporterWithRelations[]> {
 	return db.query.reporters.findMany({

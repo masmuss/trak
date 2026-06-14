@@ -2,12 +2,7 @@ import { sql } from 'drizzle-orm';
 import { db } from '@trak/database';
 import { notifications } from '@trak/database/schema';
 import { eq } from 'drizzle-orm';
-
-export type CreateNotificationInput = {
-	reporterTelegramId: bigint;
-	reportId: string;
-	message: string;
-};
+import type { CreateNotificationInput } from './notification.types';
 
 export async function createNotification(input: CreateNotificationInput) {
 	const result = await db

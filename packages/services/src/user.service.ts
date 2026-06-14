@@ -1,6 +1,7 @@
 import { eq, and, ne } from 'drizzle-orm';
 import { db, user } from '@trak/database';
 import type { User } from '@trak/shared';
+import type { CreateUserInput, UpdateUserInput } from './user.types';
 
 export async function getUsers(): Promise<User[]> {
 	return db.query.user.findMany({
@@ -29,14 +30,6 @@ export async function findUserByEmailExcluding(
 	});
 }
 
-export type CreateUserInput = {
-	id: string;
-	name: string;
-	email: string;
-	role: string;
-	isActive: boolean;
-};
-
 export async function createUser(input: CreateUserInput): Promise<void> {
 	await db.insert(user).values({
 		id: input.id,
@@ -47,13 +40,6 @@ export async function createUser(input: CreateUserInput): Promise<void> {
 		isActive: input.isActive
 	});
 }
-
-export type UpdateUserInput = {
-	name: string;
-	email: string;
-	role: string;
-	isActive: boolean;
-};
 
 export async function updateUser(id: string, input: UpdateUserInput): Promise<void> {
 	await db
