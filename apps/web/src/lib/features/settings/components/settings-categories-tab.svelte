@@ -6,6 +6,7 @@
 	import SettingsCategoriesList from './settings-categories-list.svelte';
 	import SettingsCategoryDistribution from './settings-category-distribution.svelte';
 	import CategoryForm from '$lib/features/category/components/category-form.svelte';
+	import { useCategoryDialog } from '$lib/features/category/use-category-dialog.svelte';
 
 	type DistItem = {
 		categoryId: string;
@@ -24,23 +25,7 @@
 		uncategorized?: number;
 	} = $props();
 
-	let editingCategory: Category | null = $state(null);
-	let dialogOpen = $state(false);
-
-	function openCreate() {
-		editingCategory = null;
-		dialogOpen = true;
-	}
-
-	function openEdit(category: Category) {
-		editingCategory = category;
-		dialogOpen = true;
-	}
-
-	function closeDialog() {
-		dialogOpen = false;
-		editingCategory = null;
-	}
+	const dialog = useCategoryDialog();
 </script>
 
 <div class="grid grid-cols-3 gap-4">
@@ -49,20 +34,20 @@
 			<Card.Title>Ticket Categories</Card.Title>
 			<Card.Description>Define how reports are classified across the system.</Card.Description>
 			<Card.Action>
-				<Button onclick={openCreate}>
+				<Button onclick={dialog.openCreate}>
 					<PlusIcon />
 					Add Category
 				</Button>
 			</Card.Action>
 		</Card.Header>
-		<SettingsCategoriesList {categories} onEdit={openEdit} actionPrefix="?/category" />
+		<SettingsCategoriesList {categories} onEdit={dialog.openEdit} actionPrefix="?/category" />
 	</Card.Root>
 	<SettingsCategoryDistribution {distribution} {uncategorized} />
 </div>
 
 <CategoryForm
-	bind:dialogOpen
-	bind:editingCategory
-	onClose={closeDialog}
+	bind:dialogOpen={dialog.dialogOpen}
+	bind:editingCategory={dialog.editingCategory}
+	onClose={dialog.closeDialog}
 	actionPrefix="?/category"
 />

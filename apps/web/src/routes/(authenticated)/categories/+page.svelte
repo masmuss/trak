@@ -3,29 +3,13 @@
 	import { Button } from '$lib/components/ui/button';
 	import { PlusIcon } from 'phosphor-svelte';
 	import type { PageData } from './$types';
-	import type { Category } from '@trak/shared';
 	import CategoriesTable from '$lib/features/category/components/categories-table.svelte';
 	import CategoryForm from '$lib/features/category/components/category-form.svelte';
+	import { useCategoryDialog } from '$lib/features/category/use-category-dialog.svelte';
 
 	let { data }: { data: PageData } = $props();
 
-	let editingCategory: Category | null = $state(null);
-	let dialogOpen = $state(false);
-
-	function openCreate() {
-		editingCategory = null;
-		dialogOpen = true;
-	}
-
-	function openEdit(category: Category) {
-		editingCategory = category;
-		dialogOpen = true;
-	}
-
-	function closeDialog() {
-		dialogOpen = false;
-		editingCategory = null;
-	}
+	const dialog = useCategoryDialog();
 </script>
 
 <svelte:head>
@@ -38,13 +22,17 @@
 			title="Categories"
 			description="Manage ticket categories for organizing and classifying reports."
 		/>
-		<Button onclick={openCreate}>
+		<Button onclick={dialog.openCreate}>
 			<PlusIcon />
 			Add Category
 		</Button>
 	</div>
 
-	<CategoriesTable categories={data.categories} onEdit={openEdit} />
+	<CategoriesTable categories={data.categories} onEdit={dialog.openEdit} />
 </div>
 
-<CategoryForm bind:dialogOpen bind:editingCategory onClose={closeDialog} />
+<CategoryForm
+	bind:dialogOpen={dialog.dialogOpen}
+	bind:editingCategory={dialog.editingCategory}
+	onClose={dialog.closeDialog}
+/>
