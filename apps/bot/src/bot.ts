@@ -6,8 +6,14 @@ import { registerCallbacks } from './handlers/callbacks';
 import { startNotificationListener } from './handlers/notifications';
 import { handleTitleInput, handleBodyInput } from './conversations/report';
 import { processTelegramFile } from './utils/uploader';
-import { validateInviteCode, createReporter, getReporterByTelegramId } from '@trak/services';
+import {
+	validateInviteCode,
+	createReporter,
+	getReporterByTelegramId,
+	cleanUpStaleSessions
+} from '@trak/services';
 import { BotContext, BotSession } from './types';
+import nodeCron from 'node-cron';
 
 const bot = new Bot<BotContext>(config.botToken);
 
@@ -74,6 +80,13 @@ bot.hears(/^(\/done|✅ Selesai|⏭️ Skip)$/, async (ctx) => {
 bot.on('message:text', async (ctx) => {
 	const s = ctx.session;
 	if (!s.step) return;
+
+	if (s.step === 'idle') {
+		await ctx.reply(
+			'Maaf, saya tidak mengerti maksud Anda atau sesi laporan Anda sebelumnya telah kedaluwarsa karena tidak ada aktivitas.\n\nSilakan ketik /report untuk memulai laporan baru.'
+		);
+		return;
+	}
 
 	if (s.step === 'awaiting_invite') {
 		const code = ctx.message.text.trim();
@@ -171,4 +184,19 @@ bot.catch((err) => {
 });
 
 startNotificationListener(bot);
+
+// Schedule daily cleanup of stale sessions at 3 AM
+nodeCron.schedule(
+	'0 3 * * *',
+	async () => {
+		console.log('Running daily cleanup of stale sessions...');
+		const deletedCount = await cleanUpStaleSessions();
+		console.log(`Deleted ${deletedCount} stale sessions.`);
+	},
+	{
+		timezone: 'Asia/Jakarta',
+		name: 'Daily Session Cleanup'
+	}
+);
+
 bot.start();
