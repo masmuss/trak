@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Table from '$lib/components/ui/table';
-	import type { InviteCode } from '$lib/features/invite-codes/types';
+	import type { InviteCode } from '@trak/shared';
 	import { Badge } from '$lib/components/ui/badge';
 	import { PencilIcon, TrashIcon } from 'phosphor-svelte';
 	import { Button } from '$lib/components/ui/button';

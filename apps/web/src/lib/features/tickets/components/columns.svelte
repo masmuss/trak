@@ -5,7 +5,7 @@
 	import type { ColumnDef, CellContext } from '@tanstack/table-core';
 	import { renderComponent, renderSnippet } from '$lib/components/ui/data-table/index.js';
 	import { DataTableColumnHeader } from '$lib/components/shared/data-table/index.js';
-	import type { TicketWithRelations } from '$lib/features/tickets/types';
+	import type { TicketWithRelations } from '@trak/shared';
 	import StatusBadge from './status-badge.svelte';
 	import PriorityBadge from './priority-badge.svelte';
 	import { Badge } from '$lib/components/ui/badge';

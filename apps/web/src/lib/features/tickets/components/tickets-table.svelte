@@ -2,7 +2,7 @@
 	import { TableBuilder } from '$lib/components/shared/data-table/index.js';
 	import type { ColumnDef } from '@tanstack/table-core';
 	import Columns from './columns.svelte';
-	import type { TicketWithRelations, Category } from '$lib/features/tickets/types';
+	import type { TicketWithRelations, Category } from '@trak/shared';
 	import { createTicketsTableConfig } from '../table-config';
 
 	let {

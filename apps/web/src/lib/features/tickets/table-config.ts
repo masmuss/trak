@@ -4,7 +4,7 @@ import {
 	createSelectFilter,
 	createSearchFilter
 } from '$lib/components/shared/data-table';
-import type { TicketWithRelations, Category } from '../tickets/types';
+import type { TicketWithRelations, Category } from '@trak/shared';
 
 export function createTicketsTableConfig(categories: Category[]): TableConfig<TicketWithRelations> {
 	const categoryOptions = categories.map((c) => ({
