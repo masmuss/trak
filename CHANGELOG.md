@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/masmuss/trak/compare/v1.2.1...v1.2.2) (2026-06-14)
+
+
+### Bug Fixes
+
+* improve URL sync logic by deleting stale params before setting active filters ([68e50c3](https://github.com/masmuss/trak/commit/68e50c3b512a369a35b4c24245ce421715705459))
+
 ## [1.2.1](https://github.com/masmuss/trak/compare/v1.2.0...v1.2.1) (2026-06-14)
 
 
