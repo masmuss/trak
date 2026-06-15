@@ -17,6 +17,7 @@ export const COMMANDS_TEXT =
 	'Perintah yang tersedia:\n\n' +
 	'/start - Mulai dan daftarkan diri\n' +
 	'/report - Buat laporan baru\n' +
+	'/status - Cek status tiket\n' +
 	'/help - Tampilkan bantuan';
 
 export function welcomeBack(fullName: string): string {
@@ -99,15 +100,15 @@ export function noCategoriesMessage(): string {
 export function categorySelected(name: string): string {
 	return (
 		`Kategori dipilih: ${name}\n\n` +
-		'Sekarang kirim lampiran (foto/dokumen) atau ketik "/done" untuk selesai.'
+		'Sekarang kirim lampiran (foto/dokumen) atau ketik /selesai untuk lanjut.'
 	);
 }
 
 export const NO_CATEGORY_MESSAGE =
-	'Laporan tanpa kategori.\n\nSekarang kirim lampiran (foto/dokumen) atau ketik "/done" untuk selesai.';
+	'Laporan tanpa kategori.\n\nSekarang kirim lampiran (foto/dokumen) atau ketik /selesai untuk lanjut.';
 
 export function attachmentReceived(count: number): string {
-	return `📎 Diterima. Total lampiran: ${count}\nKirim lagi atau ketik "/done" untuk selesai.`;
+	return `📎 Diterima. Total lampiran: ${count}\nKirim lagi atau ketik /selesai untuk lanjut.`;
 }
 
 export function buildReportSummary(params: {
@@ -131,7 +132,8 @@ export function reportSuccess(ticketCode: string): string {
 	return (
 		`✅ Laporan berhasil dikirim!` +
 		`\n\nKode tiket: ${ticketCode}` +
-		`\n\nTerima kasih, laporan Anda akan segera diproses.`
+		`\n\n📌 Simpan kode tiket untuk cek status via /status.\n` +
+		`Terima kasih, laporan Anda akan segera diproses.`
 	);
 }
 

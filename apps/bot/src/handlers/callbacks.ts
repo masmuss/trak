@@ -7,7 +7,12 @@ import {
 } from '@trak/services';
 import { startReportFlow } from '../conversations/report';
 import { BotContext } from '../types';
-import { requireReporter, resetSession, getAttachmentSummary } from '../utils/helpers';
+import {
+	requireReporter,
+	resetSession,
+	getAttachmentSummary,
+	replyTicketStatus
+} from '../utils/helpers';
 import {
 	COMMANDS_TEXT,
 	categorySelected,
@@ -93,7 +98,7 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 			await ctx.editMessageText(reportSuccess(ticketCode));
 
 			await ctx.reply(WHATS_NEXT, {
-				reply_markup: buildPostSubmitKeyboard()
+				reply_markup: buildPostSubmitKeyboard(ticketCode)
 			});
 
 			resetSession(session);
@@ -134,5 +139,11 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 	bot.callbackQuery('show_commands', async (ctx) => {
 		await ctx.answerCallbackQuery();
 		await ctx.reply(COMMANDS_TEXT);
+	});
+
+	bot.callbackQuery(/^status_(.+)$/, async (ctx) => {
+		const ticketCode = ctx.match[1];
+		await ctx.answerCallbackQuery();
+		await replyTicketStatus(ctx, ticketCode);
 	});
 }

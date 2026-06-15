@@ -15,7 +15,7 @@ export const cancelKeyboard: ReplyKeyboard = {
 };
 
 export const doneKeyboard: ReplyKeyboard = {
-	keyboard: [[{ text: '✅ Selesai' }, { text: '⏭️ Skip' }, { text: '❌ Batal' }]],
+	keyboard: [[{ text: '✅ Selesai' }, { text: '❌ Batal' }]],
 	resize_keyboard: true,
 	one_time_keyboard: true
 };
@@ -45,13 +45,14 @@ export function buildSkipAttachmentKeyboard(): InlineKeyboard {
 	};
 }
 
-export function buildPostSubmitKeyboard(): InlineKeyboard {
+export function buildPostSubmitKeyboard(ticketCode: string): InlineKeyboard {
 	return {
 		inline_keyboard: [
 			[
 				{ text: '📝 Buat laporan baru', callback_data: 'new_report' },
-				{ text: '📋 Perintah', callback_data: 'show_commands' }
-			]
+				{ text: '🔍 Cek status', callback_data: `status_${ticketCode}` }
+			],
+			[{ text: '📋 Perintah', callback_data: 'show_commands' }]
 		]
 	};
 }

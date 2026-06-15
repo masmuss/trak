@@ -39,7 +39,7 @@ bot.hears(/^(\/cancel|❌ Batal)$/, async (ctx) => {
 	await ctx.reply(CANCEL_MESSAGE, { reply_markup: removeKeyboard });
 });
 
-bot.hears(/^(\/done|✅ Selesai|⏭️ Skip)$/, async (ctx) => {
+bot.hears(/^(\/selesai|\/done|✅ Selesai)$/, async (ctx) => {
 	const s = ctx.session;
 
 	const summary = buildReportSummary({

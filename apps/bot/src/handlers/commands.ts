@@ -1,16 +1,14 @@
 import { Bot } from 'grammy';
-import { getReporterByTelegramId, getTicketByTicketCode } from '@trak/services';
+import { getReporterByTelegramId } from '@trak/services';
 import { startReportFlow } from '../conversations/report';
 import { BotContext } from '../types';
-import { requireReporter } from '../utils/helpers';
+import { requireReporter, replyTicketStatus } from '../utils/helpers';
 import {
-	STATUS_LABEL,
 	HELP_TEXT,
 	welcomeBack,
 	WELCOME_NEW,
 	registrationSuccess,
-	statusUsage,
-	ticketNotFound
+	statusUsage
 } from '../utils/messages';
 import { removeKeyboard } from '../utils/keyboards';
 
@@ -54,37 +52,7 @@ export function registerCommands(bot: Bot<BotContext>): void {
 			return;
 		}
 
-		const ticket = await getTicketByTicketCode(ticketCode);
-
-		if (!ticket) {
-			await ctx.reply(ticketNotFound(ticketCode));
-			return;
-		}
-
-		const history =
-			ticket.statusHistories.length > 0
-				? '\n\nRiwayat Status:\n' +
-					ticket.statusHistories
-						.map(
-							(h) =>
-								`${h.changedAt.toLocaleString('id-ID')} — ${STATUS_LABEL[h.oldStatus] ?? h.oldStatus} → ${STATUS_LABEL[h.newStatus] ?? h.newStatus}` +
-								(h.note ? ` (${h.note})` : '') +
-								` oleh ${h.changedByUser.name}`
-						)
-						.join('\n')
-				: '';
-
-		await ctx.reply(
-			`📋 Tiket ${ticketCode}\n\n` +
-				`${ticket.title}\n\n` +
-				`${ticket.body}\n\n` +
-				`Status: ${STATUS_LABEL[ticket.status] ?? ticket.status}` +
-				` | Kategori: ${ticket.category?.name ?? '-'}` +
-				` | Lampiran: ${ticket.attachments.length}` +
-				`\nDibuat: ${ticket.createdAt.toLocaleString('id-ID')}` +
-				(ticket.updatedAt ? `\nDiperbarui: ${ticket.updatedAt.toLocaleString('id-ID')}` : '') +
-				history
-		);
+		await replyTicketStatus(ctx, ticketCode);
 	});
 
 	bot.command('report', async (ctx) => {
