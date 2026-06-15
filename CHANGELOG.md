@@ -1,3 +1,18 @@
+# [1.3.0](https://github.com/masmuss/trak/compare/v1.2.2...v1.3.0) (2026-06-15)
+
+
+### Bug Fixes
+
+* **bot:** eliminate redundant bubble after category selection ([4260d88](https://github.com/masmuss/trak/commit/4260d8882a882c5dfde2fb83ddc87c972eb7076d))
+* **ticket-detail-view:** correct subtitle formatting for reporter username ([81e3fb9](https://github.com/masmuss/trak/commit/81e3fb970d29a437afb43f5eeda0030f17a0a178))
+
+
+### Features
+
+* **bot:** add cancel to category keyboard + proper reply keyboard after selection ([40632fb](https://github.com/masmuss/trak/commit/40632fbf79c04d17e91470c3070e3193e241da5d))
+* **bot:** improve UX flow — consistent language, quick status check, cleaner keyboards ([fe3846c](https://github.com/masmuss/trak/commit/fe3846c9f9dd5013d6cb93db956478e74a672d78))
+* **bot:** replace slash command list with inline keyboard on start ([6a4f742](https://github.com/masmuss/trak/commit/6a4f74294ee944355a9b843fff2f84fc304f1de3))
+
 ## [1.2.2](https://github.com/masmuss/trak/compare/v1.2.1...v1.2.2) (2026-06-14)
 
 
