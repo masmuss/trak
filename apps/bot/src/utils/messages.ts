@@ -21,14 +21,7 @@ export const COMMANDS_TEXT =
 	'/help - Tampilkan bantuan';
 
 export function welcomeBack(fullName: string): string {
-	return (
-		`Selamat datang kembali, ${fullName}!\n\n` +
-		'Sistem Pelaporan Tiket\n\n' +
-		'Perintah:\n' +
-		'/report - Buat laporan baru\n' +
-		'/status - Cek status tiket\n' +
-		'/help - Bantuan'
-	);
+	return `Selamat datang kembali, ${fullName}!\n\nSistem Pelaporan Tiket`;
 }
 
 export const WELCOME_NEW =
@@ -36,14 +29,7 @@ export const WELCOME_NEW =
 	'Untuk mendaftar, silakan masukkan kode undangan (invite code) Anda.';
 
 export function registrationSuccess(fullName: string, firstName: string): string {
-	return (
-		`✅ Registrasi berhasil! Selamat datang, ${fullName || firstName}!\n\n` +
-		'Sistem Pelaporan Tiket\n\n' +
-		'Perintah:\n' +
-		'/report - Buat laporan baru\n' +
-		'/status - Cek status tiket\n' +
-		'/help - Bantuan'
-	);
+	return `✅ Registrasi berhasil! Selamat datang, ${fullName || firstName}!\n\nSistem Pelaporan Tiket`;
 }
 
 export function invalidInviteError(code: string): string {

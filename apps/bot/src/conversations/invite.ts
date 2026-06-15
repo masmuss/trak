@@ -1,7 +1,7 @@
 import { validateInviteCode, createReporter, getReporterByTelegramId } from '@trak/services';
 import { BotContext } from '../types';
 import { invalidInviteError, registrationSuccess } from '../utils/messages';
-import { removeKeyboard } from '../utils/keyboards';
+import { buildWelcomeKeyboard } from '../utils/keyboards';
 
 export async function handleInviteInput(ctx: BotContext): Promise<void> {
 	if (!ctx.message || !ctx.message.text) return;
@@ -29,6 +29,6 @@ export async function handleInviteInput(ctx: BotContext): Promise<void> {
 	ctx.session.reporterId = reporter?.id;
 
 	await ctx.reply(registrationSuccess(reporter?.fullName ?? '', from.first_name), {
-		reply_markup: removeKeyboard
+		reply_markup: buildWelcomeKeyboard()
 	});
 }

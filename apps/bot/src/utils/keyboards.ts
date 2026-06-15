@@ -45,6 +45,15 @@ export function buildSkipAttachmentKeyboard(): InlineKeyboard {
 	};
 }
 
+export function buildWelcomeKeyboard(): InlineKeyboard {
+	return {
+		inline_keyboard: [
+			[{ text: '📝 Buat laporan baru', callback_data: 'new_report' }],
+			[{ text: '❓ Bantuan', callback_data: 'show_commands' }]
+		]
+	};
+}
+
 export function buildPostSubmitKeyboard(ticketCode: string): InlineKeyboard {
 	return {
 		inline_keyboard: [

@@ -10,7 +10,7 @@ import {
 	registrationSuccess,
 	statusUsage
 } from '../utils/messages';
-import { removeKeyboard } from '../utils/keyboards';
+import { buildWelcomeKeyboard, removeKeyboard } from '../utils/keyboards';
 
 export function registerCommands(bot: Bot<BotContext>): void {
 	bot.command('start', async (ctx) => {
@@ -22,7 +22,7 @@ export function registerCommands(bot: Bot<BotContext>): void {
 
 		if (existing) {
 			await ctx.reply(welcomeBack(existing.fullName), {
-				reply_markup: removeKeyboard
+				reply_markup: buildWelcomeKeyboard()
 			});
 			return;
 		}
