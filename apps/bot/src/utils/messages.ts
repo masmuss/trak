@@ -84,17 +84,18 @@ export function noCategoriesMessage(): string {
 }
 
 export function categorySelected(name: string): string {
-	return (
-		`Kategori dipilih: ${name}\n\n` +
-		'Sekarang kirim lampiran (foto/dokumen) atau pilih "Selesai" untuk lanjut.'
-	);
+	return `✅ Kategori dipilih: ${name}`;
 }
+
+export const ATTACHMENT_PROMPT =
+	'Anda dapat mengirim lampiran (foto/dokumen) untuk melengkapi laporan Anda.\n\n' +
+	'Kirim file sekarang atau pilih "Selesai" jika tidak ingin menambahkan lampiran.';
 
 export const NO_CATEGORY_MESSAGE =
 	'Laporan tanpa kategori.\n\nSekarang kirim lampiran (foto/dokumen) atau pilih "Selesai" untuk lanjut.';
 
 export function attachmentReceived(count: number): string {
-	return `📎 Diterima. Total lampiran: ${count}\nKirim lagi atau pilih "Selesai" untuk lanjut.`;
+	return `📎 Diterima. Total lampiran: ${count}\n\nKirim lagi atau pilih "Selesai" untuk lanjut.`;
 }
 
 export function buildReportSummary(params: {

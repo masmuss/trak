@@ -20,7 +20,8 @@ import {
 	reportSuccess,
 	REPORT_FAILED,
 	WHATS_NEXT,
-	CANCEL_MESSAGE
+	CANCEL_MESSAGE,
+	ATTACHMENT_PROMPT
 } from '../utils/messages';
 import { buildCategoryKeyboard, buildPostSubmitKeyboard, doneKeyboard } from '../utils/keyboards';
 
@@ -35,21 +36,10 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 		session.step = 'attachment';
 
 		await ctx.answerCallbackQuery();
-		await ctx.editMessageText('✅ Kategori dipilih');
 		await ctx.reply(categorySelected(session.categoryName), {
 			reply_markup: doneKeyboard
 		});
-	});
-
-	bot.callbackQuery('skip_category', async (ctx) => {
-		const session = ctx.session;
-		session.categoryId = undefined;
-		session.categoryName = undefined;
-		session.step = 'attachment';
-
-		await ctx.answerCallbackQuery();
-		await ctx.editMessageText('✅ Tanpa kategori');
-		await ctx.reply(NO_CATEGORY_MESSAGE, {
+		await ctx.reply(ATTACHMENT_PROMPT, {
 			reply_markup: doneKeyboard
 		});
 	});
