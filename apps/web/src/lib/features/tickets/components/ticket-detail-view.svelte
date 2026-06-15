@@ -84,7 +84,7 @@
 								<TicketMessageHeader
 									initials={getInitials(ticket.reporter.fullName)}
 									name={ticket.reporter.fullName}
-									subtitle={ticket.reporter.username ? '@{ticket.reporter.username}' : ''}
+									subtitle={ticket.reporter.username ? ticket.reporter.username : ''}
 									timestamp={formatDateTime(ticket.createdAt)}
 								/>
 								<div class="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
