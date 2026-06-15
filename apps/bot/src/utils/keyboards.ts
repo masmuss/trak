@@ -40,12 +40,6 @@ export function buildConfirmKeyboard(): InlineKeyboard {
 	};
 }
 
-export function buildSkipAttachmentKeyboard(): InlineKeyboard {
-	return {
-		inline_keyboard: [[{ text: 'Lewati lampiran', callback_data: 'skip_attachment' }]]
-	};
-}
-
 export function buildWelcomeKeyboard(): InlineKeyboard {
 	return {
 		inline_keyboard: [

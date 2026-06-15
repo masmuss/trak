@@ -86,15 +86,15 @@ export function noCategoriesMessage(): string {
 export function categorySelected(name: string): string {
 	return (
 		`Kategori dipilih: ${name}\n\n` +
-		'Sekarang kirim lampiran (foto/dokumen) atau ketik /selesai untuk lanjut.'
+		'Sekarang kirim lampiran (foto/dokumen) atau pilih "Selesai" untuk lanjut.'
 	);
 }
 
 export const NO_CATEGORY_MESSAGE =
-	'Laporan tanpa kategori.\n\nSekarang kirim lampiran (foto/dokumen) atau ketik /selesai untuk lanjut.';
+	'Laporan tanpa kategori.\n\nSekarang kirim lampiran (foto/dokumen) atau pilih "Selesai" untuk lanjut.';
 
 export function attachmentReceived(count: number): string {
-	return `📎 Diterima. Total lampiran: ${count}\nKirim lagi atau ketik /selesai untuk lanjut.`;
+	return `📎 Diterima. Total lampiran: ${count}\nKirim lagi atau pilih "Selesai" untuk lanjut.`;
 }
 
 export function buildReportSummary(params: {

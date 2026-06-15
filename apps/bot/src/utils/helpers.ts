@@ -49,8 +49,7 @@ export async function promptConfirmReport(ctx: BotContext): Promise<void> {
 		categoryName: s.categoryName,
 		attachmentSummary: getAttachmentSummary(s.attachments)
 	});
-	await ctx.reply(summary, { reply_markup: { remove_keyboard: true } });
-	await ctx.reply('Pilih aksi:', { reply_markup: buildConfirmKeyboard() });
+	await ctx.reply(summary, { reply_markup: buildConfirmKeyboard() });
 }
 
 export async function replyTicketStatus(ctx: BotContext, ticketCode: string): Promise<void> {

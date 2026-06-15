@@ -22,12 +22,7 @@ import {
 	WHATS_NEXT,
 	CANCEL_MESSAGE
 } from '../utils/messages';
-import {
-	buildCategoryKeyboard,
-	buildSkipAttachmentKeyboard,
-	buildPostSubmitKeyboard,
-	doneKeyboard
-} from '../utils/keyboards';
+import { buildCategoryKeyboard, buildPostSubmitKeyboard, doneKeyboard } from '../utils/keyboards';
 
 export function registerCallbacks(bot: Bot<BotContext>): void {
 	bot.callbackQuery(/^category_(.+)$/, async (ctx) => {
@@ -40,9 +35,7 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 		session.step = 'attachment';
 
 		await ctx.answerCallbackQuery();
-		await ctx.editMessageText(categorySelected(session.categoryName), {
-			reply_markup: buildSkipAttachmentKeyboard()
-		});
+		await ctx.editMessageText(categorySelected(session.categoryName));
 		await ctx.reply('Kirim lampiran atau klik tombol di bawah:', {
 			reply_markup: doneKeyboard
 		});
@@ -55,9 +48,7 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 		session.step = 'attachment';
 
 		await ctx.answerCallbackQuery();
-		await ctx.editMessageText(NO_CATEGORY_MESSAGE, {
-			reply_markup: buildSkipAttachmentKeyboard()
-		});
+		await ctx.editMessageText(NO_CATEGORY_MESSAGE);
 		await ctx.reply('Kirim lampiran atau klik tombol di bawah:', {
 			reply_markup: doneKeyboard
 		});
