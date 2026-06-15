@@ -10,14 +10,13 @@ import { BotContext } from '../types';
 import {
 	requireReporter,
 	resetSession,
-	getAttachmentSummary,
-	replyTicketStatus
+	replyTicketStatus,
+	promptConfirmReport
 } from '../utils/helpers';
 import {
 	COMMANDS_TEXT,
 	categorySelected,
 	NO_CATEGORY_MESSAGE,
-	buildReportSummary,
 	reportSuccess,
 	REPORT_FAILED,
 	WHATS_NEXT,
@@ -25,7 +24,6 @@ import {
 } from '../utils/messages';
 import {
 	buildCategoryKeyboard,
-	buildConfirmKeyboard,
 	buildSkipAttachmentKeyboard,
 	buildPostSubmitKeyboard,
 	doneKeyboard
@@ -74,20 +72,8 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 	});
 
 	bot.callbackQuery('skip_attachment', async (ctx) => {
-		const session = ctx.session;
-
 		await ctx.answerCallbackQuery();
-
-		const summary = buildReportSummary({
-			title: session.title,
-			body: session.body,
-			categoryName: session.categoryName,
-			attachmentSummary: 'Tidak ada'
-		});
-
-		await ctx.editMessageText(summary, {
-			reply_markup: buildConfirmKeyboard()
-		});
+		await promptConfirmReport(ctx);
 	});
 
 	bot.callbackQuery('confirm_report', async (ctx) => {
@@ -111,8 +97,10 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 			}
 
 			await ctx.answerCallbackQuery();
-			await ctx.editMessageText(reportSuccess(ticketCode));
-
+			await ctx.editMessageText('✅ Laporan terkirim');
+			await ctx.reply(reportSuccess(ticketCode), {
+				reply_markup: { remove_keyboard: true }
+			});
 			await ctx.reply(WHATS_NEXT, {
 				reply_markup: buildPostSubmitKeyboard(ticketCode)
 			});

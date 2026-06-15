@@ -1,6 +1,13 @@
 import { getReporterByTelegramId, getTicketByTicketCode } from '@trak/services';
 import { BotContext, BotSession } from '../types';
-import { NO_REPORTER_SHORT, NO_REPORTER_MESSAGE, STATUS_LABEL, ticketNotFound } from './messages';
+import {
+	NO_REPORTER_SHORT,
+	NO_REPORTER_MESSAGE,
+	STATUS_LABEL,
+	ticketNotFound,
+	buildReportSummary
+} from './messages';
+import { buildConfirmKeyboard } from './keyboards';
 
 export async function requireReporter(ctx: BotContext, short = false): Promise<string | null> {
 	const from = ctx.from;
@@ -32,6 +39,18 @@ export function resetSession(session: BotSession): void {
 
 export function getAttachmentSummary(attachments: BotSession['attachments']): string {
 	return attachments.length > 0 ? `${attachments.length} file(s)` : 'Tidak ada';
+}
+
+export async function promptConfirmReport(ctx: BotContext): Promise<void> {
+	const s = ctx.session;
+	const summary = buildReportSummary({
+		title: s.title,
+		body: s.body,
+		categoryName: s.categoryName,
+		attachmentSummary: getAttachmentSummary(s.attachments)
+	});
+	await ctx.reply(summary, { reply_markup: { remove_keyboard: true } });
+	await ctx.reply('Pilih aksi:', { reply_markup: buildConfirmKeyboard() });
 }
 
 export async function replyTicketStatus(ctx: BotContext, ticketCode: string): Promise<void> {

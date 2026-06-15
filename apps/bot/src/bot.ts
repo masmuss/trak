@@ -9,14 +9,9 @@ import { startNotificationListener } from './handlers/notifications';
 import { handleTitleInput, handleBodyInput } from './conversations/report';
 import { handleInviteInput } from './conversations/invite';
 import { BotContext, BotSession } from './types';
-import { resetSession, getAttachmentSummary } from './utils/helpers';
-import {
-	buildReportSummary,
-	CANCEL_MESSAGE,
-	IDLE_ERROR_MESSAGE,
-	UNKNOWN_MESSAGE
-} from './utils/messages';
-import { removeKeyboard, buildConfirmKeyboard } from './utils/keyboards';
+import { resetSession, promptConfirmReport } from './utils/helpers';
+import { CANCEL_MESSAGE, IDLE_ERROR_MESSAGE, UNKNOWN_MESSAGE } from './utils/messages';
+import { removeKeyboard } from './utils/keyboards';
 import nodeCron from 'node-cron';
 
 const bot = new Bot<BotContext>(config.botToken);
@@ -42,15 +37,14 @@ bot.hears(/^(\/cancel|❌ Batal)$/, async (ctx) => {
 bot.hears(/^(\/selesai|\/done|✅ Selesai)$/, async (ctx) => {
 	const s = ctx.session;
 
-	const summary = buildReportSummary({
-		title: s.title,
-		body: s.body,
-		categoryName: s.categoryName,
-		attachmentSummary: getAttachmentSummary(s.attachments)
-	});
+	if (!s.step || !s.title || !s.body) {
+		await ctx.reply('Tidak ada sesi laporan aktif. Gunakan /report untuk membuat laporan baru.', {
+			reply_markup: removeKeyboard
+		});
+		return;
+	}
 
-	await ctx.reply(summary, { reply_markup: removeKeyboard });
-	await ctx.reply('Pilih aksi:', { reply_markup: buildConfirmKeyboard() });
+	await promptConfirmReport(ctx);
 });
 
 bot.on('message:text', async (ctx) => {
