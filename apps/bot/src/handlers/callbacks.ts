@@ -27,7 +27,8 @@ import {
 	buildCategoryKeyboard,
 	buildConfirmKeyboard,
 	buildSkipAttachmentKeyboard,
-	buildPostSubmitKeyboard
+	buildPostSubmitKeyboard,
+	doneKeyboard
 } from '../utils/keyboards';
 
 export function registerCallbacks(bot: Bot<BotContext>): void {
@@ -44,17 +45,32 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 		await ctx.editMessageText(categorySelected(session.categoryName), {
 			reply_markup: buildSkipAttachmentKeyboard()
 		});
+		await ctx.reply('Kirim lampiran atau klik tombol di bawah:', {
+			reply_markup: doneKeyboard
+		});
 	});
 
 	bot.callbackQuery('skip_category', async (ctx) => {
 		const session = ctx.session;
 		session.categoryId = undefined;
+		session.categoryName = undefined;
 		session.step = 'attachment';
 
 		await ctx.answerCallbackQuery();
 		await ctx.editMessageText(NO_CATEGORY_MESSAGE, {
 			reply_markup: buildSkipAttachmentKeyboard()
 		});
+		await ctx.reply('Kirim lampiran atau klik tombol di bawah:', {
+			reply_markup: doneKeyboard
+		});
+	});
+
+	bot.callbackQuery('cancel_category', async (ctx) => {
+		const session = ctx.session;
+		resetSession(session);
+		await ctx.answerCallbackQuery();
+		await ctx.editMessageText(CANCEL_MESSAGE);
+		await ctx.reply(CANCEL_MESSAGE, { reply_markup: { remove_keyboard: true } });
 	});
 
 	bot.callbackQuery('skip_attachment', async (ctx) => {

@@ -25,6 +25,7 @@ export function buildCategoryKeyboard(categories: { id: string; name: string }[]
 		{ text: cat.name, callback_data: `category_${cat.id}` }
 	]);
 	keyboard.push([{ text: 'Lewati', callback_data: 'skip_category' }]);
+	keyboard.push([{ text: '❌ Batal', callback_data: 'cancel_category' }]);
 	return { inline_keyboard: keyboard };
 }
 
