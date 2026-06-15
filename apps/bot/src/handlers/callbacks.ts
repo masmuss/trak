@@ -7,23 +7,23 @@ import {
 } from '@trak/services';
 import { startReportFlow } from '../conversations/report';
 import { BotContext } from '../types';
-import { requireReporter, resetSession, getAttachmentSummary } from '../utils/helpers';
+import {
+	requireReporter,
+	resetSession,
+	replyTicketStatus,
+	promptConfirmReport
+} from '../utils/helpers';
 import {
 	COMMANDS_TEXT,
 	categorySelected,
 	NO_CATEGORY_MESSAGE,
-	buildReportSummary,
 	reportSuccess,
 	REPORT_FAILED,
 	WHATS_NEXT,
-	CANCEL_MESSAGE
+	CANCEL_MESSAGE,
+	ATTACHMENT_PROMPT
 } from '../utils/messages';
-import {
-	buildCategoryKeyboard,
-	buildConfirmKeyboard,
-	buildSkipAttachmentKeyboard,
-	buildPostSubmitKeyboard
-} from '../utils/keyboards';
+import { buildCategoryKeyboard, buildPostSubmitKeyboard, doneKeyboard } from '../utils/keyboards';
 
 export function registerCallbacks(bot: Bot<BotContext>): void {
 	bot.callbackQuery(/^category_(.+)$/, async (ctx) => {
@@ -36,37 +36,25 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 		session.step = 'attachment';
 
 		await ctx.answerCallbackQuery();
-		await ctx.editMessageText(categorySelected(session.categoryName), {
-			reply_markup: buildSkipAttachmentKeyboard()
+		await ctx.reply(categorySelected(session.categoryName), {
+			reply_markup: doneKeyboard
+		});
+		await ctx.reply(ATTACHMENT_PROMPT, {
+			reply_markup: doneKeyboard
 		});
 	});
 
-	bot.callbackQuery('skip_category', async (ctx) => {
+	bot.callbackQuery('cancel_category', async (ctx) => {
 		const session = ctx.session;
-		session.categoryId = undefined;
-		session.step = 'attachment';
-
+		resetSession(session);
 		await ctx.answerCallbackQuery();
-		await ctx.editMessageText(NO_CATEGORY_MESSAGE, {
-			reply_markup: buildSkipAttachmentKeyboard()
-		});
+		await ctx.editMessageText(CANCEL_MESSAGE);
+		await ctx.reply(CANCEL_MESSAGE, { reply_markup: { remove_keyboard: true } });
 	});
 
 	bot.callbackQuery('skip_attachment', async (ctx) => {
-		const session = ctx.session;
-
 		await ctx.answerCallbackQuery();
-
-		const summary = buildReportSummary({
-			title: session.title,
-			body: session.body,
-			categoryName: session.categoryName,
-			attachmentSummary: 'Tidak ada'
-		});
-
-		await ctx.editMessageText(summary, {
-			reply_markup: buildConfirmKeyboard()
-		});
+		await promptConfirmReport(ctx);
 	});
 
 	bot.callbackQuery('confirm_report', async (ctx) => {
@@ -90,10 +78,12 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 			}
 
 			await ctx.answerCallbackQuery();
-			await ctx.editMessageText(reportSuccess(ticketCode));
-
+			await ctx.editMessageText('✅ Laporan terkirim');
+			await ctx.reply(reportSuccess(ticketCode), {
+				reply_markup: { remove_keyboard: true }
+			});
 			await ctx.reply(WHATS_NEXT, {
-				reply_markup: buildPostSubmitKeyboard()
+				reply_markup: buildPostSubmitKeyboard(ticketCode)
 			});
 
 			resetSession(session);
@@ -134,5 +124,11 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 	bot.callbackQuery('show_commands', async (ctx) => {
 		await ctx.answerCallbackQuery();
 		await ctx.reply(COMMANDS_TEXT);
+	});
+
+	bot.callbackQuery(/^status_(.+)$/, async (ctx) => {
+		const ticketCode = ctx.match[1];
+		await ctx.answerCallbackQuery();
+		await replyTicketStatus(ctx, ticketCode);
 	});
 }

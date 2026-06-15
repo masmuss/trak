@@ -17,17 +17,11 @@ export const COMMANDS_TEXT =
 	'Perintah yang tersedia:\n\n' +
 	'/start - Mulai dan daftarkan diri\n' +
 	'/report - Buat laporan baru\n' +
+	'/status - Cek status tiket\n' +
 	'/help - Tampilkan bantuan';
 
 export function welcomeBack(fullName: string): string {
-	return (
-		`Selamat datang kembali, ${fullName}!\n\n` +
-		'Sistem Pelaporan Tiket\n\n' +
-		'Perintah:\n' +
-		'/report - Buat laporan baru\n' +
-		'/status - Cek status tiket\n' +
-		'/help - Bantuan'
-	);
+	return `Selamat datang kembali, ${fullName}!\n\nSistem Pelaporan Tiket`;
 }
 
 export const WELCOME_NEW =
@@ -35,14 +29,7 @@ export const WELCOME_NEW =
 	'Untuk mendaftar, silakan masukkan kode undangan (invite code) Anda.';
 
 export function registrationSuccess(fullName: string, firstName: string): string {
-	return (
-		`✅ Registrasi berhasil! Selamat datang, ${fullName || firstName}!\n\n` +
-		'Sistem Pelaporan Tiket\n\n' +
-		'Perintah:\n' +
-		'/report - Buat laporan baru\n' +
-		'/status - Cek status tiket\n' +
-		'/help - Bantuan'
-	);
+	return `✅ Registrasi berhasil! Selamat datang, ${fullName || firstName}!\n\nSistem Pelaporan Tiket`;
 }
 
 export function invalidInviteError(code: string): string {
@@ -97,17 +84,18 @@ export function noCategoriesMessage(): string {
 }
 
 export function categorySelected(name: string): string {
-	return (
-		`Kategori dipilih: ${name}\n\n` +
-		'Sekarang kirim lampiran (foto/dokumen) atau ketik "/done" untuk selesai.'
-	);
+	return `✅ Kategori dipilih: ${name}`;
 }
 
+export const ATTACHMENT_PROMPT =
+	'Anda dapat mengirim lampiran (foto/dokumen) untuk melengkapi laporan Anda.\n\n' +
+	'Kirim file sekarang atau pilih "Selesai" jika tidak ingin menambahkan lampiran.';
+
 export const NO_CATEGORY_MESSAGE =
-	'Laporan tanpa kategori.\n\nSekarang kirim lampiran (foto/dokumen) atau ketik "/done" untuk selesai.';
+	'Laporan tanpa kategori.\n\nSekarang kirim lampiran (foto/dokumen) atau pilih "Selesai" untuk lanjut.';
 
 export function attachmentReceived(count: number): string {
-	return `📎 Diterima. Total lampiran: ${count}\nKirim lagi atau ketik "/done" untuk selesai.`;
+	return `📎 Diterima. Total lampiran: ${count}\n\nKirim lagi atau pilih "Selesai" untuk lanjut.`;
 }
 
 export function buildReportSummary(params: {
@@ -131,7 +119,8 @@ export function reportSuccess(ticketCode: string): string {
 	return (
 		`✅ Laporan berhasil dikirim!` +
 		`\n\nKode tiket: ${ticketCode}` +
-		`\n\nTerima kasih, laporan Anda akan segera diproses.`
+		`\n\n📌 Simpan kode tiket untuk cek status via /status.\n` +
+		`Terima kasih, laporan Anda akan segera diproses.`
 	);
 }
 
