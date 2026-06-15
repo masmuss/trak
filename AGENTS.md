@@ -44,6 +44,16 @@
 - README updated with mermaid architecture graph + sequence diagram.
 - **Priority management system**: `updateTicketPriority`, `checkSlaBreach` services; `PriorityBadge` component with color-coded icons (CRITICAL=red/WarningCircle, HIGH=orange/Warning, MEDIUM=yellow/Circle, LOW=slate/Flag); priority column in tickets table; priority form in detail view with SLA deadline display and breach indicator; priority change notifications.
 - **SLA recalculated on priority change** from ticket's `createdAt`, not current time. `checkSlaBreach` side-effect updates `isSlaBreached` column.
+- **Bot refactored (PR pending)**: extracted shared utilities, deduplicated logic across handlers, slimmed `bot.ts` from 202→70 lines.
+  - `utils/messages.ts` — all string constants centralized (was scattered across 5 files)
+  - `utils/keyboards.ts` — factory functions for all inline/reply keyboards (4 ad-hoc constructions eliminated)
+  - `utils/helpers.ts` — `requireReporter`, `resetSession` (3 Object.assign dups → 1), `getAttachmentSummary`
+  - `conversations/invite.ts` — invite flow extracted from `bot.ts` text handler (was 38 lines inline)
+  - `handlers/attachments.ts` — photo + document handlers extracted from `bot.ts`
+  - `notifications.ts` — `sendAndMark` dedup helper for catch-up + real-time listener
+  - `report.ts` — handler signatures fixed from `Context` to `BotContext` for type safety
+  - `commands.ts` — removed dead `Keyboard` import (was imported but never used)
+  - `bot.ts` — now only bootstraps middleware, registers handlers, and schedules cron
 
 ### Blocked
 
@@ -69,13 +79,13 @@
 1. Add filter-by-priority in ticket list (agent panel).
 2. Wire `lastActivityAt` trigger or cron for stale ticket detection.
 3. Show SLA warning colors in ticket list (green/yellow/red based on deadline proximity).
-4. Migrate bot back to main.
+4. Merge bot refactor PR to main.
 
 ## Critical Context
 
 - Project uses `pnpm`, not `npm`.
 - Repository: `git@github.com:masmuss/trak.git`
-- Active branch: `feat/report-priority`.
+- Active branch: `refactor/bot-cleanup`.
 - `DATABASE_URL` lives in root `.env`, loaded automatically by `@trak/database` import.
 - Per-app `.env` files only contain non-DB vars: `TELEGRAM_BOT_TOKEN`, `ORIGIN`, `BETTER_AUTH_SECRET`.
 - DB reset + full migrate (0000–0006) + re-seed done. No pending migrations.
@@ -97,6 +107,15 @@
 - `apps/web/src/lib/features/tickets/components/columns.svelte` — table columns (includes priority)
 - `apps/web/src/lib/features/tickets/components/ticket-detail-view.svelte` — layout (includes priority form)
 - `apps/web/src/lib/features/tickets/components/ticket-description.svelte` — header with priority badge
-- `apps/bot/src/handlers/commands.ts` — `/status` (enriched), `/start`, `/help`
-- `apps/bot/src/handlers/callbacks.ts` — uses `createReport` returned `ticketCode` directly
+- `apps/bot/src/bot.ts` — bootstrap, middleware, handler registration, cron
+- `apps/bot/src/handlers/commands.ts` — `/status`, `/start`, `/help`, `/report`
+- `apps/bot/src/handlers/callbacks.ts` — category picker, confirm/cancel, post-submit
+- `apps/bot/src/handlers/notifications.ts` — real-time catch-up + LISTEN/NOTIFY listener
+- `apps/bot/src/handlers/attachments.ts` — photo + document handler
+- `apps/bot/src/conversations/report.ts` — multi-step report creation flow
+- `apps/bot/src/conversations/invite.ts` — invite code validation + registration
+- `apps/bot/src/utils/messages.ts` — all string constants (help, errors, status labels, templates)
+- `apps/bot/src/utils/keyboards.ts` — factory functions for all inline/reply keyboards
+- `apps/bot/src/utils/helpers.ts` — `requireReporter`, `resetSession`, `getAttachmentSummary`
+- `apps/bot/src/utils/uploader.ts` — Telegram file handle → download URL
 - `root package.json` — `db:seed` uses `pnpm --filter @trak/web db:seed`

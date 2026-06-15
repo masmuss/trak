@@ -3,11 +3,27 @@ import {
 	getActiveCategories,
 	getCategoryById,
 	createReport,
-	addReportAttachment,
-	getReporterByTelegramId
+	addReportAttachment
 } from '@trak/services';
 import { startReportFlow } from '../conversations/report';
 import { BotContext } from '../types';
+import { requireReporter, resetSession, getAttachmentSummary } from '../utils/helpers';
+import {
+	COMMANDS_TEXT,
+	categorySelected,
+	NO_CATEGORY_MESSAGE,
+	buildReportSummary,
+	reportSuccess,
+	REPORT_FAILED,
+	WHATS_NEXT,
+	CANCEL_MESSAGE
+} from '../utils/messages';
+import {
+	buildCategoryKeyboard,
+	buildConfirmKeyboard,
+	buildSkipAttachmentKeyboard,
+	buildPostSubmitKeyboard
+} from '../utils/keyboards';
 
 export function registerCallbacks(bot: Bot<BotContext>): void {
 	bot.callbackQuery(/^category_(.+)$/, async (ctx) => {
@@ -20,14 +36,9 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 		session.step = 'attachment';
 
 		await ctx.answerCallbackQuery();
-		await ctx.editMessageText(
-			`Kategori dipilih: ${session.categoryName}\n\nSekarang kirim lampiran (foto/dokumen) atau ketik "/done" untuk selesai.`,
-			{
-				reply_markup: {
-					inline_keyboard: [[{ text: 'Lewati lampiran', callback_data: 'skip_attachment' }]]
-				}
-			}
-		);
+		await ctx.editMessageText(categorySelected(session.categoryName), {
+			reply_markup: buildSkipAttachmentKeyboard()
+		});
 	});
 
 	bot.callbackQuery('skip_category', async (ctx) => {
@@ -36,14 +47,9 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 		session.step = 'attachment';
 
 		await ctx.answerCallbackQuery();
-		await ctx.editMessageText(
-			'Laporan tanpa kategori.\n\nSekarang kirim lampiran (foto/dokumen) atau ketik "/done" untuk selesai.',
-			{
-				reply_markup: {
-					inline_keyboard: [[{ text: 'Lewati lampiran', callback_data: 'skip_attachment' }]]
-				}
-			}
-		);
+		await ctx.editMessageText(NO_CATEGORY_MESSAGE, {
+			reply_markup: buildSkipAttachmentKeyboard()
+		});
 	});
 
 	bot.callbackQuery('skip_attachment', async (ctx) => {
@@ -51,23 +57,15 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 
 		await ctx.answerCallbackQuery();
 
-		const confirmation =
-			`Ringkasan Laporan:\n\n` +
-			`Judul: ${session.title}\n` +
-			`Deskripsi: ${session.body}\n` +
-			`Kategori: ${session.categoryName ?? 'Tidak ada'}\n` +
-			`Lampiran: Tidak ada\n\n` +
-			`Kirim laporan ini?`;
+		const summary = buildReportSummary({
+			title: session.title,
+			body: session.body,
+			categoryName: session.categoryName,
+			attachmentSummary: 'Tidak ada'
+		});
 
-		await ctx.editMessageText(confirmation, {
-			reply_markup: {
-				inline_keyboard: [
-					[
-						{ text: 'Ya, kirim', callback_data: 'confirm_report' },
-						{ text: 'Batal', callback_data: 'cancel_report' }
-					]
-				]
-			}
+		await ctx.editMessageText(summary, {
+			reply_markup: buildConfirmKeyboard()
 		});
 	});
 
@@ -92,35 +90,16 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 			}
 
 			await ctx.answerCallbackQuery();
-			await ctx.editMessageText(
-				`✅ Laporan berhasil dikirim!` +
-					`\n\nKode tiket: ${ticketCode}` +
-					`\n\nTerima kasih, laporan Anda akan segera diproses.`
-			);
+			await ctx.editMessageText(reportSuccess(ticketCode));
 
-			await ctx.reply('Apa yang ingin Anda lakukan selanjutnya?', {
-				reply_markup: {
-					inline_keyboard: [
-						[
-							{ text: '📝 Buat laporan baru', callback_data: 'new_report' },
-							{ text: '📋 Perintah', callback_data: 'show_commands' }
-						]
-					]
-				}
+			await ctx.reply(WHATS_NEXT, {
+				reply_markup: buildPostSubmitKeyboard()
 			});
 
-			Object.assign(session, {
-				step: undefined,
-				reporterId: undefined,
-				title: undefined,
-				body: undefined,
-				categoryId: undefined,
-				categoryName: undefined,
-				attachments: []
-			});
+			resetSession(session);
 		} catch (e) {
 			await ctx.answerCallbackQuery();
-			await ctx.editMessageText('❌ Gagal mengirim laporan. Silakan coba lagi.');
+			await ctx.editMessageText(REPORT_FAILED);
 		}
 	});
 
@@ -128,57 +107,32 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 		const session = ctx.session;
 
 		await ctx.answerCallbackQuery();
-		await ctx.editMessageText('🚫 Laporan dibatalkan.');
-		await ctx.reply('Laporan dibatalkan.', { reply_markup: { remove_keyboard: true } });
+		await ctx.editMessageText(CANCEL_MESSAGE);
+		await ctx.reply(CANCEL_MESSAGE, { reply_markup: { remove_keyboard: true } });
 
-		Object.assign(session, {
-			step: undefined,
-			reporterId: undefined,
-			title: undefined,
-			body: undefined,
-			categoryId: undefined,
-			categoryName: undefined,
-			attachments: []
-		});
+		resetSession(session);
 	});
 
 	bot.callbackQuery('select_category', async (ctx) => {
 		const categories = await getActiveCategories();
-		const keyboard = categories.map((cat) => [
-			{ text: cat.name, callback_data: `category_${cat.id}` }
-		]);
-		keyboard.push([{ text: 'Lewati', callback_data: 'skip_category' }]);
 
 		await ctx.answerCallbackQuery();
 		await ctx.editMessageText('Pilih kategori laporan:', {
-			reply_markup: { inline_keyboard: keyboard }
+			reply_markup: buildCategoryKeyboard(categories)
 		});
 	});
 
 	bot.callbackQuery('new_report', async (ctx) => {
-		const from = ctx.from;
-		if (!from) return;
-
 		await ctx.answerCallbackQuery();
 
-		const telegramId = BigInt(from.id);
-		const reporter = await getReporterByTelegramId(telegramId);
+		const reporterId = await requireReporter(ctx, true);
+		if (!reporterId) return;
 
-		if (!reporter) {
-			await ctx.reply('Anda belum terdaftar. Silakan kirim /start.');
-			return;
-		}
-
-		await startReportFlow(ctx, reporter.id);
+		await startReportFlow(ctx, reporterId);
 	});
 
 	bot.callbackQuery('show_commands', async (ctx) => {
 		await ctx.answerCallbackQuery();
-		await ctx.reply(
-			'Perintah yang tersedia:\n\n' +
-				'/start - Mulai dan daftarkan diri\n' +
-				'/report - Buat laporan baru\n' +
-				'/help - Tampilkan bantuan'
-		);
+		await ctx.reply(COMMANDS_TEXT);
 	});
 }

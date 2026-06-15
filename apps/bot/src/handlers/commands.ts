@@ -1,27 +1,18 @@
-import { Bot, Keyboard } from 'grammy';
-import {
-	getReporterByTelegramId,
-	createReporter,
-	validateInviteCode,
-	getTicketByTicketCode
-} from '@trak/services';
+import { Bot } from 'grammy';
+import { getReporterByTelegramId, getTicketByTicketCode } from '@trak/services';
 import { startReportFlow } from '../conversations/report';
 import { BotContext } from '../types';
-
-async function requireReporter(ctx: BotContext): Promise<string | null> {
-	const from = ctx.from;
-	if (!from) return null;
-
-	const telegramId = BigInt(from.id);
-	const reporter = await getReporterByTelegramId(telegramId);
-
-	if (!reporter) {
-		await ctx.reply('Anda belum terdaftar. Silakan kirim /start untuk mendaftar terlebih dahulu.');
-		return null;
-	}
-
-	return reporter.id;
-}
+import { requireReporter } from '../utils/helpers';
+import {
+	STATUS_LABEL,
+	HELP_TEXT,
+	welcomeBack,
+	WELCOME_NEW,
+	registrationSuccess,
+	statusUsage,
+	ticketNotFound
+} from '../utils/messages';
+import { removeKeyboard } from '../utils/keyboards';
 
 export function registerCommands(bot: Bot<BotContext>): void {
 	bot.command('start', async (ctx) => {
@@ -29,45 +20,25 @@ export function registerCommands(bot: Bot<BotContext>): void {
 		if (!from) return;
 
 		const telegramId = BigInt(from.id);
-
 		const existing = await getReporterByTelegramId(telegramId);
 
 		if (existing) {
-			await ctx.reply(
-				`Selamat datang kembali, ${existing.fullName}!\n\n` +
-					'Sistem Pelaporan Tiket\n\n' +
-					'Perintah:\n' +
-					'/report - Buat laporan baru\n' +
-					'/status - Cek status tiket\n' +
-					'/help - Bantuan',
-				{ reply_markup: { remove_keyboard: true } }
-			);
+			await ctx.reply(welcomeBack(existing.fullName), {
+				reply_markup: removeKeyboard
+			});
 			return;
 		}
 
 		ctx.session.step = 'awaiting_invite';
 		ctx.session.attachments = [];
 
-		await ctx.reply(
-			'Selamat datang di Sistem Pelaporan Tiket!\n\n' +
-				'Untuk mendaftar, silakan masukkan kode undangan (invite code) Anda.',
-			{
-				reply_markup: {
-					remove_keyboard: true
-				}
-			}
-		);
+		await ctx.reply(WELCOME_NEW, {
+			reply_markup: removeKeyboard
+		});
 	});
 
 	bot.command('help', async (ctx) => {
-		await ctx.reply(
-			'Bantuan Bot Pelaporan:\n\n' +
-				'/start - Mulai dan daftarkan diri\n' +
-				'/report - Buat laporan baru\n' +
-				'/status - Cek status tiket berdasarkan nomor\n' +
-				'/help - Tampilkan bantuan ini\n\n' +
-				'Setelah memulai laporan, ikuti petunjuk yang diberikan.'
-		);
+		await ctx.reply(HELP_TEXT);
 	});
 
 	bot.command('status', async (ctx) => {
@@ -79,23 +50,16 @@ export function registerCommands(bot: Bot<BotContext>): void {
 		const ticketCode = parts?.[1]?.toUpperCase();
 
 		if (!ticketCode) {
-			await ctx.reply('Gunakan: /status <nomor tiket>\n\nContoh: /status TKT-ABC12345');
+			await ctx.reply(statusUsage());
 			return;
 		}
 
 		const ticket = await getTicketByTicketCode(ticketCode);
 
 		if (!ticket) {
-			await ctx.reply(`Tiket ${ticketCode} tidak ditemukan.`);
+			await ctx.reply(ticketNotFound(ticketCode));
 			return;
 		}
-
-		const statusMap: Record<string, string> = {
-			open: '🔴 Open',
-			in_progress: '🟡 In Progress',
-			resolved: '🟢 Resolved',
-			closed: '⚪ Closed'
-		};
 
 		const history =
 			ticket.statusHistories.length > 0
@@ -103,7 +67,7 @@ export function registerCommands(bot: Bot<BotContext>): void {
 					ticket.statusHistories
 						.map(
 							(h) =>
-								`${h.changedAt.toLocaleString('id-ID')} — ${statusMap[h.oldStatus] ?? h.oldStatus} → ${statusMap[h.newStatus] ?? h.newStatus}` +
+								`${h.changedAt.toLocaleString('id-ID')} — ${STATUS_LABEL[h.oldStatus] ?? h.oldStatus} → ${STATUS_LABEL[h.newStatus] ?? h.newStatus}` +
 								(h.note ? ` (${h.note})` : '') +
 								` oleh ${h.changedByUser.name}`
 						)
@@ -114,7 +78,7 @@ export function registerCommands(bot: Bot<BotContext>): void {
 			`📋 Tiket ${ticketCode}\n\n` +
 				`${ticket.title}\n\n` +
 				`${ticket.body}\n\n` +
-				`Status: ${statusMap[ticket.status] ?? ticket.status}` +
+				`Status: ${STATUS_LABEL[ticket.status] ?? ticket.status}` +
 				` | Kategori: ${ticket.category?.name ?? '-'}` +
 				` | Lampiran: ${ticket.attachments.length}` +
 				`\nDibuat: ${ticket.createdAt.toLocaleString('id-ID')}` +
