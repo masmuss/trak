@@ -35,8 +35,8 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 		session.step = 'attachment';
 
 		await ctx.answerCallbackQuery();
-		await ctx.editMessageText(categorySelected(session.categoryName));
-		await ctx.reply('Kirim lampiran atau klik tombol di bawah:', {
+		await ctx.editMessageText('✅ Kategori dipilih');
+		await ctx.reply(categorySelected(session.categoryName), {
 			reply_markup: doneKeyboard
 		});
 	});
@@ -48,8 +48,8 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 		session.step = 'attachment';
 
 		await ctx.answerCallbackQuery();
-		await ctx.editMessageText(NO_CATEGORY_MESSAGE);
-		await ctx.reply('Kirim lampiran atau klik tombol di bawah:', {
+		await ctx.editMessageText('✅ Tanpa kategori');
+		await ctx.reply(NO_CATEGORY_MESSAGE, {
 			reply_markup: doneKeyboard
 		});
 	});
