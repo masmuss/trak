@@ -33,3 +33,6 @@ test-results
 
 # Misc
 .antigravitycli
+apps/web-template/
+docs/
+@docs/**

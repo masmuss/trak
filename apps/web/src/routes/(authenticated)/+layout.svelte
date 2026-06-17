@@ -26,31 +26,41 @@
 
 <Sidebar.Provider>
 	<AppSidebar />
-	<Sidebar.Inset>
+	<Sidebar.Inset class="min-w-0 overflow-x-hidden peer-data-[variant=inset]:border">
 		<header
-			class="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
+			class="flex h-12 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
 		>
-			<div class="flex items-center gap-2 px-4">
-				<Sidebar.Trigger class="-ms-1" />
-				<Separator orientation="vertical" class="me-2 data-[orientation=vertical]:h-4" />
-				<Breadcrumb.Root>
-					<Breadcrumb.List>
-						{#each autoBreadcrumbs as crumb, i (crumb.label)}
-							<Breadcrumb.Item class={i < autoBreadcrumbs.length - 1 ? 'hidden md:block' : ''}>
-								{#if crumb.href}
-									<Breadcrumb.Link href={crumb.href}>{crumb.label}</Breadcrumb.Link>
-								{:else}
-									<Breadcrumb.Page>{crumb.label}</Breadcrumb.Page>
+			<div class="flex w-full items-center justify-between px-4 lg:px-6">
+				<div class="flex items-center gap-1 lg:gap-2">
+					<Sidebar.Trigger class="-ms-1" />
+					<Separator
+						orientation="vertical"
+						class="mx-2 data-[orientation=vertical]:h-4 data-[orientation=vertical]:self-center"
+					/>
+					<Breadcrumb.Root>
+						<Breadcrumb.List>
+							{#each autoBreadcrumbs as crumb, i (crumb.label)}
+								<Breadcrumb.Item class={i < autoBreadcrumbs.length - 1 ? 'hidden md:block' : ''}>
+									{#if crumb.href}
+										<Breadcrumb.Link href={crumb.href}>{crumb.label}</Breadcrumb.Link>
+									{:else}
+										<Breadcrumb.Page>{crumb.label}</Breadcrumb.Page>
+									{/if}
+								</Breadcrumb.Item>
+								{#if i < autoBreadcrumbs.length - 1}
+									<Breadcrumb.Separator class="hidden md:block" />
 								{/if}
-							</Breadcrumb.Item>
-							{#if i < autoBreadcrumbs.length - 1}
-								<Breadcrumb.Separator class="hidden md:block" />
-							{/if}
-						{/each}
-					</Breadcrumb.List>
-				</Breadcrumb.Root>
+							{/each}
+						</Breadcrumb.List>
+					</Breadcrumb.Root>
+				</div>
+				<div class="flex items-center gap-2">
+					<!-- Right header controls placeholder -->
+				</div>
 			</div>
 		</header>
-		{@render children?.()}
+		<div class="min-h-0 min-w-0 flex-1 overflow-x-hidden p-4 md:p-6">
+			{@render children?.()}
+		</div>
 	</Sidebar.Inset>
 </Sidebar.Provider>
