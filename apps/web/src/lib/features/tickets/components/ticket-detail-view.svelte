@@ -103,32 +103,19 @@
 									</div>
 
 									{#if ticket.attachments && ticket.attachments.length > 0}
-										<div class="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-											<PaperclipIcon class="size-4" />
-											<span>{ticket.attachments.length} attachment(s)</span>
-										</div>
-										<div class="mt-1 grid grid-cols-2 gap-3 sm:grid-cols-3">
+										<div class="mt-px flex flex-wrap gap-1.5">
 											{#each ticket.attachments as attachment (attachment.id)}
 												<a
 													href={attachment.storageUrl}
 													target="_blank"
 													rel="external noopener noreferrer"
-													class="group flex items-center justify-center rounded-xl border bg-background p-3 transition-colors hover:bg-muted/50"
+													class="inline-flex h-7 items-center gap-1.5 rounded-md border bg-secondary px-2.5 py-0.5 text-xs font-normal text-secondary-foreground transition-colors hover:bg-secondary/80"
 												>
-													{#if attachment.fileType.startsWith('image/')}
-														<img
-															src={attachment.storageUrl}
-															alt="Attachment"
-															class="max-h-24 rounded object-contain"
-														/>
-													{:else}
-														<div class="flex flex-col items-center gap-1">
-															<PaperclipIcon class="size-6 text-muted-foreground" />
-															<span class="max-w-24 truncate text-xs text-muted-foreground"
-																>Download File</span
-															>
-														</div>
-													{/if}
+													<PaperclipIcon class="size-3" />
+													<span>Attachment</span>
+													<span class="opacity-60">
+														{attachment.fileType.split('/')[1]?.toUpperCase() ?? 'FILE'}
+													</span>
 												</a>
 											{/each}
 										</div>
