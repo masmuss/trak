@@ -137,27 +137,51 @@
 							</article>
 
 							{#each statusHistories as history (history.id)}
-								<article class="flex items-center justify-center">
-									<div
-										class="flex flex-col items-center gap-2 rounded-full border bg-muted/30 px-4 py-2 text-xs text-muted-foreground shadow-xs backdrop-blur-sm"
-									>
-										<div class="flex items-center gap-2">
+								{#if history.note}
+									<article class="flex flex-row-reverse gap-4">
+										<div
+											class="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary font-semibold text-secondary-foreground"
+										>
+											{getInitials(history.changedByUser?.name ?? 'System')}
+										</div>
+										<div class="flex flex-1 flex-col items-end gap-1.5">
+											<div class="flex flex-row-reverse items-center gap-2">
+												<span class="text-sm font-semibold"
+													>{history.changedByUser?.name ?? 'System Agent'}</span
+												>
+												<span class="text-xs text-muted-foreground"
+													>{formatDateTime(history.changedAt)}</span
+												>
+											</div>
+											<div
+												class="rounded-2xl rounded-tr-none bg-secondary p-4 text-sm leading-relaxed whitespace-pre-wrap text-primary shadow-xs"
+											>
+												{history.note}
+											</div>
+											<div class="mt-1 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+												<span>Changed status from</span>
+												<StatusBadge status={history.oldStatus} />
+												<span>to</span>
+												<StatusBadge status={history.newStatus} />
+											</div>
+										</div>
+									</article>
+								{:else}
+									<article class="flex items-center justify-center">
+										<div
+											class="flex items-center gap-2 rounded-full border bg-muted/30 px-4 py-1.5 text-xs text-muted-foreground shadow-xs backdrop-blur-sm"
+										>
 											<span class="font-medium text-foreground"
 												>{history.changedByUser?.name ?? 'System'}</span
 											>
-											changed status from
-											<StatusBadge status={history.oldStatus} />
-											to
+											<span>changed status to</span>
 											<StatusBadge status={history.newStatus} />
+											<span class="ml-1 text-[10px] opacity-70"
+												>{formatDateTime(history.changedAt)}</span
+											>
 										</div>
-										{#if history.note}
-											<div class="text-center leading-relaxed italic">
-												"{history.note}"
-											</div>
-										{/if}
-										<span class="text-[10px] opacity-70">{formatDateTime(history.changedAt)}</span>
-									</div>
-								</article>
+									</article>
+								{/if}
 							{/each}
 						</div>
 					</ScrollArea>
