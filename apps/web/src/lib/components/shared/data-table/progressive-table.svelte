@@ -154,13 +154,13 @@
 </script>
 
 {#snippet Pagination({ table }: { table: TableType<TData> })}
-	<div class="flex items-center justify-between px-2">
-		<div class="flex-1 text-sm text-muted-foreground">
+	<div class="flex items-center justify-between px-1">
+		<div class="hidden flex-1 text-sm text-muted-foreground lg:flex">
 			{table.getFilteredSelectedRowModel().rows.length} of
 			{table.getFilteredRowModel().rows.length} row(s) selected.
 		</div>
-		<div class="flex items-center space-x-6 lg:space-x-8">
-			<div class="flex items-center space-x-2">
+		<div class="flex w-full items-center gap-8 lg:w-fit">
+			<div class="hidden items-center gap-2 lg:flex">
 				<p class="text-sm font-medium">Rows per page</p>
 				<Select.Root
 					allowDeselect={false}
@@ -170,7 +170,7 @@
 						table.setPageSize(Number(value));
 					}}
 				>
-					<Select.Trigger class="h-8 w-16">
+					<Select.Trigger size="sm" class="w-20">
 						{String(table.getState().pagination.pageSize)}
 					</Select.Trigger>
 					<Select.Content side="top">
@@ -182,10 +182,10 @@
 					</Select.Content>
 				</Select.Root>
 			</div>
-			<div class="flex w-25 items-center justify-center text-sm font-medium">
+			<div class="flex w-fit items-center justify-center text-sm font-medium">
 				Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
 			</div>
-			<div class="flex items-center space-x-2">
+			<div class="ml-auto flex items-center gap-2 lg:ml-0">
 				<Button
 					variant="outline"
 					class="hidden size-8 p-0 lg:flex"
@@ -231,14 +231,17 @@
 	{#if toolbar}
 		{@render toolbar(table)}
 	{/if}
-	<div class="rounded-md border">
+	<div class="overflow-hidden rounded-lg border bg-card">
 		<Table.Root>
-			<Table.Header>
+			<Table.Header class="bg-muted/15">
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
 					<Table.Row>
 						{#each headerGroup.headers as header (header.id)}
 							{@const meta = header.column.columnDef.meta as { className?: string } | undefined}
-							<Table.Head colspan={header.colSpan} class={meta?.className}>
+							<Table.Head
+								colspan={header.colSpan}
+								class="h-11 p-3 font-medium {meta?.className ?? ''}"
+							>
 								{#if !header.isPlaceholder}
 									<FlexRender
 										content={header.column.columnDef.header}
@@ -255,7 +258,7 @@
 					<Table.Row data-state={row.getIsSelected() && 'selected'}>
 						{#each row.getVisibleCells() as cell (cell.id)}
 							{@const meta = cell.column.columnDef.meta as { className?: string } | undefined}
-							<Table.Cell class={meta?.className}>
+							<Table.Cell class="p-3 align-middle {meta?.className ?? ''}">
 								<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
 							</Table.Cell>
 						{/each}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { TicketIcon, ClockCountdownIcon, CheckCircleIcon } from 'phosphor-svelte';
-	import Heading from '$lib/components/shared/heading.svelte';
+	import * as Card from '$lib/components/ui/card';
 	import TicketsTable from '$lib/features/tickets/components/tickets-table.svelte';
 	import TicketStats from '$lib/features/tickets/components/ticket-stats.svelte';
 	import type { PageData } from './$types';
@@ -33,21 +33,26 @@
 	<title>Tickets</title>
 </svelte:head>
 
-<div class="flex flex-1 flex-col gap-4 p-4 pt-0">
-	<div class="flex w-full items-center justify-between">
-		<Heading
-			title="Support Tickets"
-			description="View and manage all organization-wide support incidents and feedback."
-		/>
-	</div>
-
+<div class="@container/main flex flex-col gap-4 md:gap-6">
 	<TicketStats items={statsItems} />
 
-	<TicketsTable
-		tickets={data.tickets}
-		totalCount={data.totalCount}
-		page={data.page}
-		limit={data.limit}
-		categories={data.categories}
-	/>
+	<Card.Root>
+		<Card.Header class="flex flex-row items-center justify-between border-b">
+			<div>
+				<Card.Title>Support Tickets</Card.Title>
+				<Card.Description>
+					View and manage all organization-wide support incidents and feedback.
+				</Card.Description>
+			</div>
+		</Card.Header>
+		<Card.Content>
+			<TicketsTable
+				tickets={data.tickets}
+				totalCount={data.totalCount}
+				page={data.page}
+				limit={data.limit}
+				categories={data.categories}
+			/>
+		</Card.Content>
+	</Card.Root>
 </div>

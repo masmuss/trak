@@ -52,7 +52,7 @@
 	};
 </script>
 
-<div class="mx-auto p-4">
+<div class="@container/main flex flex-col gap-4 md:gap-6">
 	<div class="grid grid-cols-1 gap-5 xl:grid-cols-12">
 		<!-- Left: Conversation & Status Update -->
 		<div class="xl:col-span-8 2xl:col-span-9">
