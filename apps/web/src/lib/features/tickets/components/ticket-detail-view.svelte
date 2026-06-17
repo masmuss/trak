@@ -7,7 +7,7 @@
 	import PriorityBadge from './priority-badge.svelte';
 	import StatusBadge from './status-badge.svelte';
 	import TicketPriorityForm from './ticket-priority-form.svelte';
-	import TicketMessageHeader from './ticket-message-header.svelte';
+
 	import TicketDetailsSidebar from './ticket-details-sidebar.svelte';
 	import type { TicketDetails } from '@trak/shared';
 	import { PaperclipIcon } from 'phosphor-svelte';
@@ -61,13 +61,13 @@
 					class="flex flex-col justify-between gap-5 border-b sm:flex-row sm:items-center"
 				>
 					<div class="min-w-0">
-						<div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+						<div class="flex items-center gap-2 text-xs text-muted-foreground">
 							<span class="font-bold tracking-wider uppercase">Ticket #{ticket.ticketCode}</span>
 						</div>
-						<h3 class="truncate text-lg font-medium text-gray-800 dark:text-white/90">
+						<h3 class="truncate text-lg font-medium text-foreground">
 							{ticket.title}
 						</h3>
-						<p class="text-sm text-gray-500 dark:text-gray-400">
+						<p class="text-sm text-muted-foreground">
 							{formatDateTime(ticket.createdAt)}
 						</p>
 					</div>
@@ -80,76 +80,83 @@
 				<Card.Content>
 					<ScrollArea class="h-96">
 						<div class="space-y-7">
-							<article>
-								<TicketMessageHeader
-									initials={getInitials(ticket.reporter.fullName)}
-									name={ticket.reporter.fullName}
-									subtitle={ticket.reporter.username ? ticket.reporter.username : ''}
-									timestamp={formatDateTime(ticket.createdAt)}
-								/>
-								<div class="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
-									{ticket.body}
+							<article class="flex gap-4">
+								<div
+									class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary"
+								>
+									{getInitials(ticket.reporter.fullName)}
 								</div>
-
-								{#if ticket.attachments && ticket.attachments.length > 0}
+								<div class="flex flex-1 flex-col gap-1.5">
+									<div class="flex items-center gap-2">
+										<span class="text-sm font-semibold">{ticket.reporter.fullName}</span>
+										{#if ticket.reporter.username}
+											<span class="text-xs text-muted-foreground">@{ticket.reporter.username}</span>
+										{/if}
+										<span class="ms-auto text-xs text-muted-foreground"
+											>{formatDateTime(ticket.createdAt)}</span
+										>
+									</div>
 									<div
-										class="mt-4 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400"
+										class="rounded-2xl rounded-tl-none bg-muted/50 p-4 text-sm leading-relaxed whitespace-pre-wrap text-foreground shadow-xs"
 									>
-										<PaperclipIcon class="size-4" />
-										<span>{ticket.attachments.length} attachment(s)</span>
+										{ticket.body}
 									</div>
-									<div class="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
-										{#each ticket.attachments as attachment (attachment.id)}
-											<a
-												href={attachment.storageUrl}
-												target="_blank"
-												rel="external noopener noreferrer"
-												class="group flex items-center justify-center rounded-lg border p-3 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-											>
-												{#if attachment.fileType.startsWith('image/')}
-													<img
-														src={attachment.storageUrl}
-														alt="Attachment"
-														class="max-h-20 rounded object-contain"
-													/>
-												{:else}
-													<div class="flex flex-col items-center gap-1">
-														<PaperclipIcon class="size-5 text-gray-400" />
-														<span class="max-w-24 truncate text-xs text-gray-500"
-															>Download File</span
-														>
-													</div>
-												{/if}
-											</a>
-										{/each}
-									</div>
-								{/if}
+
+									{#if ticket.attachments && ticket.attachments.length > 0}
+										<div class="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+											<PaperclipIcon class="size-4" />
+											<span>{ticket.attachments.length} attachment(s)</span>
+										</div>
+										<div class="mt-1 grid grid-cols-2 gap-3 sm:grid-cols-3">
+											{#each ticket.attachments as attachment (attachment.id)}
+												<a
+													href={attachment.storageUrl}
+													target="_blank"
+													rel="external noopener noreferrer"
+													class="group flex items-center justify-center rounded-xl border bg-background p-3 transition-colors hover:bg-muted/50"
+												>
+													{#if attachment.fileType.startsWith('image/')}
+														<img
+															src={attachment.storageUrl}
+															alt="Attachment"
+															class="max-h-24 rounded object-contain"
+														/>
+													{:else}
+														<div class="flex flex-col items-center gap-1">
+															<PaperclipIcon class="size-6 text-muted-foreground" />
+															<span class="max-w-24 truncate text-xs text-muted-foreground"
+																>Download File</span
+															>
+														</div>
+													{/if}
+												</a>
+											{/each}
+										</div>
+									{/if}
+								</div>
 							</article>
 
 							{#each statusHistories as history (history.id)}
-								<article>
-									<TicketMessageHeader
-										initials={getInitials(history.changedByUser?.name ?? 'System')}
-										name={history.changedByUser?.name ?? 'System Agent'}
-										subtitle="Status Update"
-										timestamp={formatDateTime(history.changedAt)}
-										avatarClass="bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
-									/>
+								<article class="flex items-center justify-center">
 									<div
-										class="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400"
+										class="flex flex-col items-center gap-2 rounded-full border bg-muted/30 px-4 py-2 text-xs text-muted-foreground shadow-xs backdrop-blur-sm"
 									>
-										Status changed from
-										<StatusBadge status={history.oldStatus} />
-										to
-										<StatusBadge status={history.newStatus} />
-									</div>
-									{#if history.note}
-										<div
-											class="mt-3 text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground"
-										>
-											{history.note}
+										<div class="flex items-center gap-2">
+											<span class="font-medium text-foreground"
+												>{history.changedByUser?.name ?? 'System'}</span
+											>
+											changed status from
+											<StatusBadge status={history.oldStatus} />
+											to
+											<StatusBadge status={history.newStatus} />
 										</div>
-									{/if}
+										{#if history.note}
+											<div class="text-center leading-relaxed italic">
+												"{history.note}"
+											</div>
+										{/if}
+										<span class="text-[10px] opacity-70">{formatDateTime(history.changedAt)}</span>
+									</div>
 								</article>
 							{/each}
 						</div>
