@@ -4,6 +4,9 @@
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import { Button } from '$lib/components/ui/button';
+	import { GithubLogo } from 'phosphor-svelte';
+	import ThemeSwitcher from '$lib/components/layout/theme-switcher.svelte';
 
 	const autoBreadcrumbs = $derived.by(() => {
 		if (page.data.breadcrumbs) {
@@ -55,7 +58,17 @@
 					</Breadcrumb.Root>
 				</div>
 				<div class="flex items-center gap-2">
-					<!-- Right header controls placeholder -->
+					<ThemeSwitcher />
+					<Button
+						variant="ghost"
+						size="icon"
+						href="https://github.com/masmuss/trak"
+						target="_blank"
+						rel="noreferrer"
+						aria-label="Open GitHub repository"
+					>
+						<GithubLogo class="size-4" />
+					</Button>
 				</div>
 			</div>
 		</header>
