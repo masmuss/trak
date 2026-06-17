@@ -16,12 +16,14 @@ export const actions: Actions = {
 		const formData = await event.request.formData();
 		const email = formData.get('email')?.toString() ?? '';
 		const password = formData.get('password')?.toString() ?? '';
+		const rememberMe = formData.get('rememberMe') === 'true';
 
 		try {
 			await auth.api.signInEmail({
 				body: {
 					email,
 					password,
+					rememberMe,
 					callbackURL: '/auth/verification-success'
 				}
 			});
