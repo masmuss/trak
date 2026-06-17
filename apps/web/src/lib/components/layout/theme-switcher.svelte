@@ -3,11 +3,12 @@
 	import { SunIcon, MoonIcon, DesktopIcon } from 'phosphor-svelte';
 	import { setMode, userPrefersMode } from 'mode-watcher';
 
-	const THEME_CYCLE = ['light', 'dark', 'system'] as const;
+	type ThemeMode = 'light' | 'dark' | 'system';
+	const THEME_CYCLE: ThemeMode[] = ['light', 'dark', 'system'];
 
 	function cycleTheme() {
 		const currentMode = userPrefersMode.current ?? 'system';
-		const currentIndex = THEME_CYCLE.indexOf(currentMode as any);
+		const currentIndex = THEME_CYCLE.indexOf(currentMode);
 		const nextTheme = THEME_CYCLE[(currentIndex + 1) % THEME_CYCLE.length];
 		setMode(nextTheme);
 	}
