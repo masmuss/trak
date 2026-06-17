@@ -1,6 +1,7 @@
 <script lang="ts">
 	import PriorityBadge from './priority-badge.svelte';
 	import StatusBadge from './status-badge.svelte';
+	import SlaBadge from './sla-badge.svelte';
 	import TicketPriorityForm from './ticket-priority-form.svelte';
 
 	import TicketDetailsSidebar from './ticket-details-sidebar.svelte';
@@ -42,6 +43,11 @@
 						</p>
 					</div>
 					<div class="flex shrink-0 items-center gap-2">
+						<SlaBadge
+							isSlaBreached={ticket.isSlaBreached}
+							slaResolveDue={ticket.slaResolveDue}
+							status={ticket.status}
+						/>
 						<PriorityBadge priority={ticket.priority} />
 						<StatusBadge status={ticket.status} />
 					</div>

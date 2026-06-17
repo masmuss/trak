@@ -8,6 +8,7 @@
 	import type { TicketWithRelations } from '@trak/shared';
 	import StatusBadge from './status-badge.svelte';
 	import PriorityBadge from './priority-badge.svelte';
+	import SlaBadge from './sla-badge.svelte';
 	import { Badge } from '$lib/components/ui/badge';
 
 	let { columns = $bindable() }: { columns: ColumnDef<TicketWithRelations, unknown>[] } = $props();
@@ -109,13 +110,11 @@
 {/snippet}
 
 {#snippet slaCell({ row }: CellContext<TicketWithRelations, unknown>)}
-	{@const breached = row.original.isSlaBreached}
-	{@const hasSla = !!row.original.slaResolveDue}
-	{#if breached}
-		<span class="inline-block size-2.5 rounded-full bg-red-500" title="SLA Breached"></span>
-	{:else if hasSla}
-		<span class="inline-block size-2.5 rounded-full bg-green-500" title="SLA On Track"></span>
-	{/if}
+	<SlaBadge
+		isSlaBreached={row.original.isSlaBreached}
+		slaResolveDue={row.original.slaResolveDue}
+		status={row.original.status}
+	/>
 {/snippet}
 
 {#snippet priorityCell({ row }: CellContext<TicketWithRelations, unknown>)}
