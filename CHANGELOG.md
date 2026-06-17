@@ -1,3 +1,22 @@
+# [1.4.0](https://github.com/masmuss/trak/compare/v1.3.0...v1.4.0) (2026-06-17)
+
+
+### Bug Fixes
+
+* prevent eslint from detecting resolve hooks on buttons ([520e4e7](https://github.com/masmuss/trak/commit/520e4e7fc3ab5e2011d557ef393b07e8f6cd7991))
+
+
+### Features
+
+* adopt sidebar group structure from template ([26a2e88](https://github.com/masmuss/trak/commit/26a2e888918fc1f1ef482ffe020b75c972de9e03))
+* adopt template data table UI, toolbar, pagination, and card island layout for pages ([40bccc3](https://github.com/masmuss/trak/commit/40bccc36083c500de3bcc95d6f286c27025377c1))
+* implement template header elements and sidebar logo ([f66093b](https://github.com/masmuss/trak/commit/f66093b70252ceeb1250b9fed0a740d514cac05e))
+* redesign auth login page and add remember me feature ([0b13d9d](https://github.com/masmuss/trak/commit/0b13d9d37d1a9ea15f82d963b3fe3dfb0738967e))
+* redesign dashboard app shell and stats section ([2287152](https://github.com/masmuss/trak/commit/2287152da225d86ff1b48ca946b38edcc259c6f9))
+* redesign dashboard components based on CRM template ([e474fc1](https://github.com/masmuss/trak/commit/e474fc15b43dd2a5e1e56339e56e82269ba5448a))
+* **ui:** implement SLABadge pill for visual proximity warning ([f7ab783](https://github.com/masmuss/trak/commit/f7ab78389ae13cd24545c3e17a17fcaf3506a391))
+* **ui:** split status histories into chat bubbles or system pills ([992a099](https://github.com/masmuss/trak/commit/992a099e310a130e1e264542497b15aa9e6a697a))
+
 # [1.3.0](https://github.com/masmuss/trak/compare/v1.2.2...v1.3.0) (2026-06-15)
 
 
