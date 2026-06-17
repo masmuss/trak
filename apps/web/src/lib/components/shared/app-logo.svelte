@@ -1,11 +1,9 @@
 <script lang="ts">
-	import logoSvg from '$lib/assets/logo-icon.svg';
+	import { CommandIcon } from 'phosphor-svelte';
+	import { resolve } from '$app/paths';
 </script>
 
-<div class="flex aspect-square size-8 items-center justify-center text-sidebar-primary-foreground">
-	<img src={logoSvg} alt="trak" />
-</div>
-<div class="grid flex-1 text-start text-sm leading-tight">
-	<span class="truncate font-medium"> Trak </span>
-	<span class="truncate text-xs"> Ticket Tracker </span>
-</div>
+<a href={resolve('/dashboard')} class="flex w-full items-center gap-2 px-1">
+	<CommandIcon class="size-5 shrink-0" />
+	<span class="truncate text-base font-semibold">Trak</span>
+</a>

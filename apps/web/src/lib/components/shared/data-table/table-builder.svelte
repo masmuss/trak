@@ -164,7 +164,7 @@
 >
 	{#snippet toolbar(table)}
 		<TableToolbar>
-			<div class="flex w-full flex-row items-center gap-2">
+			<div class="flex flex-wrap items-center gap-2">
 				{#if config.features?.search !== false}
 					<SearchBar
 						value={tableState.search}
@@ -184,7 +184,7 @@
 					/>
 				{/if}
 			</div>
-			<div class="flex items-center justify-end gap-2">
+			<div class="flex flex-col gap-2 sm:flex-row sm:items-center xl:w-auto">
 				{#if config.export?.enabled}
 					<ExportButton
 						{exportUrl}

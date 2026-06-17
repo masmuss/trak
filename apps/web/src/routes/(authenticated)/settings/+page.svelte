@@ -18,7 +18,7 @@
 	<title>Settings</title>
 </svelte:head>
 
-<div class="flex flex-1 flex-col gap-4 p-4 pt-0">
+<div class="@container/main flex flex-col gap-4 md:gap-6">
 	<Heading title="Settings" description="Manage your account and organization preferences." />
 
 	<Tabs.Root bind:value={tab}>

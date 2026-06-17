@@ -8,7 +8,7 @@
 	} = $props();
 </script>
 
-<div class="flex w-full flex-row items-center justify-between gap-4">
+<div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
 	{#if children}
 		{@render children()}
 	{/if}

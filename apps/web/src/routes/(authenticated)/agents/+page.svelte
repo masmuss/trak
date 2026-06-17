@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Heading from '$lib/components/shared/heading.svelte';
+	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { PlusIcon } from 'phosphor-svelte';
 	import type { PageData } from './$types';
@@ -32,16 +32,24 @@
 	<title>Agents</title>
 </svelte:head>
 
-<div class="flex flex-1 flex-col gap-4 p-4 pt-0">
-	<div class="flex w-full items-center justify-between">
-		<Heading title="Agents" description="Manage system agents who handle and respond to tickets." />
-		<Button onclick={openCreate}>
-			<PlusIcon />
-			Add Agent
-		</Button>
-	</div>
-
-	<AgentsTable agents={data.agents} onEdit={openEdit} />
+<div class="@container/main flex flex-col gap-4 md:gap-6">
+	<Card.Root>
+		<Card.Header class="flex flex-row items-center justify-between border-b">
+			<div>
+				<Card.Title>Agents</Card.Title>
+				<Card.Description>Manage system agents who handle and respond to tickets.</Card.Description>
+			</div>
+			<Card.Action>
+				<Button onclick={openCreate} size="sm">
+					<PlusIcon />
+					Add Agent
+				</Button>
+			</Card.Action>
+		</Card.Header>
+		<Card.Content>
+			<AgentsTable agents={data.agents} onEdit={openEdit} />
+		</Card.Content>
+	</Card.Root>
 </div>
 
 <AgentForm bind:dialogOpen bind:editingAgent onClose={closeDialog} />

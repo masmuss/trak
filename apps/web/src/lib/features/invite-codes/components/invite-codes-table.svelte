@@ -34,58 +34,60 @@
 	}
 </script>
 
-<Table.Root class="border">
-	<Table.Header>
-		<Table.Row>
-			<Table.Head>Code</Table.Head>
-			<Table.Head>Status</Table.Head>
-			<Table.Head>Expires</Table.Head>
-			<Table.Head>Created</Table.Head>
-			<Table.Head class="w-25">Actions</Table.Head>
-		</Table.Row>
-	</Table.Header>
-	<Table.Body>
-		{#each inviteCodes as code (code.id)}
+<div class="overflow-hidden rounded-lg border bg-card">
+	<Table.Root>
+		<Table.Header class="bg-muted/15">
 			<Table.Row>
-				<Table.Cell class="font-mono font-medium">{code.code}</Table.Cell>
-				<Table.Cell>
-					{#if isExpired(code)}
-						<Badge variant="destructive">Expired</Badge>
-					{:else if code.isActive}
-						<Badge>Active</Badge>
-					{:else}
-						<Badge variant="secondary">Inactive</Badge>
-					{/if}
-				</Table.Cell>
-				<Table.Cell class="text-sm text-muted-foreground">
-					{formatDate(code.expiresAt)}
-				</Table.Cell>
-				<Table.Cell class="text-sm text-muted-foreground">
-					{formatDate(code.createdAt)}
-				</Table.Cell>
-				<Table.Cell>
-					<div class="flex items-center gap-1">
-						<Button variant="ghost" size="icon-sm" onclick={() => onEdit(code)}>
-							<PencilIcon />
-							<span class="sr-only">Edit</span>
-						</Button>
-						<Button
-							variant="ghost"
-							size="icon-sm"
-							onclick={() => {
-								deleteTarget = { id: code.id, code: code.code, action: '?/delete' };
-								dialogOpen = true;
-							}}
-						>
-							<TrashIcon />
-							<span class="sr-only">Delete</span>
-						</Button>
-					</div>
-				</Table.Cell>
+				<Table.Head class="h-11 p-3 font-medium">Code</Table.Head>
+				<Table.Head class="h-11 p-3 font-medium">Status</Table.Head>
+				<Table.Head class="h-11 p-3 font-medium">Expires</Table.Head>
+				<Table.Head class="h-11 p-3 font-medium">Created</Table.Head>
+				<Table.Head class="h-11 w-25 p-3 font-medium">Actions</Table.Head>
 			</Table.Row>
-		{/each}
-	</Table.Body>
-</Table.Root>
+		</Table.Header>
+		<Table.Body>
+			{#each inviteCodes as code (code.id)}
+				<Table.Row class="hover:bg-muted/50">
+					<Table.Cell class="p-3 align-middle font-mono font-medium">{code.code}</Table.Cell>
+					<Table.Cell class="p-3 align-middle">
+						{#if isExpired(code)}
+							<Badge variant="destructive">Expired</Badge>
+						{:else if code.isActive}
+							<Badge>Active</Badge>
+						{:else}
+							<Badge variant="secondary">Inactive</Badge>
+						{/if}
+					</Table.Cell>
+					<Table.Cell class="p-3 align-middle text-sm text-muted-foreground">
+						{formatDate(code.expiresAt)}
+					</Table.Cell>
+					<Table.Cell class="p-3 align-middle text-sm text-muted-foreground">
+						{formatDate(code.createdAt)}
+					</Table.Cell>
+					<Table.Cell class="p-3 align-middle">
+						<div class="flex items-center gap-1">
+							<Button variant="ghost" size="icon-sm" onclick={() => onEdit(code)}>
+								<PencilIcon />
+								<span class="sr-only">Edit</span>
+							</Button>
+							<Button
+								variant="ghost"
+								size="icon-sm"
+								onclick={() => {
+									deleteTarget = { id: code.id, code: code.code, action: '?/delete' };
+									dialogOpen = true;
+								}}
+							>
+								<TrashIcon />
+								<span class="sr-only">Delete</span>
+							</Button>
+						</div>
+					</Table.Cell>
+				</Table.Row>
+			{/each}
+		</Table.Body>
+	</Table.Root>
+</div>
 
 <DeleteConfirmDialog
 	bind:open={dialogOpen}

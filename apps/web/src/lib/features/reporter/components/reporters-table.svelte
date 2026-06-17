@@ -20,31 +20,33 @@
 	} = $props();
 </script>
 
-<Table.Root class="border">
-	<Table.Header>
-		<Table.Row>
-			<Table.Head>Full Name</Table.Head>
-			<Table.Head>Telegram ID</Table.Head>
-			<Table.Head>Username</Table.Head>
-			<Table.Head>Invite Code</Table.Head>
-			<Table.Head class="text-center">Tickets</Table.Head>
-		</Table.Row>
-	</Table.Header>
-	<Table.Body>
-		{#each reporters as reporter (reporter.id)}
+<div class="overflow-hidden rounded-lg border bg-card">
+	<Table.Root>
+		<Table.Header class="bg-muted/15">
 			<Table.Row>
-				<Table.Cell class="font-medium">{reporter.fullName}</Table.Cell>
-				<Table.Cell class="font-mono text-muted-foreground">
-					{reporter.telegramId}
-				</Table.Cell>
-				<Table.Cell class="text-muted-foreground">
-					{reporter.username ?? '—'}
-				</Table.Cell>
-				<Table.Cell class="font-mono text-muted-foreground">
-					{reporter.inviteCode?.code ?? '—'}
-				</Table.Cell>
-				<Table.Cell class="text-center">{reporter.reportCount}</Table.Cell>
+				<Table.Head class="h-11 p-3 font-medium">Full Name</Table.Head>
+				<Table.Head class="h-11 p-3 font-medium">Telegram ID</Table.Head>
+				<Table.Head class="h-11 p-3 font-medium">Username</Table.Head>
+				<Table.Head class="h-11 p-3 font-medium">Invite Code</Table.Head>
+				<Table.Head class="h-11 p-3 text-center font-medium">Tickets</Table.Head>
 			</Table.Row>
-		{/each}
-	</Table.Body>
-</Table.Root>
+		</Table.Header>
+		<Table.Body>
+			{#each reporters as reporter (reporter.id)}
+				<Table.Row class="hover:bg-muted/50">
+					<Table.Cell class="p-3 align-middle font-medium">{reporter.fullName}</Table.Cell>
+					<Table.Cell class="p-3 align-middle font-mono text-muted-foreground">
+						{reporter.telegramId}
+					</Table.Cell>
+					<Table.Cell class="p-3 align-middle text-muted-foreground">
+						{reporter.username ?? '—'}
+					</Table.Cell>
+					<Table.Cell class="p-3 align-middle font-mono text-muted-foreground">
+						{reporter.inviteCode?.code ?? '—'}
+					</Table.Cell>
+					<Table.Cell class="p-3 text-center align-middle">{reporter.reportCount}</Table.Cell>
+				</Table.Row>
+			{/each}
+		</Table.Body>
+	</Table.Root>
+</div>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Heading from '$lib/components/shared/heading.svelte';
+	import * as Card from '$lib/components/ui/card';
 	import type { PageData } from './$types';
 	import ReportersTable from '$lib/features/reporter/components/reporters-table.svelte';
 
@@ -10,13 +10,16 @@
 	<title>Reporters</title>
 </svelte:head>
 
-<div class="flex flex-1 flex-col gap-4 p-4 pt-0">
-	<div class="flex w-full items-center justify-between">
-		<Heading
-			title="Reporters"
-			description="View all Telegram reporters who have submitted tickets."
-		/>
-	</div>
-
-	<ReportersTable reporters={data.reporters} />
+<div class="@container/main flex flex-col gap-4 md:gap-6">
+	<Card.Root>
+		<Card.Header>
+			<div>
+				<Card.Title>Reporters</Card.Title>
+				<Card.Description>View all Telegram reporters who have submitted tickets.</Card.Description>
+			</div>
+		</Card.Header>
+		<Card.Content>
+			<ReportersTable reporters={data.reporters} />
+		</Card.Content>
+	</Card.Root>
 </div>

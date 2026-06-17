@@ -7,3 +7,4 @@ allowBuilds:
   lefthook: true
   better-sqlite3: true
   '@prisma/client': true
+  sharp: false

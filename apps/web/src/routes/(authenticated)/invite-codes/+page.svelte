@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Heading from '$lib/components/shared/heading.svelte';
+	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { PlusIcon } from 'phosphor-svelte';
 	import type { PageData } from './$types';
@@ -32,19 +32,24 @@
 	<title>Invite Codes</title>
 </svelte:head>
 
-<div class="flex flex-1 flex-col gap-4 p-4 pt-0">
-	<div class="flex w-full items-center justify-between">
-		<Heading
-			title="Invite Codes"
-			description="Manage invite codes for Telegram reporter registration."
-		/>
-		<Button onclick={openCreate}>
-			<PlusIcon />
-			Add Invite Code
-		</Button>
-	</div>
-
-	<InviteCodesTable inviteCodes={data.inviteCodes} onEdit={openEdit} />
+<div class="@container/main flex flex-col gap-4 md:gap-6">
+	<Card.Root>
+		<Card.Header>
+			<div>
+				<Card.Title>Invite Codes</Card.Title>
+				<Card.Description>Manage invite codes for Telegram reporter registration.</Card.Description>
+			</div>
+			<Card.Action>
+				<Button onclick={openCreate} size="sm">
+					<PlusIcon />
+					Add Invite Code
+				</Button>
+			</Card.Action>
+		</Card.Header>
+		<Card.Content>
+			<InviteCodesTable inviteCodes={data.inviteCodes} onEdit={openEdit} />
+		</Card.Content>
+	</Card.Root>
 </div>
 
 <InviteCodeForm bind:dialogOpen bind:editingInviteCode onClose={closeDialog} />

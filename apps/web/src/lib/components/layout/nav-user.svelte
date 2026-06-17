@@ -3,20 +3,10 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { useSidebar } from '$lib/components/ui/sidebar/index.js';
-	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
-	import {
-		CaretUpDownIcon,
-		SignOutIcon,
-		SunIcon,
-		MoonIcon,
-		MonitorIcon,
-		GearSixIcon,
-		SmileyIcon
-	} from 'phosphor-svelte';
+	import { CaretUpDownIcon, SignOutIcon, GearSixIcon, SmileyIcon } from 'phosphor-svelte';
 	import { authClient } from '$lib/auth-client';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { userPrefersMode, setMode } from 'mode-watcher';
 	import getInitials from '$lib/utils/initials';
 
 	let { user }: { user: { name: string; email: string; image?: string | null } } = $props();
@@ -89,40 +79,6 @@
 					<span>Feedback</span>
 					<SmileyIcon class="size-4 text-muted-foreground" />
 				</DropdownMenu.Item>
-				<div class="flex items-center justify-between px-3 py-1.5 text-sm">
-					<span class="font-medium text-foreground">Theme</span>
-					<ToggleGroup.Root
-						type="single"
-						variant="outline"
-						value={userPrefersMode.current || 'system'}
-						onValueChange={(v) => {
-							if (v) setMode(v as 'light' | 'dark' | 'system');
-						}}
-						class="h-8 bg-muted/50 p-0.5"
-					>
-						<ToggleGroup.Item
-							value="system"
-							class="size-7 border border-transparent p-0 data-[state=on]:border-border/50 data-[state=on]:bg-background data-[state=on]:shadow-xs"
-							aria-label="System theme"
-						>
-							<MonitorIcon class="size-4" />
-						</ToggleGroup.Item>
-						<ToggleGroup.Item
-							value="light"
-							class="size-7 border border-transparent p-0 data-[state=on]:border-border/50 data-[state=on]:bg-background data-[state=on]:shadow-xs"
-							aria-label="Light theme"
-						>
-							<SunIcon class="size-4" />
-						</ToggleGroup.Item>
-						<ToggleGroup.Item
-							value="dark"
-							class="size-7 border border-transparent p-0 data-[state=on]:border-border/50 data-[state=on]:bg-background data-[state=on]:shadow-xs"
-							aria-label="Dark theme"
-						>
-							<MoonIcon class="size-4" />
-						</ToggleGroup.Item>
-					</ToggleGroup.Root>
-				</div>
 				<DropdownMenu.Separator />
 				<DropdownMenu.Item onSelect={handleLogout}>
 					<SignOutIcon />

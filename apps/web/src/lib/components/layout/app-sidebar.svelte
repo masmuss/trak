@@ -9,54 +9,60 @@
 	} from 'phosphor-svelte';
 
 	const data = {
-		navMain: [
+		navGroups: [
 			{
-				title: 'Dashboard',
-				url: '/dashboard',
-				icon: ChartPieIcon
-			},
-			{
-				title: 'Tickets',
-				url: '/tickets',
-				icon: TicketIcon,
+				id: 'workspace',
+				label: 'Workspace',
 				items: [
 					{
-						title: 'All Tickets',
-						url: '/tickets'
+						title: 'Dashboard',
+						url: '/dashboard',
+						icon: ChartPieIcon
 					},
 					{
-						title: 'Open',
-						url: '/tickets?status=open'
-					},
-					{
-						title: 'In Progress',
-						url: '/tickets?status=in_progress'
-					},
-					{
-						title: 'Resolved',
-						url: '/tickets?status=resolved'
+						title: 'Tickets',
+						url: '/tickets',
+						icon: TicketIcon,
+						items: [
+							{ title: 'All Tickets', url: '/tickets' },
+							{ title: 'Open', url: '/tickets?status=open' },
+							{ title: 'In Progress', url: '/tickets?status=in_progress' },
+							{ title: 'Resolved', url: '/tickets?status=resolved' }
+						]
 					}
 				]
 			},
 			{
-				title: 'Reporters',
-				url: '/reporters',
-				icon: UsersIcon
+				id: 'management',
+				label: 'Management',
+				items: [
+					{
+						title: 'Reporters',
+						url: '/reporters',
+						icon: UsersIcon
+					},
+					{
+						title: 'Invite Codes',
+						url: '/invite-codes',
+						icon: KeyIcon
+					},
+					{
+						title: 'Agents',
+						url: '/agents',
+						icon: ShieldIcon
+					}
+				]
 			},
 			{
-				title: 'Invite Codes',
-				url: '/invite-codes',
-				icon: KeyIcon
-			},
-			{
-				title: 'Agents',
-				url: '/agents',
-				icon: ShieldIcon
-			},
-			{
-				title: 'Settings',
-				url: '/settings',
-				icon: GearSixIcon
+				id: 'system',
+				label: 'System',
+				items: [
+					{
+						title: 'Settings',
+						url: '/settings',
+						icon: GearSixIcon
+					}
+				]
 			}
 		]
 	};
@@ -93,7 +99,7 @@
 		</Sidebar.Menu>
 	</Sidebar.Header>
 	<Sidebar.Content>
-		<NavMain items={data.navMain} />
+		<NavMain groups={data.navGroups} />
 	</Sidebar.Content>
 	<Sidebar.Footer>
 		{#if user}
