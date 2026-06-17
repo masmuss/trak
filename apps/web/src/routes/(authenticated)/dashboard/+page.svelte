@@ -5,7 +5,6 @@
 	import DashboardReportsTable from '$lib/features/dashboard/components/dashboard-reports-table.svelte';
 	import DashboardInviteCodes from '$lib/features/dashboard/components/dashboard-invite-codes.svelte';
 	import DashboardResponseTime from '$lib/features/dashboard/components/dashboard-response-time.svelte';
-	import DashboardSatisfaction from '$lib/features/dashboard/components/dashboard-satisfaction.svelte';
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -33,8 +32,5 @@
 		</div>
 	</div>
 
-	<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-		<DashboardResponseTime />
-		<DashboardSatisfaction />
-	</div>
+	<DashboardResponseTime />
 </div>

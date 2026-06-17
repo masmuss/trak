@@ -6,7 +6,7 @@
 <Card.Root>
 	<Card.Header>
 		<div class="flex items-center justify-between">
-			<Card.Title>Reporter Satisfaction</Card.Title>
+			<Card.Title class="leading-none">Reporter Satisfaction</Card.Title>
 			<span class="text-xs font-medium text-primary">4.8 / 5.0</span>
 		</div>
 		<Card.Description>Based on last 50 reviews</Card.Description>

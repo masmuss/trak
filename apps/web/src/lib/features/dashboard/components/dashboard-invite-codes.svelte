@@ -40,7 +40,7 @@
 
 <Card.Root class="flex h-full flex-col">
 	<Card.Header>
-		<Card.Title>Invite Codes</Card.Title>
+		<Card.Title class="leading-none">Invite Codes</Card.Title>
 		<Card.Description>Manage organizational access</Card.Description>
 	</Card.Header>
 	<Card.Content class="flex-1">
