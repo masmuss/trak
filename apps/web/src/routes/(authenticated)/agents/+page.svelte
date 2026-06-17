@@ -34,12 +34,10 @@
 
 <div class="@container/main flex flex-col gap-4 md:gap-6">
 	<Card.Root>
-		<Card.Header class="flex flex-row items-center justify-between border-b px-6 py-5">
+		<Card.Header class="flex flex-row items-center justify-between border-b">
 			<div>
-				<Card.Title class="text-xl leading-none">Agents</Card.Title>
-				<Card.Description class="mt-2"
-					>Manage system agents who handle and respond to tickets.</Card.Description
-				>
+				<Card.Title>Agents</Card.Title>
+				<Card.Description>Manage system agents who handle and respond to tickets.</Card.Description>
 			</div>
 			<Card.Action>
 				<Button onclick={openCreate} size="sm">
@@ -48,7 +46,7 @@
 				</Button>
 			</Card.Action>
 		</Card.Header>
-		<Card.Content class="p-6">
+		<Card.Content>
 			<AgentsTable agents={data.agents} onEdit={openEdit} />
 		</Card.Content>
 	</Card.Root>

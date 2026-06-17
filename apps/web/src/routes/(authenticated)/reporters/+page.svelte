@@ -12,15 +12,13 @@
 
 <div class="@container/main flex flex-col gap-4 md:gap-6">
 	<Card.Root>
-		<Card.Header class="flex flex-row items-center justify-between border-b px-6 py-5">
+		<Card.Header>
 			<div>
-				<Card.Title class="text-xl leading-none">Reporters</Card.Title>
-				<Card.Description class="mt-2"
-					>View all Telegram reporters who have submitted tickets.</Card.Description
-				>
+				<Card.Title>Reporters</Card.Title>
+				<Card.Description>View all Telegram reporters who have submitted tickets.</Card.Description>
 			</div>
 		</Card.Header>
-		<Card.Content class="p-6">
+		<Card.Content>
 			<ReportersTable reporters={data.reporters} />
 		</Card.Content>
 	</Card.Root>

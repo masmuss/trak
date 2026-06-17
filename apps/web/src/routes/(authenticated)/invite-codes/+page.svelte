@@ -34,12 +34,10 @@
 
 <div class="@container/main flex flex-col gap-4 md:gap-6">
 	<Card.Root>
-		<Card.Header class="flex flex-row items-center justify-between border-b px-6 py-5">
+		<Card.Header>
 			<div>
-				<Card.Title class="text-xl leading-none">Invite Codes</Card.Title>
-				<Card.Description class="mt-2"
-					>Manage invite codes for Telegram reporter registration.</Card.Description
-				>
+				<Card.Title>Invite Codes</Card.Title>
+				<Card.Description>Manage invite codes for Telegram reporter registration.</Card.Description>
 			</div>
 			<Card.Action>
 				<Button onclick={openCreate} size="sm">
@@ -48,7 +46,7 @@
 				</Button>
 			</Card.Action>
 		</Card.Header>
-		<Card.Content class="p-6">
+		<Card.Content>
 			<InviteCodesTable inviteCodes={data.inviteCodes} onEdit={openEdit} />
 		</Card.Content>
 	</Card.Root>
