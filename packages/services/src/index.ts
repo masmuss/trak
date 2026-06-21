@@ -74,8 +74,19 @@ export {
 } from './reporter.service';
 export type { ReporterWithRelations, CreateReporterInput } from './reporter.types';
 
-export { getDashboardStats, getRecentTickets, getTopInviteCodes } from './dashboard.service';
-export type { DashboardStats, TopInviteCode } from './dashboard.types';
+export {
+	getDashboardStats,
+	getRecentTickets,
+	getTopInviteCodes,
+	getCriticalTickets,
+	getPerformanceOverview
+} from './dashboard.service';
+export type {
+	DashboardStats,
+	TopInviteCode,
+	PerformanceOverviewData,
+	DayData
+} from './dashboard.types';
 
 export {
 	createNotification,

@@ -2,27 +2,22 @@
 	import * as Card from '$lib/components/ui/card';
 	import { BarChart } from 'layerchart';
 	import { ChartContainer, ChartTooltip } from '$lib/components/ui/chart';
+	import type { PerformanceOverviewData } from '@trak/services';
 
-	type DayData = { day: string; minutes: number };
+	let { overview }: { overview: PerformanceOverviewData } = $props();
 
 	const chartConfig = {
 		minutes: { label: 'Response Time (min)', color: 'hsl(var(--primary))' }
 	} as const;
 
-	const data: DayData[] = [
-		{ day: 'Mon', minutes: 40 },
-		{ day: 'Tue', minutes: 60 },
-		{ day: 'Wed', minutes: 50 },
-		{ day: 'Thu', minutes: 80 },
-		{ day: 'Fri', minutes: 70 },
-		{ day: 'Sat', minutes: 90 },
-		{ day: 'Sun', minutes: 30 }
-	];
+	const data = $derived(overview.chartData);
 
-	// Mock data for satisfaction side
-	const totalReports = 1250;
-	const resolvedReports = 980;
-	const resolveRate = Math.round((resolvedReports / totalReports) * 100);
+	// Use real data
+	const totalReports = $derived(overview.totalReports);
+	const resolvedReports = $derived(overview.resolvedReports);
+	const resolveRate = $derived(
+		totalReports > 0 ? Math.round((resolvedReports / totalReports) * 100) : 0
+	);
 </script>
 
 <div class="grid grid-cols-1 gap-4 xl:grid-cols-12">
