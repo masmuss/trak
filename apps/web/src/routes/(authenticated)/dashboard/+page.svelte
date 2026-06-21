@@ -5,6 +5,7 @@
 	import DashboardReportsTable from '$lib/features/dashboard/components/dashboard-reports-table.svelte';
 	import DashboardInviteCodes from '$lib/features/dashboard/components/dashboard-invite-codes.svelte';
 	import DashboardResponseTime from '$lib/features/dashboard/components/dashboard-response-time.svelte';
+	import DashboardCriticalTickets from '$lib/features/dashboard/components/dashboard-critical-tickets.svelte';
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -14,8 +15,6 @@
 </svelte:head>
 
 <div class="@container/main flex flex-col gap-4 md:gap-6">
-	<!-- Wait, let's keep Heading here if we want, but in web-template, maybe there's no Heading or it's different.
-	     Let's just change the wrapper classes for now. -->
 	<Heading
 		title="Dashboard Overview"
 		description="Performance metrics and ticketing activity for the last 30 days."
@@ -32,5 +31,12 @@
 		</div>
 	</div>
 
-	<DashboardResponseTime />
+	<div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
+		<div class="xl:col-span-2">
+			<DashboardResponseTime overview={data.performanceOverview} />
+		</div>
+		<div>
+			<DashboardCriticalTickets criticalReports={data.criticalReports} />
+		</div>
+	</div>
 </div>

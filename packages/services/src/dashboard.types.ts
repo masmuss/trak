@@ -3,6 +3,15 @@ export type DashboardStats = {
 	openTickets: number;
 	totalReporters: number;
 	activeInviteCodes: number;
+	slaBreachedTickets: number;
+	criticalTickets: number;
+};
+
+export type DayData = { day: string; minutes: number };
+export type PerformanceOverviewData = {
+	chartData: DayData[];
+	totalReports: number;
+	resolvedReports: number;
 };
 
 export type TopInviteCode = {
