@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/masmuss/trak/compare/v1.4.0...v1.5.0) (2026-06-21)
+
+
+### Features
+
+* **dashboard:** add comprehensive stats and critical tickets view ([a2e097e](https://github.com/masmuss/trak/commit/a2e097e66feb049bd1edb92f675474ab9b6a51aa))
+
 # [1.4.0](https://github.com/masmuss/trak/compare/v1.3.0...v1.4.0) (2026-06-17)
 
 
