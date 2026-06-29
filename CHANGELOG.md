@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/masmuss/trak/compare/v1.5.0...v1.5.1) (2026-06-29)
+
+
+### Bug Fixes
+
+* **ui:** resolve dark mode and collapse layout issues for custom app icon ([82275df](https://github.com/masmuss/trak/commit/82275dfc72ada81c7482f5650224a0b5a7f7fccf))
+
 # [1.5.0](https://github.com/masmuss/trak/compare/v1.4.0...v1.5.0) (2026-06-21)
 
 
