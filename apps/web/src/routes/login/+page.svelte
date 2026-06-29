@@ -1,8 +1,9 @@
 <script lang="ts">
 	import LoginForm from '$lib/features/auth/login-form.svelte';
-	import { CommandIcon, GlobeIcon } from 'phosphor-svelte';
+	import { GlobeIcon } from 'phosphor-svelte';
 	import type { ActionData } from './$types';
 	import { Separator } from '$lib/components/ui/separator/index.js';
+	import AppIcon from '$lib/components/shared/app-icon.svelte';
 
 	let { form }: { form: ActionData } = $props();
 </script>
@@ -15,7 +16,7 @@
 	<div class="grid h-dvh justify-center p-2 lg:grid-cols-2">
 		<div class="relative order-2 hidden h-full rounded-3xl bg-primary lg:flex">
 			<div class="absolute top-10 space-y-1 px-10 text-primary-foreground">
-				<CommandIcon class="size-10" />
+				<AppIcon />
 				<h1 class="text-2xl font-medium">Trak</h1>
 				<p class="text-sm">Ticket Tracker for Customer Support.</p>
 			</div>

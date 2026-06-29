@@ -89,10 +89,7 @@
 	<Sidebar.Header>
 		<Sidebar.Menu>
 			<Sidebar.MenuItem>
-				<Sidebar.MenuButton
-					size="lg"
-					class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-				>
+				<Sidebar.MenuButton size="lg">
 					<AppLogo />
 				</Sidebar.MenuButton>
 			</Sidebar.MenuItem>
