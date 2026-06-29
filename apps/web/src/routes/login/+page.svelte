@@ -16,7 +16,9 @@
 	<div class="grid h-dvh justify-center p-2 lg:grid-cols-2">
 		<div class="relative order-2 hidden h-full rounded-3xl bg-primary lg:flex">
 			<div class="absolute top-10 space-y-1 px-10 text-primary-foreground">
-				<AppIcon />
+				<div class="mb-3 inline-flex rounded-xl bg-background p-1.5 shadow-sm">
+					<AppIcon />
+				</div>
 				<h1 class="text-2xl font-medium">Trak</h1>
 				<p class="text-sm">Ticket Tracker for Customer Support.</p>
 			</div>
