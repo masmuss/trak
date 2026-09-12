@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { TicketDetails } from '@trak/shared';
-	import { PaperclipIcon } from 'phosphor-svelte';
+	import { FileIcon, PaperclipIcon } from 'phosphor-svelte';
+	import * as Attachment from '$lib/components/ui/attachment';
 	import getInitials from '$lib/utils/initials';
 	import StatusBadge from './status-badge.svelte';
 
@@ -41,22 +42,35 @@
 			</div>
 
 			{#if ticket.attachments && ticket.attachments.length > 0}
-				<div class="mt-px flex flex-wrap gap-1.5">
+				<Attachment.Group class="mt-px">
 					{#each ticket.attachments as attachment (attachment.id)}
-						<a
-							href={attachment.storageUrl}
-							target="_blank"
-							rel="external noopener noreferrer"
-							class="inline-flex h-7 items-center gap-1.5 rounded-md border bg-secondary px-2.5 py-0.5 text-xs font-normal text-secondary-foreground transition-colors hover:bg-secondary/80"
+						<Attachment.Root
+							size="sm"
+							class="max-w-64"
+							aria-label={`Open attachment ${attachment.fileType}`}
 						>
-							<PaperclipIcon class="size-3" />
-							<span>Attachment</span>
-							<span class="opacity-60">
-								{attachment.fileType.split('/')[1]?.toUpperCase() ?? 'FILE'}
-							</span>
-						</a>
+							<Attachment.Media>
+								<FileIcon class="size-4" />
+							</Attachment.Media>
+							<Attachment.Content>
+								<Attachment.Title class="truncate">
+									{attachment.fileType.split('/')[1]?.toUpperCase() ?? 'FILE'}
+								</Attachment.Title>
+								<Attachment.Description>Open attachment</Attachment.Description>
+							</Attachment.Content>
+							<Attachment.Actions>
+								<Attachment.Action
+									href={`/attachments/${attachment.id}`}
+									target="_blank"
+									rel="noopener noreferrer"
+									aria-label="Open attachment"
+								>
+									<PaperclipIcon class="size-3" />
+								</Attachment.Action>
+							</Attachment.Actions>
+						</Attachment.Root>
 					{/each}
-				</div>
+				</Attachment.Group>
 			{/if}
 		</div>
 	</article>

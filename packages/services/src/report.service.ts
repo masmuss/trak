@@ -190,7 +190,13 @@ export async function addReportAttachment(input: CreateAttachmentInput): Promise
 		reportId: input.reportId,
 		fileId: input.fileId,
 		fileType: input.fileType,
-		storageUrl: input.storageUrl
+		storageUrl: `telegram://${input.fileId}`
+	});
+}
+
+export async function getReportAttachmentById(id: string) {
+	return db.query.reportAttachments.findFirst({
+		where: eq(reportAttachments.id, id)
 	});
 }
 

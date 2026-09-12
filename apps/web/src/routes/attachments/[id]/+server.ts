@@ -1,0 +1,49 @@
+import { error } from '@sveltejs/kit';
+import { env } from '$env/dynamic/private';
+import { getReportAttachmentById } from '@trak/services';
+import type { RequestHandler } from './$types';
+
+export const GET: RequestHandler = async ({ locals, params, fetch }) => {
+	if (!locals.user) {
+		throw error(401, 'Unauthorized');
+	}
+
+	const attachment = await getReportAttachmentById(params.id);
+	if (!attachment) {
+		throw error(404, 'Attachment not found');
+	}
+
+	const botToken = env.TELEGRAM_BOT_TOKEN;
+	if (!botToken) {
+		throw error(503, 'Attachment service is not configured');
+	}
+
+	const fileResponse = await fetch(
+		`https://api.telegram.org/bot${botToken}/getFile?file_id=${encodeURIComponent(attachment.fileId)}`
+	);
+	if (!fileResponse.ok) {
+		throw error(502, 'Unable to locate attachment');
+	}
+
+	const fileResult = (await fileResponse.json()) as {
+		ok: boolean;
+		result?: { file_path?: string };
+	};
+	const filePath = fileResult.result?.file_path;
+	if (!fileResult.ok || !filePath) {
+		throw error(404, 'Attachment file not found');
+	}
+
+	const contentResponse = await fetch(`https://api.telegram.org/file/bot${botToken}/${filePath}`);
+	if (!contentResponse.ok || !contentResponse.body) {
+		throw error(502, 'Unable to download attachment');
+	}
+
+	return new Response(contentResponse.body, {
+		headers: {
+			'Cache-Control': 'private, max-age=300',
+			'Content-Disposition': 'inline',
+			'Content-Type': attachment.fileType
+		}
+	});
+};

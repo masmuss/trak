@@ -36,6 +36,7 @@ export {
 	calculateSLA,
 	createReport,
 	addReportAttachment,
+	getReportAttachmentById,
 	getCategoryDistribution,
 	getTicketsForExport,
 	getTicketStats

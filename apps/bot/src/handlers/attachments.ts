@@ -11,7 +11,7 @@ export function registerAttachmentHandlers(bot: Bot<BotContext>): void {
 		const photo = ctx.message.photo.at(-1);
 		if (!photo) return;
 
-		const fileInfo = await processTelegramFile(bot, photo.file_id, 'image/jpeg');
+		const fileInfo = processTelegramFile(photo.file_id, 'image/jpeg');
 		s.attachments.push(fileInfo);
 
 		await ctx.reply(attachmentReceived(s.attachments.length));
@@ -24,11 +24,7 @@ export function registerAttachmentHandlers(bot: Bot<BotContext>): void {
 		const doc = ctx.message.document;
 		if (!doc) return;
 
-		const fileInfo = await processTelegramFile(
-			bot,
-			doc.file_id,
-			doc.mime_type ?? 'application/octet-stream'
-		);
+		const fileInfo = processTelegramFile(doc.file_id, doc.mime_type ?? 'application/octet-stream');
 		s.attachments.push(fileInfo);
 
 		await ctx.reply(attachmentReceived(s.attachments.length));
