@@ -3,7 +3,9 @@
 	import { FileIcon, PaperclipIcon } from 'phosphor-svelte';
 	import * as Attachment from '$lib/components/ui/attachment';
 	import getInitials from '$lib/utils/initials';
+	import { cn } from '$lib/utils';
 	import StatusBadge from './status-badge.svelte';
+	import * as Marker from '$lib/components/ui/marker';
 
 	let { ticket }: { ticket: TicketDetails } = $props();
 
@@ -17,6 +19,7 @@
 	}
 
 	const statusHistories = $derived(ticket.statusHistories ?? []);
+	const messages = $derived(ticket.messages ?? []);
 </script>
 
 <div class="space-y-7">
@@ -116,4 +119,43 @@
 			</article>
 		{/if}
 	{/each}
+
+	{#each messages as message (message.id)}
+		<article class:flex-row-reverse={message.senderType === 'agent'} class="flex gap-4">
+			<div
+				class:flex-row-reverse={message.senderType === 'agent'}
+				class="flex flex-1 flex-col gap-1.5"
+			>
+				<div class="flex items-center gap-2">
+					<span class="text-sm font-semibold">
+						{message.senderUser?.name ?? message.senderReporter?.fullName ?? 'System'}
+					</span>
+					{#if message.isInternal}
+						<span class="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs text-amber-700"
+							>Internal</span
+						>
+					{/if}
+					<span class="ms-auto text-xs text-muted-foreground"
+						>{formatDateTime(message.createdAt)}</span
+					>
+				</div>
+				<div
+					class={cn(
+						'rounded-2xl p-3 text-sm leading-relaxed whitespace-pre-wrap text-foreground shadow-xs',
+						message.senderType === 'agent'
+							? 'rounded-tr-none bg-secondary'
+							: 'rounded-tl-none bg-muted/50'
+					)}
+				>
+					{message.body}
+				</div>
+			</div>
+		</article>
+	{/each}
+
+	{#if ticket.status === 'closed'}
+		<Marker.Root variant="separator">
+			<Marker.Content>Conversation closed</Marker.Content>
+		</Marker.Root>
+	{/if}
 </div>

@@ -1,5 +1,5 @@
 import { eq, and, inArray, count, sql, type SQL } from 'drizzle-orm';
-import { db, reports, reportAttachments, statusHistories } from '@trak/database';
+import { db, reports, reportAttachments, statusHistories, ticketMessages } from '@trak/database';
 import type { Ticket, TicketDetails, Priority } from '@trak/shared';
 import { randomBytes } from 'crypto';
 import type {
@@ -9,7 +9,8 @@ import type {
 	TicketStats,
 	DistributionResult,
 	CreateReportInput,
-	CreateAttachmentInput
+	CreateAttachmentInput,
+	CreateTicketMessageInput
 } from './report.types';
 
 const ticketDetailsWith = {
@@ -19,6 +20,10 @@ const ticketDetailsWith = {
 	statusHistories: {
 		with: { changedByUser: true },
 		orderBy: (statusHistories: any, { desc }: any) => [desc(statusHistories.changedAt)]
+	},
+	messages: {
+		with: { senderUser: true, senderReporter: true },
+		orderBy: (ticketMessages: any, { asc }: any) => [asc(ticketMessages.createdAt)]
 	}
 } as const;
 
@@ -110,7 +115,20 @@ export async function updateTicketStatus(
 	await db.transaction(async (tx) => {
 		const existing = await requireTicket(tx, id);
 
-		await tx.update(reports).set({ status: newStatus }).where(eq(reports.id, id));
+		const now = new Date();
+		const timestamps = {
+			firstRespondedAt:
+				newStatus !== 'open' && !existing.firstRespondedAt ? now : existing.firstRespondedAt,
+			resolvedAt:
+				(newStatus === 'resolved' || newStatus === 'closed') && !existing.resolvedAt
+					? now
+					: existing.resolvedAt
+		};
+
+		await tx
+			.update(reports)
+			.set({ status: newStatus, ...timestamps })
+			.where(eq(reports.id, id));
 
 		await tx.insert(statusHistories).values({
 			reportId: id,
@@ -191,6 +209,35 @@ export async function addReportAttachment(input: CreateAttachmentInput): Promise
 		fileId: input.fileId,
 		fileType: input.fileType,
 		storageUrl: `telegram://${input.fileId}`
+	});
+}
+
+export async function createTicketMessage(input: CreateTicketMessageInput) {
+	const body = input.body.trim();
+	if (!body) throw new Error('Message body is required');
+
+	return db.transaction(async (tx) => {
+		const ticket = await requireTicket(tx, input.reportId);
+		const [message] = await tx
+			.insert(ticketMessages)
+			.values({
+				reportId: input.reportId,
+				senderType: input.senderType,
+				senderUserId: input.senderUserId,
+				senderReporterId: input.senderReporterId,
+				body,
+				isInternal: input.isInternal ?? false
+			})
+			.returning();
+
+		if (input.senderType === 'agent' && !input.isInternal && !ticket.firstRespondedAt) {
+			await tx
+				.update(reports)
+				.set({ firstRespondedAt: message.createdAt })
+				.where(eq(reports.id, input.reportId));
+		}
+
+		return message;
 	});
 }
 

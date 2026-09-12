@@ -48,3 +48,12 @@ export type CreateAttachmentInput = {
 	fileType: string;
 	storageUrl: string;
 };
+
+export type CreateTicketMessageInput = {
+	reportId: string;
+	senderType: 'agent' | 'reporter' | 'system';
+	senderUserId?: string;
+	senderReporterId?: string;
+	body: string;
+	isInternal?: boolean;
+};

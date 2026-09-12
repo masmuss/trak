@@ -64,6 +64,13 @@
       "when": 1780310000000,
       "tag": "0008_secure_attachment_urls",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789210545773,
+      "tag": "0009_nappy_red_hulk",
+      "breakpoints": true
     }
   ]
 }
