@@ -6,6 +6,7 @@
 
 	import TicketDetailsSidebar from './ticket-details-sidebar.svelte';
 	import TicketConversation from './ticket-conversation.svelte';
+	import TicketMessageForm from './ticket-message-form.svelte';
 	import TicketStatusForm from './ticket-status-form.svelte';
 	import type { TicketDetails } from '@trak/shared';
 	import * as Card from '$lib/components/ui/card';
@@ -60,7 +61,10 @@
 				</Card.Content>
 
 				<Card.Footer>
-					<TicketStatusForm {ticket} />
+					<div class="w-full space-y-4">
+						<TicketMessageForm {ticket} />
+						<TicketStatusForm {ticket} />
+					</div>
 				</Card.Footer>
 			</Card.Root>
 		</div>

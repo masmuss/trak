@@ -36,6 +36,8 @@ export {
 	calculateSLA,
 	createReport,
 	addReportAttachment,
+	createTicketMessage,
+	getReportAttachmentById,
 	getCategoryDistribution,
 	getTicketsForExport,
 	getTicketStats
@@ -48,7 +50,8 @@ export type {
 	CategoryDistribution,
 	DistributionResult,
 	CreateReportInput,
-	CreateAttachmentInput
+	CreateAttachmentInput,
+	CreateTicketMessageInput
 } from './report.types';
 
 export {

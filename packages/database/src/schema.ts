@@ -106,6 +106,25 @@ export const statusHistories = pgTable('status_histories', {
 	changedAt: timestamp('changed_at', { withTimezone: true }).notNull().defaultNow()
 });
 
+export const messageSenderTypeEnum = pgEnum('message_sender_type', ['agent', 'reporter', 'system']);
+
+export const ticketMessages = pgTable('ticket_messages', {
+	id: uuid('id')
+		.primaryKey()
+		.$defaultFn(() => uuidv7()),
+	reportId: uuid('report_id')
+		.notNull()
+		.references(() => reports.id, { onDelete: 'cascade' }),
+	senderType: messageSenderTypeEnum('sender_type').notNull(),
+	senderUserId: text('sender_user_id').references(() => user.id, { onDelete: 'set null' }),
+	senderReporterId: uuid('sender_reporter_id').references(() => reporters.id, {
+		onDelete: 'set null'
+	}),
+	body: text('body').notNull(),
+	isInternal: boolean('is_internal').notNull().default(false),
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+});
+
 export const inviteCodesRelations = relations(inviteCodes, ({ many }) => ({
 	reporters: many(reporters)
 }));
@@ -132,13 +151,29 @@ export const reportsRelations = relations(reports, ({ one, many }) => ({
 		references: [categories.id]
 	}),
 	attachments: many(reportAttachments),
-	statusHistories: many(statusHistories)
+	statusHistories: many(statusHistories),
+	messages: many(ticketMessages)
 }));
 
 export const reportAttachmentsRelations = relations(reportAttachments, ({ one }) => ({
 	report: one(reports, {
 		fields: [reportAttachments.reportId],
 		references: [reports.id]
+	})
+}));
+
+export const ticketMessagesRelations = relations(ticketMessages, ({ one }) => ({
+	report: one(reports, {
+		fields: [ticketMessages.reportId],
+		references: [reports.id]
+	}),
+	senderUser: one(user, {
+		fields: [ticketMessages.senderUserId],
+		references: [user.id]
+	}),
+	senderReporter: one(reporters, {
+		fields: [ticketMessages.senderReporterId],
+		references: [reporters.id]
 	})
 }));
 

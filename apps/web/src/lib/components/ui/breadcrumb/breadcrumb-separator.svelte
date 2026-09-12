@@ -1,7 +1,7 @@
 <script lang="ts">
+	import CaretRightIcon from 'phosphor-svelte/lib/CaretRight';
 	import { cn, type WithElementRef } from '$lib/utils.js';
 	import type { HTMLLiAttributes } from 'svelte/elements';
-	import CaretRightIcon from 'phosphor-svelte/lib/CaretRight';
 
 	let {
 		ref = $bindable(null),
@@ -22,6 +22,6 @@
 	{#if children}
 		{@render children?.()}
 	{:else}
-		<CaretRightIcon />
+		<CaretRightIcon class="cn-rtl-flip" />
 	{/if}
 </li>

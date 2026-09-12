@@ -1,8 +1,12 @@
 <script lang="ts">
 	import type { TicketDetails } from '@trak/shared';
-	import { PaperclipIcon } from 'phosphor-svelte';
+	import { FileIcon, PaperclipIcon } from 'phosphor-svelte';
+	import * as Attachment from '$lib/components/ui/attachment';
+	import * as Bubble from '$lib/components/ui/bubble';
+	import * as Message from '$lib/components/ui/message';
 	import getInitials from '$lib/utils/initials';
 	import StatusBadge from './status-badge.svelte';
+	import * as Marker from '$lib/components/ui/marker';
 
 	let { ticket }: { ticket: TicketDetails } = $props();
 
@@ -16,79 +20,84 @@
 	}
 
 	const statusHistories = $derived(ticket.statusHistories ?? []);
+	const messages = $derived(ticket.messages ?? []);
 </script>
 
 <div class="space-y-7">
-	<article class="flex gap-4">
-		<div
-			class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary"
-		>
+	<Message.Root>
+		<Message.Avatar class="size-10 bg-primary/10 font-semibold text-primary">
 			{getInitials(ticket.reporter.fullName)}
-		</div>
-		<div class="flex flex-1 flex-col gap-1.5">
-			<div class="flex items-center gap-2">
+		</Message.Avatar>
+		<Message.Content>
+			<Message.Header>
 				<span class="text-sm font-semibold">{ticket.reporter.fullName}</span>
 				{#if ticket.reporter.username}
 					<span class="text-xs text-muted-foreground">@{ticket.reporter.username}</span>
 				{/if}
-				<span class="ms-auto text-xs text-muted-foreground">{formatDateTime(ticket.createdAt)}</span
-				>
-			</div>
-			<div
-				class="rounded-2xl rounded-tl-none bg-muted/50 p-3 text-sm leading-relaxed whitespace-pre-wrap text-foreground shadow-xs"
-			>
-				{ticket.body}
-			</div>
+				<span class="ms-auto">{formatDateTime(ticket.createdAt)}</span>
+			</Message.Header>
+			<Bubble.Root variant="muted">
+				<Bubble.Content class="rounded-tl-none whitespace-pre-wrap">{ticket.body}</Bubble.Content>
+			</Bubble.Root>
 
 			{#if ticket.attachments && ticket.attachments.length > 0}
-				<div class="mt-px flex flex-wrap gap-1.5">
+				<Attachment.Group class="mt-px">
 					{#each ticket.attachments as attachment (attachment.id)}
-						<a
-							href={attachment.storageUrl}
-							target="_blank"
-							rel="external noopener noreferrer"
-							class="inline-flex h-7 items-center gap-1.5 rounded-md border bg-secondary px-2.5 py-0.5 text-xs font-normal text-secondary-foreground transition-colors hover:bg-secondary/80"
+						<Attachment.Root
+							size="sm"
+							class="max-w-64"
+							aria-label={`Open attachment ${attachment.fileType}`}
 						>
-							<PaperclipIcon class="size-3" />
-							<span>Attachment</span>
-							<span class="opacity-60">
-								{attachment.fileType.split('/')[1]?.toUpperCase() ?? 'FILE'}
-							</span>
-						</a>
+							<Attachment.Media>
+								<FileIcon class="size-4" />
+							</Attachment.Media>
+							<Attachment.Content>
+								<Attachment.Title class="truncate">
+									{attachment.fileType.split('/')[1]?.toUpperCase() ?? 'FILE'}
+								</Attachment.Title>
+								<Attachment.Description>Open attachment</Attachment.Description>
+							</Attachment.Content>
+							<Attachment.Actions>
+								<Attachment.Action
+									href={`/attachments/${attachment.id}`}
+									target="_blank"
+									rel="noopener noreferrer"
+									aria-label="Open attachment"
+								>
+									<PaperclipIcon class="size-3" />
+								</Attachment.Action>
+							</Attachment.Actions>
+						</Attachment.Root>
 					{/each}
-				</div>
+				</Attachment.Group>
 			{/if}
-		</div>
-	</article>
+		</Message.Content>
+	</Message.Root>
 
 	{#each statusHistories as history (history.id)}
 		{#if history.note}
-			<article class="flex flex-row-reverse gap-4">
-				<div
-					class="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary font-semibold text-secondary-foreground"
-				>
+			<Message.Root align="end">
+				<Message.Avatar class="size-10 bg-secondary font-semibold text-secondary-foreground">
 					{getInitials(history.changedByUser?.name ?? 'System')}
-				</div>
-				<div class="flex flex-1 flex-col items-end gap-1.5">
-					<div class="flex flex-row-reverse items-center gap-2">
-						<span class="text-sm font-semibold"
-							>{history.changedByUser?.name ?? 'System Agent'}</span
+				</Message.Avatar>
+				<Message.Content>
+					<Message.Header>
+						<span class="font-semibold">{history.changedByUser?.name ?? 'System Agent'}</span>
+						<span>{formatDateTime(history.changedAt)}</span>
+					</Message.Header>
+					<Bubble.Root variant="secondary">
+						<Bubble.Content class="rounded-tr-none whitespace-pre-wrap"
+							>{history.note}</Bubble.Content
 						>
-						<span class="text-xs text-muted-foreground">{formatDateTime(history.changedAt)}</span>
-					</div>
-					<div
-						class="rounded-2xl rounded-tr-none bg-secondary p-3 text-sm leading-relaxed whitespace-pre-wrap text-primary shadow-xs"
-					>
-						{history.note}
-					</div>
-					<div class="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+					</Bubble.Root>
+					<Message.Footer class="gap-1.5">
 						<span>Changed status from</span>
 						<StatusBadge status={history.oldStatus} />
 						<span>to</span>
 						<StatusBadge status={history.newStatus} />
-					</div>
-				</div>
-			</article>
+					</Message.Footer>
+				</Message.Content>
+			</Message.Root>
 		{:else}
 			<article class="flex items-center justify-center">
 				<div
@@ -102,4 +111,44 @@
 			</article>
 		{/if}
 	{/each}
+
+	{#each messages as message (message.id)}
+		<Message.Root align={message.senderType === 'agent' ? 'end' : 'start'}>
+			<Message.Avatar
+				class={message.senderType === 'agent'
+					? 'size-10 bg-secondary font-semibold text-secondary-foreground'
+					: 'size-10 bg-primary/10 font-semibold text-primary'}
+			>
+				{getInitials(message.senderUser?.name ?? message.senderReporter?.fullName ?? 'System')}
+			</Message.Avatar>
+			<Message.Content>
+				<Message.Header>
+					<span class="font-semibold">
+						{message.senderUser?.name ?? message.senderReporter?.fullName ?? 'System'}
+					</span>
+					{#if message.isInternal}
+						<span class="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs text-amber-700"
+							>Internal</span
+						>
+					{/if}
+					<span>{formatDateTime(message.createdAt)}</span>
+				</Message.Header>
+				<Bubble.Root variant={message.senderType === 'agent' ? 'secondary' : 'muted'}>
+					<Bubble.Content
+						class={message.senderType === 'agent'
+							? 'rounded-tr-none whitespace-pre-wrap'
+							: 'rounded-tl-none whitespace-pre-wrap'}
+					>
+						{message.body}
+					</Bubble.Content>
+				</Bubble.Root>
+			</Message.Content>
+		</Message.Root>
+	{/each}
+
+	{#if ticket.status === 'closed'}
+		<Marker.Root variant="separator">
+			<Marker.Content>Conversation closed</Marker.Content>
+		</Marker.Root>
+	{/if}
 </div>
