@@ -50,10 +50,7 @@ export interface DateFilterConfig extends BaseFilterConfig {
 }
 
 export type FilterConfig =
-	| SelectFilterConfig
-	| SearchFilterConfig
-	| DateRangeFilterConfig
-	| DateFilterConfig;
+	SelectFilterConfig | SearchFilterConfig | DateRangeFilterConfig | DateFilterConfig;
 
 export interface TableFilterConfig {
 	filters: FilterConfig[];
