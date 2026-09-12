@@ -11,12 +11,12 @@
 		"@trak/services": "workspace:*",
 		"@trak/shared": "workspace:*",
 		"dotenv": "^17.4.2",
-		"grammy": "^1.43.0",
-		"node-cron": "^4.2.1"
+		"grammy": "^1.46.0",
+		"node-cron": "^4.6.0"
 	},
 	"devDependencies": {
-		"@types/node": "^22.19.19",
-		"tsx": "^4.0.0",
-		"typescript": "^6.0.2"
+		"@types/node": "^22.20.2",
+		"tsx": "^4.23.13",
+		"typescript": "^6.0.3"
 	}
 }
