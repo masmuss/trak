@@ -14,6 +14,7 @@ import { user } from './auth.schema';
 import { uuidv7 } from 'uuidv7';
 
 export * from './auth.schema';
+export { auditLogs } from './audit.schema';
 
 const lifecycleDates = {
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

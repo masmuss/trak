@@ -9,9 +9,12 @@ import {
 	findUserByEmailExcluding,
 	getUserById,
 	getUsers,
-	updateUser
+	updateUser,
+	createAuditLog
 } from '@trak/services';
-import { requireAuth, getFormString, getFormBool, requireExists } from '$lib/server/helpers';
+import { requireRole, getFormString, getFormBool, requireExists } from '$lib/server/helpers';
+
+const validRoles = ['agent', 'admin'] as const;
 
 const CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
@@ -21,13 +24,15 @@ function generatePassword(length: number): string {
 	return Array.from(array, (byte) => CHARS[byte % CHARS.length]).join('');
 }
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async (event) => {
+	requireRole(event, 'admin');
 	const allUsers = await getUsers();
 	return { agents: allUsers };
 };
 
 export const actions: Actions = {
 	create: async (event) => {
+		const currentUser = requireRole(event, 'admin');
 		const formData = await event.request.formData();
 		const name = getFormString(formData, 'name');
 		const email = getFormString(formData, 'email');
@@ -39,6 +44,9 @@ export const actions: Actions = {
 
 		if (!email.trim()) {
 			return fail(400, { error: 'Email is required' });
+		}
+		if (!validRoles.includes(role as (typeof validRoles)[number])) {
+			return fail(400, { error: 'Invalid role' });
 		}
 
 		const existingEmail = await findUserByEmail(email.trim());
@@ -64,12 +72,19 @@ export const actions: Actions = {
 			providerId: 'credential',
 			password: await hashPassword(password)
 		});
+		await createAuditLog({
+			actorUserId: currentUser.id,
+			action: 'user.created',
+			entityType: 'user',
+			entityId: id,
+			afterData: { email: email.trim(), role, isActive: true }
+		});
 
 		return { success: true, password };
 	},
 
 	update: async (event) => {
-		requireAuth(event);
+		const currentUser = requireRole(event, 'admin');
 		const formData = await event.request.formData();
 		const id = getFormString(formData, 'id');
 		const name = getFormString(formData, 'name');
@@ -88,6 +103,9 @@ export const actions: Actions = {
 		if (!email.trim()) {
 			return fail(400, { error: 'Email is required' });
 		}
+		if (!validRoles.includes(role as (typeof validRoles)[number])) {
+			return fail(400, { error: 'Invalid role' });
+		}
 
 		const existing = await getUserById(id);
 		requireExists(existing, 'Agent');
@@ -103,12 +121,19 @@ export const actions: Actions = {
 			role,
 			isActive
 		});
+		await createAuditLog({
+			actorUserId: currentUser.id,
+			action: 'user.updated',
+			entityType: 'user',
+			entityId: id,
+			afterData: { name: name.trim(), email: email.trim(), role, isActive }
+		});
 
 		return { success: true };
 	},
 
 	delete: async (event) => {
-		const currentUser = requireAuth(event);
+		const currentUser = requireRole(event, 'admin');
 		const formData = await event.request.formData();
 		const id = getFormString(formData, 'id');
 
@@ -124,6 +149,13 @@ export const actions: Actions = {
 		requireExists(existing, 'Agent');
 
 		await deleteUser(id);
+		await createAuditLog({
+			actorUserId: currentUser.id,
+			action: 'user.deleted',
+			entityType: 'user',
+			entityId: id,
+			beforeData: { name: existing.name, email: existing.email, role: existing.role }
+		});
 
 		return { success: true };
 	}

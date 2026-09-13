@@ -5,6 +5,15 @@ export function requireAuth(event: RequestEvent) {
 	if (!user) {
 		throw error(401, 'Unauthorized');
 	}
+
+	return user;
+}
+
+export function requireRole(event: RequestEvent, ...roles: string[]) {
+	const user = requireAuth(event);
+	if (!roles.includes(user.role ?? 'agent')) {
+		throw error(403, 'Forbidden');
+	}
 	return user;
 }
 

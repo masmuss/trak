@@ -37,12 +37,16 @@ export async function validateInviteCode(code: string): Promise<InviteCodeValida
 	return { valid: true, inviteCodeId: invite.id };
 }
 
-export async function createInviteCode(input: CreateInviteCodeInput): Promise<void> {
+export async function createInviteCode(input: CreateInviteCodeInput): Promise<string> {
 	const expiresAt = input.expiresAt ? new Date(input.expiresAt) : null;
-	await db.insert(inviteCodes).values({
-		code: input.code,
-		expiresAt
-	});
+	const [inviteCode] = await db
+		.insert(inviteCodes)
+		.values({
+			code: input.code,
+			expiresAt
+		})
+		.returning({ id: inviteCodes.id });
+	return inviteCode.id;
 }
 
 export async function updateInviteCode(id: string, input: UpdateInviteCodeInput): Promise<void> {
