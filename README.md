@@ -167,7 +167,11 @@ DATABASE_URL="postgres://root:mysecretpassword@localhost:5432/local"
 ```env
 ORIGIN=http://localhost:5173
 BETTER_AUTH_SECRET=<your-secret>
+TELEGRAM_BOT_TOKEN=<your-bot-token>
 ```
+
+`TELEGRAM_BOT_TOKEN` is required by the authenticated web attachment proxy. Keep it
+server-side in `apps/web/.env`; it is never exposed to the browser.
 
 `apps/bot/.env`:
 

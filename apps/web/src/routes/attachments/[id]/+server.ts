@@ -15,7 +15,10 @@ export const GET: RequestHandler = async ({ locals, params, fetch }) => {
 
 	const botToken = env.TELEGRAM_BOT_TOKEN;
 	if (!botToken) {
-		throw error(503, 'Attachment service is not configured');
+		throw error(
+			503,
+			'Attachment service is not configured. Set TELEGRAM_BOT_TOKEN in apps/web/.env and restart the web server.'
+		);
 	}
 
 	const fileResponse = await fetch(
