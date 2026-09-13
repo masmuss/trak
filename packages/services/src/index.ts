@@ -35,6 +35,8 @@ export {
 	getTicketByTicketCodeForReporter,
 	updateTicketStatus,
 	updateTicketPriority,
+	claimTicket,
+	assignTicket,
 	checkSlaBreach,
 	calculateSLA,
 	createReport,

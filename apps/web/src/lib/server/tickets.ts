@@ -24,6 +24,7 @@ export function parseTicketFilters(url: URL) {
 	const isValidSla = slaBreached === 'true' || slaBreached === 'false';
 
 	const categoryId = url.searchParams.get('categoryId');
+	const assignedTo = url.searchParams.get('assignedTo');
 
 	const search = url.searchParams.get('search');
 
@@ -32,6 +33,7 @@ export function parseTicketFilters(url: URL) {
 		priority: priority || undefined,
 		slaBreached: isValidSla ? slaBreached : undefined,
 		categoryId: categoryId || undefined,
+		assignedTo: assignedTo || undefined,
 		search: search || undefined
 	};
 }

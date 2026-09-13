@@ -79,6 +79,9 @@ export const reports = pgTable('reports', {
 	firstRespondedAt: timestamp('first_response_at', { withTimezone: true }),
 	resolvedAt: timestamp('resolved_at', { withTimezone: true }),
 	isSlaBreached: boolean('is_sla_breached').notNull().default(false),
+	assignedTo: text('assigned_to').references(() => user.id, { onDelete: 'set null' }),
+	assignedAt: timestamp('assigned_at', { withTimezone: true }),
+	assignedBy: text('assigned_by').references(() => user.id, { onDelete: 'set null' }),
 	...lifecycleDates
 });
 
@@ -157,6 +160,16 @@ export const reportsRelations = relations(reports, ({ one, many }) => ({
 	category: one(categories, {
 		fields: [reports.categoryId],
 		references: [categories.id]
+	}),
+	assignee: one(user, {
+		fields: [reports.assignedTo],
+		references: [user.id],
+		relationName: 'ticketAssignee'
+	}),
+	assignedByUser: one(user, {
+		fields: [reports.assignedBy],
+		references: [user.id],
+		relationName: 'ticketAssignmentActor'
 	}),
 	attachments: many(reportAttachments),
 	statusHistories: many(statusHistories),

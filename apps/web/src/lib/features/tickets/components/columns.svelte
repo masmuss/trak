@@ -55,6 +55,14 @@
 				meta: { label: 'Priority' }
 			},
 			{
+				id: 'assignee',
+				accessorFn: (row) => row.assignee?.name ?? 'Unassigned',
+				header: ({ column }) =>
+					renderComponent(DataTableColumnHeader, { column, title: 'Assigned To' }),
+				cell: (context) => renderSnippet(assigneeCell, context),
+				meta: { label: 'Assigned To' }
+			},
+			{
 				accessorKey: 'status',
 				header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: 'Status' }),
 				cell: (context) => renderSnippet(statusCell, context),
@@ -81,6 +89,10 @@
 	<span class="font-mono text-xs font-medium">
 		{row.original.ticketCode}
 	</span>
+{/snippet}
+
+{#snippet assigneeCell({ row }: CellContext<TicketWithRelations, unknown>)}
+	<span class="text-sm">{row.original.assignee?.name ?? 'Unassigned'}</span>
 {/snippet}
 
 {#snippet subjectCell({ row }: CellContext<TicketWithRelations, unknown>)}

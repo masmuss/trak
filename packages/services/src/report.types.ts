@@ -19,6 +19,7 @@ export type TicketFilters = {
 	slaBreached?: string;
 	search?: string;
 	categoryId?: string;
+	assignedTo?: string;
 	limit?: number;
 	offset?: number;
 };
