@@ -10,16 +10,9 @@
 	import PriorityBadge from './priority-badge.svelte';
 	import SlaBadge from './sla-badge.svelte';
 	import { Badge } from '$lib/components/ui/badge';
+	import { formatDate } from '../utils/formatters';
 
 	let { columns = $bindable() }: { columns: ColumnDef<TicketWithRelations, unknown>[] } = $props();
-
-	function formatDate(date: Date) {
-		return date.toLocaleDateString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric'
-		});
-	}
 
 	$effect(() => {
 		columns = [
