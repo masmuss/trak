@@ -14,6 +14,7 @@
 	import type { TicketDetails } from '@trak/shared';
 	import * as Card from '$lib/components/ui/card';
 	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
+	import { formatDateTime } from '../utils/formatters';
 
 	let {
 		ticket,
@@ -40,15 +41,6 @@
 		events.addEventListener('ticket-message', handleMessage);
 		return () => events.close();
 	});
-
-	function formatDateTime(dateStr: string | Date) {
-		return new Date(dateStr).toLocaleDateString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
-	}
 </script>
 
 <div class="@container/main flex flex-col gap-4 md:gap-6">
