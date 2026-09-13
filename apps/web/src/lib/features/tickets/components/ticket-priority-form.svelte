@@ -8,6 +8,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import type { TicketDetails } from '@trak/shared';
 	import { handleFormError } from '$lib/utils/form';
+	import { formatDateTime } from '../utils/formatters';
 
 	let { ticket }: { ticket: TicketDetails } = $props();
 
@@ -79,13 +80,13 @@
 				{#if ticket.slaResponseDue}
 					<div class="flex justify-between">
 						<span>Response due:</span>
-						<span class="font-medium">{new Date(ticket.slaResponseDue).toLocaleString()}</span>
+						<span class="font-medium">{formatDateTime(ticket.slaResponseDue)}</span>
 					</div>
 				{/if}
 				{#if ticket.slaResolveDue}
 					<div class="flex justify-between">
 						<span>Resolve due:</span>
-						<span class="font-medium">{new Date(ticket.slaResolveDue).toLocaleString()}</span>
+						<span class="font-medium">{formatDateTime(ticket.slaResolveDue)}</span>
 					</div>
 				{/if}
 				{#if ticket.isSlaBreached}
