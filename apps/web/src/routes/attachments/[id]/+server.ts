@@ -13,17 +13,25 @@ export const GET: RequestHandler = async ({ locals, params, fetch }) => {
 		throw error(404, 'Attachment not found');
 	}
 
+	if (attachment.message && attachment.message.reportId !== attachment.report.id) {
+		throw error(404, 'Attachment not found');
+	}
+
 	const botToken = process.env.TELEGRAM_BOT_TOKEN;
-	const isAgentMessageAttachment = attachment.message?.senderType === 'agent';
-	if (attachment.storageUrl.startsWith('s3://') || isAgentMessageAttachment) {
+	const filename = getAttachmentFilename(attachment.fileId, attachment.fileType);
+	if (attachment.storageUrl.startsWith('s3://')) {
 		const content = await downloadAttachment(attachment.fileId);
 		return new Response(content.Body as ReadableStream, {
 			headers: {
 				'Cache-Control': 'private, max-age=300',
-				'Content-Disposition': 'inline',
+				'Content-Disposition': `inline; filename="${filename}"`,
 				'Content-Type': attachment.fileType
 			}
 		});
+	}
+
+	if (!attachment.storageUrl.startsWith('telegram://')) {
+		throw error(422, 'Unsupported attachment storage');
 	}
 
 	if (!botToken) {
@@ -57,8 +65,18 @@ export const GET: RequestHandler = async ({ locals, params, fetch }) => {
 	return new Response(contentResponse.body, {
 		headers: {
 			'Cache-Control': 'private, max-age=300',
-			'Content-Disposition': 'inline',
+			'Content-Disposition': `inline; filename="${filename}"`,
 			'Content-Type': attachment.fileType
 		}
 	});
 };
+
+function getAttachmentFilename(fileId: string, fileType: string): string {
+	const generatedName = fileId.match(
+		/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-(.+)$/i
+	)?.[1];
+	const extension = fileType.split('/')[1]?.replace(/[^a-z0-9]/gi, '') || 'bin';
+	const filename = generatedName || `attachment.${extension}`;
+
+	return filename.replace(/[^a-z0-9._-]/gi, '_');
+}

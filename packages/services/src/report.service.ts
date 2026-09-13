@@ -410,7 +410,7 @@ export async function createReporterTicketMessage(
 export async function getReportAttachmentById(id: string) {
 	return db.query.reportAttachments.findFirst({
 		where: eq(reportAttachments.id, id),
-		with: { message: true }
+		with: { report: true, message: true }
 	});
 }
 
