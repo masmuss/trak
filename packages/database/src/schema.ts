@@ -98,6 +98,7 @@ export const reports = pgTable('reports', {
 	firstRespondedAt: timestamp('first_response_at', { withTimezone: true }),
 	resolvedAt: timestamp('resolved_at', { withTimezone: true }),
 	isSlaBreached: boolean('is_sla_breached').notNull().default(false),
+	lastActivityAt: timestamp('last_activity_at', { withTimezone: true }).notNull().defaultNow(),
 	assignedTo: text('assigned_to').references(() => user.id, { onDelete: 'set null' }),
 	assignedAt: timestamp('assigned_at', { withTimezone: true }),
 	assignedBy: text('assigned_by').references(() => user.id, { onDelete: 'set null' }),

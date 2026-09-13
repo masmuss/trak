@@ -39,6 +39,7 @@ export {
 	getTicketByTicketCodeForReporter,
 	getCategoryDistribution,
 	getTicketsForExport,
+	getStaleTickets,
 	getTicketStats,
 	isTicketSortKey
 } from './ticket-query.service';

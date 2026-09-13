@@ -1,125 +1,132 @@
 {
-	"version": "7",
-	"dialect": "postgresql",
-	"entries": [
-		{
-			"idx": 0,
-			"version": "7",
-			"when": 1779519019635,
-			"tag": "0000_spooky_scourge",
-			"breakpoints": true
-		},
-		{
-			"idx": 1,
-			"version": "7",
-			"when": 1779798770487,
-			"tag": "0001_good_butterfly",
-			"breakpoints": true
-		},
-		{
-			"idx": 2,
-			"version": "7",
-			"when": 1779929471320,
-			"tag": "0002_big_sharon_carter",
-			"breakpoints": true
-		},
-		{
-			"idx": 3,
-			"version": "7",
-			"when": 1779930441921,
-			"tag": "0003_bumpy_victor_mancha",
-			"breakpoints": true
-		},
-		{
-			"idx": 4,
-			"version": "7",
-			"when": 1779930562130,
-			"tag": "0004_aromatic_titania",
-			"breakpoints": true
-		},
-		{
-			"idx": 5,
-			"version": "7",
-			"when": 1779931882147,
-			"tag": "0005_green_spot",
-			"breakpoints": true
-		},
-		{
-			"idx": 6,
-			"version": "7",
-			"when": 1779961829793,
-			"tag": "0006_careful_trauma",
-			"breakpoints": true
-		},
-		{
-			"idx": 7,
-			"version": "7",
-			"when": 1780308194617,
-			"tag": "0007_tan_nemesis",
-			"breakpoints": true
-		},
-		{
-			"idx": 8,
-			"version": "7",
-			"when": 1780310000000,
-			"tag": "0008_secure_attachment_urls",
-			"breakpoints": true
-		},
-		{
-			"idx": 9,
-			"version": "7",
-			"when": 1789210545773,
-			"tag": "0009_nappy_red_hulk",
-			"breakpoints": true
-		},
-		{
-			"idx": 10,
-			"version": "7",
-			"when": 1789273985449,
-			"tag": "0010_dark_the_phantom",
-			"breakpoints": true
-		},
-		{
-			"idx": 11,
-			"version": "7",
-			"when": 1789275076458,
-			"tag": "0011_elite_wild_pack",
-			"breakpoints": true
-		},
-		{
-			"idx": 12,
-			"version": "7",
-			"when": 1789282072401,
-			"tag": "0012_lean_magik",
-			"breakpoints": true
-		},
-		{
-			"idx": 13,
-			"version": "7",
-			"when": 1789284995427,
-			"tag": "0013_white_lilith",
-			"breakpoints": true
-		},
-		{
-			"idx": 14,
-			"version": "7",
-			"when": 1789292078746,
-			"tag": "0014_left_korvac",
-			"breakpoints": true
-		},
-		{
-			"idx": 15,
-			"version": "7",
-			"when": 1789301945815,
-			"tag": "0015_known_galactus",
-			"breakpoints": true
-		},
-		{
-			"idx": 16,
-			"version": "7",
-			"when": 1789303357533,
-			"tag": "0016_amazing_jack_power",
-			"breakpoints": true
-		}
-	]
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1779519019635,
+      "tag": "0000_spooky_scourge",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1779798770487,
+      "tag": "0001_good_butterfly",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779929471320,
+      "tag": "0002_big_sharon_carter",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1779930441921,
+      "tag": "0003_bumpy_victor_mancha",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1779930562130,
+      "tag": "0004_aromatic_titania",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1779931882147,
+      "tag": "0005_green_spot",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779961829793,
+      "tag": "0006_careful_trauma",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1780308194617,
+      "tag": "0007_tan_nemesis",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1780310000000,
+      "tag": "0008_secure_attachment_urls",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789210545773,
+      "tag": "0009_nappy_red_hulk",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1789273985449,
+      "tag": "0010_dark_the_phantom",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1789275076458,
+      "tag": "0011_elite_wild_pack",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1789282072401,
+      "tag": "0012_lean_magik",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1789284995427,
+      "tag": "0013_white_lilith",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1789292078746,
+      "tag": "0014_left_korvac",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1789301945815,
+      "tag": "0015_known_galactus",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1789303357533,
+      "tag": "0016_amazing_jack_power",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1789337284509,
+      "tag": "0017_early_golden_guardian",
+      "breakpoints": true
+    }
+  ]
 }

@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, inArray, isNull, sql, type SQL } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNull, lt, sql, type SQL } from 'drizzle-orm';
 import { db, reports } from '@trak/database';
 import { toPriorityList, toTicketStatusList } from '@trak/shared';
 import type { Ticket, TicketDetails } from '@trak/shared';
@@ -157,6 +157,30 @@ export async function getTicketsForExport(filters: ReportFilterInput): Promise<T
 		where: buildReportFilters(filters),
 		with: { reporter: true, category: true, assignee: true },
 		orderBy: [resolveTicketOrder(filters)]
+	});
+}
+
+/**
+ * Open tickets with no meaningful activity (status/priority/assignment/edit/message)
+ * for longer than `maxInactiveHours`. SLA bookkeeping flips and session noise do not
+ * count — `last_activity_at` is maintained by DB triggers (see migration 0017).
+ */
+export async function getStaleTickets(
+	maxInactiveHours: number,
+	limit = 50
+): Promise<TicketListItem[]> {
+	if (!Number.isFinite(maxInactiveHours) || maxInactiveHours <= 0) {
+		throw new Error('maxInactiveHours must be a positive number');
+	}
+	const cutoff = new Date(Date.now() - maxInactiveHours * 3_600_000);
+	return db.query.reports.findMany({
+		where: and(
+			inArray(reports.status, toTicketStatusList('open,in_progress')),
+			lt(reports.lastActivityAt, cutoff)
+		),
+		with: { reporter: true, category: true, assignee: true },
+		orderBy: [asc(reports.lastActivityAt)],
+		limit
 	});
 }
 
