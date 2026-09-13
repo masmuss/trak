@@ -31,6 +31,9 @@ test-results
 # Bot
 .bot-sessions/
 
+# Local attachment storage
+attachments/
+
 # Misc
 .antigravitycli
 apps/web-template/
