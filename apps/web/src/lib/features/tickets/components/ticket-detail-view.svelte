@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { invalidateAll } from '$app/navigation';
+	import { toast } from 'svelte-sonner';
 	import PriorityBadge from './priority-badge.svelte';
 	import StatusBadge from './status-badge.svelte';
 	import SlaBadge from './sla-badge.svelte';
@@ -13,6 +16,22 @@
 	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
 
 	let { ticket }: { ticket: TicketDetails } = $props();
+
+	onMount(() => {
+		const events = new EventSource('/tickets/events');
+		const handleMessage = (event: MessageEvent<string>) => {
+			const payload = JSON.parse(event.data) as { reportId?: string; message?: string };
+			if (payload.reportId === ticket.id) {
+				toast.info('New reporter reply received', {
+					description: payload.message
+				});
+				void invalidateAll();
+			}
+		};
+
+		events.addEventListener('ticket-message', handleMessage);
+		return () => events.close();
+	});
 
 	function formatDateTime(dateStr: string | Date) {
 		return new Date(dateStr).toLocaleDateString('en-US', {

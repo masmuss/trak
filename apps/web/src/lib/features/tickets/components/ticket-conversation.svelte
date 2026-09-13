@@ -21,6 +21,26 @@
 
 	const statusHistories = $derived(ticket.statusHistories ?? []);
 	const messages = $derived(ticket.messages ?? []);
+	const messageGroups = $derived.by(() => {
+		const groups: { key: string; messages: TicketDetails['messages'] }[] = [];
+
+		for (const message of messages) {
+			const key = [
+				message.senderType,
+				message.senderUserId ?? message.senderReporterId ?? 'system',
+				message.isInternal
+			].join(':');
+			const currentGroup = groups.at(-1);
+
+			if (currentGroup?.key === key) {
+				currentGroup.messages.push(message);
+			} else {
+				groups.push({ key, messages: [message] });
+			}
+		}
+
+		return groups;
+	});
 </script>
 
 <div class="space-y-7">
@@ -37,7 +57,7 @@
 				<span class="ms-auto">{formatDateTime(ticket.createdAt)}</span>
 			</Message.Header>
 			<Bubble.Root variant="muted">
-				<Bubble.Content class="rounded-tl-none whitespace-pre-wrap">{ticket.body}</Bubble.Content>
+				<Bubble.Content class="whitespace-pre-wrap">{ticket.body}</Bubble.Content>
 			</Bubble.Root>
 
 			{#if ticket.attachments && ticket.attachments.length > 0}
@@ -85,10 +105,8 @@
 						<span class="font-semibold">{history.changedByUser?.name ?? 'System Agent'}</span>
 						<span>{formatDateTime(history.changedAt)}</span>
 					</Message.Header>
-					<Bubble.Root variant="secondary">
-						<Bubble.Content class="rounded-tr-none whitespace-pre-wrap"
-							>{history.note}</Bubble.Content
-						>
+					<Bubble.Root variant="muted">
+						<Bubble.Content class=" whitespace-pre-wrap">{history.note}</Bubble.Content>
 					</Bubble.Root>
 					<Message.Footer class="gap-1.5">
 						<span>Changed status from</span>
@@ -112,36 +130,46 @@
 		{/if}
 	{/each}
 
-	{#each messages as message (message.id)}
-		<Message.Root align={message.senderType === 'agent' ? 'end' : 'start'}>
+	{#each messageGroups as group (group.key + group.messages[0].id)}
+		{@const firstMessage = group.messages[0]}
+		{@const lastMessage = group.messages[group.messages.length - 1]}
+		<Message.Root align={firstMessage.senderType === 'agent' ? 'end' : 'start'}>
 			<Message.Avatar
-				class={message.senderType === 'agent'
-					? 'size-10 bg-secondary font-semibold text-secondary-foreground'
-					: 'size-10 bg-primary/10 font-semibold text-primary'}
+				class={`self-end ${
+					firstMessage.senderType === 'agent'
+						? 'size-10 bg-secondary font-semibold text-secondary-foreground'
+						: 'size-10 bg-primary/10 font-semibold text-primary'
+				}`}
 			>
-				{getInitials(message.senderUser?.name ?? message.senderReporter?.fullName ?? 'System')}
+				{getInitials(
+					firstMessage.senderUser?.name ?? firstMessage.senderReporter?.fullName ?? 'System'
+				)}
 			</Message.Avatar>
 			<Message.Content>
 				<Message.Header>
 					<span class="font-semibold">
-						{message.senderUser?.name ?? message.senderReporter?.fullName ?? 'System'}
+						{firstMessage.senderUser?.name ?? firstMessage.senderReporter?.fullName ?? 'System'}
 					</span>
-					{#if message.isInternal}
+					{#if firstMessage.isInternal}
 						<span class="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs text-amber-700"
 							>Internal</span
 						>
 					{/if}
-					<span>{formatDateTime(message.createdAt)}</span>
+					<span>{formatDateTime(lastMessage.createdAt)}</span>
 				</Message.Header>
-				<Bubble.Root variant={message.senderType === 'agent' ? 'secondary' : 'muted'}>
-					<Bubble.Content
-						class={message.senderType === 'agent'
-							? 'rounded-tr-none whitespace-pre-wrap'
-							: 'rounded-tl-none whitespace-pre-wrap'}
-					>
-						{message.body}
-					</Bubble.Content>
-				</Bubble.Root>
+				<Bubble.Group>
+					{#each group.messages as message (message.id)}
+						<Bubble.Root variant={message.senderType === 'agent' ? 'default' : 'muted'}>
+							<Bubble.Content
+								class={message.senderType === 'agent'
+									? 'whitespace-pre-wrap'
+									: 'whitespace-pre-wrap'}
+							>
+								{message.body}
+							</Bubble.Content>
+						</Bubble.Root>
+					{/each}
+				</Bubble.Group>
 			</Message.Content>
 		</Message.Root>
 	{/each}

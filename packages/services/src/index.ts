@@ -95,6 +95,7 @@ export type {
 
 export {
 	createNotification,
+	publishAgentNotification,
 	getPendingNotifications,
 	markNotificationRead
 } from './notification.service';

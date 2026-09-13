@@ -24,6 +24,15 @@ export async function createNotification(input: CreateNotificationInput) {
 	await db.execute(sql`SELECT pg_notify('notifications', ${payload})`);
 }
 
+export async function publishAgentNotification(input: {
+	reportId: string;
+	messageId: string;
+	message: string;
+}) {
+	const payload = JSON.stringify(input);
+	await db.execute(sql`SELECT pg_notify('agent_notifications', ${payload})`);
+}
+
 export async function getPendingNotifications() {
 	return db
 		.select()
