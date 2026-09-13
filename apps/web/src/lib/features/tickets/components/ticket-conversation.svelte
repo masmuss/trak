@@ -79,17 +79,13 @@
 				<span class="ms-auto">{formatDateTime(ticket.createdAt)}</span>
 			</Message.Header>
 			<Bubble.Root variant="muted">
-				<Bubble.Content class="whitespace-pre-wrap">{ticket.body}</Bubble.Content>
+				<Bubble.Content>{ticket.body}</Bubble.Content>
 			</Bubble.Root>
 
 			{#if ticket.attachments && ticket.attachments.length > 0}
 				<Attachment.Group class="mt-px">
 					{#each ticket.attachments as attachment (attachment.id)}
-						<Attachment.Root
-							size="sm"
-							class="max-w-64"
-							aria-label={`Open attachment ${attachment.fileType}`}
-						>
+						<Attachment.Root size="sm" aria-label={`Open attachment ${attachment.fileType}`}>
 							<Attachment.Media><FileIcon class="size-4" /></Attachment.Media>
 							<Attachment.Content>
 								<Attachment.Title class="truncate">
@@ -158,7 +154,7 @@
 					<Bubble.Group>
 						{#each group.messages as message (message.id)}
 							<Bubble.Root variant={message.senderType === 'agent' ? 'default' : 'muted'}>
-								<Bubble.Content class="whitespace-pre-wrap">{message.body}</Bubble.Content>
+								<Bubble.Content>{message.body}</Bubble.Content>
 							</Bubble.Root>
 						{/each}
 					</Bubble.Group>
