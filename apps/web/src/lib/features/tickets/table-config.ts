@@ -27,6 +27,12 @@ export function createTicketsTableConfig(categories: Category[]): TableConfig<Ti
 					{ label: 'Closed', value: 'closed' }
 				]
 			}),
+			createSelectFilter({
+				key: 'assignedTo',
+				title: 'Assignment',
+				serverKey: 'assignedTo',
+				options: [{ label: 'Unassigned', value: 'unassigned' }]
+			}),
 			createMultiSelectFilter({
 				key: 'priority',
 				title: 'Priority',

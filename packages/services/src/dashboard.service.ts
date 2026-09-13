@@ -41,7 +41,8 @@ export async function getRecentTickets(limit = 5): Promise<TicketWithRelations[]
 		where: (reports, { inArray }) => inArray(reports.status, ['open', 'in_progress']),
 		with: {
 			reporter: true,
-			category: true
+			category: true,
+			assignee: true
 		},
 		orderBy: (reports, { desc }) => [desc(reports.createdAt)]
 	}) as Promise<TicketWithRelations[]>;
@@ -54,7 +55,8 @@ export async function getCriticalTickets(limit = 5): Promise<TicketWithRelations
 			or(eq(reports.priority, 'CRITICAL'), eq(reports.isSlaBreached, true)),
 		with: {
 			reporter: true,
-			category: true
+			category: true,
+			assignee: true
 		},
 		orderBy: (reports, { desc }) => [desc(reports.createdAt)]
 	}) as Promise<TicketWithRelations[]>;

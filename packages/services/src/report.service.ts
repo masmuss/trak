@@ -1,4 +1,4 @@
-import { eq, and, inArray, count, sql, type SQL } from 'drizzle-orm';
+import { eq, and, inArray, count, sql, isNull, type SQL } from 'drizzle-orm';
 import { db, reports, reportAttachments, statusHistories, ticketMessages } from '@trak/database';
 import type { Ticket, TicketDetails, Priority } from '@trak/shared';
 import { randomBytes } from 'crypto';
@@ -19,6 +19,7 @@ const ticketDetailsWith = {
 	reporter: true,
 	category: true,
 	attachments: true,
+	assignee: true,
 	statusHistories: {
 		with: { changedByUser: true },
 		orderBy: (statusHistories: any, { desc }: any) => [desc(statusHistories.changedAt)]
@@ -31,7 +32,7 @@ const ticketDetailsWith = {
 
 type ReportFilterInput = Pick<
 	TicketFilters,
-	'status' | 'priority' | 'slaBreached' | 'search' | 'categoryId'
+	'status' | 'priority' | 'slaBreached' | 'search' | 'categoryId' | 'assignedTo'
 >;
 
 function buildReportFilters(filters: ReportFilterInput): SQL | undefined {
@@ -53,6 +54,13 @@ function buildReportFilters(filters: ReportFilterInput): SQL | undefined {
 
 	if (filters.categoryId) {
 		conditions.push(inArray(reports.categoryId, filters.categoryId.split(',')));
+	}
+	if (filters.assignedTo) {
+		conditions.push(
+			filters.assignedTo === 'unassigned'
+				? isNull(reports.assignedTo)
+				: inArray(reports.assignedTo, filters.assignedTo.split(','))
+		);
 	}
 
 	if (filters.search) {
@@ -91,7 +99,7 @@ export async function listTickets(filters: TicketFilters): Promise<TicketListRes
 			where: whereClause,
 			limit: filters.limit ?? 10,
 			offset: filters.offset ?? 0,
-			with: { reporter: true, category: true },
+			with: { reporter: true, category: true, assignee: true },
 			orderBy: (reports, { desc }) => [desc(reports.createdAt)]
 		})
 	]);
@@ -100,6 +108,30 @@ export async function listTickets(filters: TicketFilters): Promise<TicketListRes
 		tickets,
 		total: totalResult[0]?.count ?? 0
 	};
+}
+
+export async function claimTicket(ticketId: string, userId: string): Promise<boolean> {
+	const result = await db
+		.update(reports)
+		.set({ assignedTo: userId, assignedAt: new Date(), assignedBy: userId })
+		.where(and(eq(reports.id, ticketId), isNull(reports.assignedTo)))
+		.returning({ id: reports.id });
+	return result.length > 0;
+}
+
+export async function assignTicket(
+	ticketId: string,
+	assigneeId: string | null,
+	assignedBy: string
+): Promise<void> {
+	await db
+		.update(reports)
+		.set({
+			assignedTo: assigneeId,
+			assignedAt: assigneeId ? new Date() : null,
+			assignedBy
+		})
+		.where(eq(reports.id, ticketId));
 }
 
 export async function getTicketByIdSimple(id: string): Promise<Ticket | undefined> {
@@ -151,7 +183,7 @@ export async function getTicketsForExport(filters: {
 
 	return db.query.reports.findMany({
 		where: whereClause,
-		with: { reporter: true, category: true },
+		with: { reporter: true, category: true, assignee: true },
 		orderBy: (reports, { desc }) => [desc(reports.createdAt)]
 	}) as Promise<TicketListItem[]>;
 }
@@ -246,7 +278,7 @@ export async function createTicketMessage(input: CreateTicketMessageInput) {
 					messageId: message.id,
 					fileId: attachment.fileId,
 					fileType: attachment.fileType,
-					storageUrl: `telegram://${attachment.fileId}`
+					storageUrl: attachment.storageUrl
 				}))
 			);
 		}
@@ -312,7 +344,7 @@ export async function createReporterTicketMessage(
 					messageId: message.id,
 					fileId: attachment.fileId,
 					fileType: attachment.fileType,
-					storageUrl: `telegram://${attachment.fileId}`
+					storageUrl: attachment.storageUrl
 				}))
 			);
 		}
@@ -335,7 +367,8 @@ export async function createReporterTicketMessage(
 
 export async function getReportAttachmentById(id: string) {
 	return db.query.reportAttachments.findFirst({
-		where: eq(reportAttachments.id, id)
+		where: eq(reportAttachments.id, id),
+		with: { message: true }
 	});
 }
 

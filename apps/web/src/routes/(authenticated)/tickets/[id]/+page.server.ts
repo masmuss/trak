@@ -1,6 +1,9 @@
 import { error, fail } from '@sveltejs/kit';
 import {
 	getTicketById,
+	getUsers,
+	claimTicket,
+	assignTicket,
 	updateTicketStatus,
 	updateTicketPriority,
 	createTicketMessage,
@@ -30,11 +33,50 @@ export const load: PageServerLoad = async (event) => {
 
 	return {
 		ticket,
+		agents: (await getUsers()).filter((agent) => agent.isActive),
+		currentUser: event.locals.user,
 		breadcrumbs: [{ label: 'Tickets', href: '/tickets' }, { label: `Ticket #${ticket.ticketCode}` }]
 	};
 };
 
 export const actions: Actions = {
+	claim: async (event) => {
+		const user = requireRole(event, 'agent', 'admin');
+		const claimed = await claimTicket(event.params.id, user.id);
+		if (!claimed) {
+			return fail(409, { error: 'Ticket is already assigned' });
+		}
+		await createAuditLog({
+			actorUserId: user.id,
+			action: 'ticket.assigned',
+			entityType: 'ticket',
+			entityId: event.params.id,
+			afterData: { assignedTo: user.id, method: 'claim' }
+		});
+		return { success: true };
+	},
+
+	assign: async (event) => {
+		const user = requireRole(event, 'admin');
+		const formData = await event.request.formData();
+		const assigneeId = formData.get('assigneeId');
+		if (assigneeId !== null && typeof assigneeId !== 'string') {
+			return fail(400, { error: 'Invalid assignee' });
+		}
+		const ticket = await getTicketById(event.params.id);
+		requireExists(ticket, 'Ticket');
+		await assignTicket(event.params.id, assigneeId || null, user.id);
+		await createAuditLog({
+			actorUserId: user.id,
+			action: 'ticket.assigned',
+			entityType: 'ticket',
+			entityId: event.params.id,
+			beforeData: { assignedTo: ticket.assignee?.id ?? null },
+			afterData: { assignedTo: assigneeId || null, method: 'manual' }
+		});
+		return { success: true };
+	},
+
 	updateStatus: async (event) => {
 		const user = requireRole(event, 'agent', 'admin');
 		const { id } = event.params;

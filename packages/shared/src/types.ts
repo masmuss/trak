@@ -27,6 +27,7 @@ export type StatusHistoryWithUser = StatusHistory & {
 export type TicketWithRelations = Ticket & {
 	reporter: Reporter;
 	category: Category | null;
+	assignee: User | null;
 };
 
 export type TicketDetails = TicketWithRelations & {

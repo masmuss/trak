@@ -15,7 +15,15 @@
 	import * as Card from '$lib/components/ui/card';
 	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
 
-	let { ticket }: { ticket: TicketDetails } = $props();
+	let {
+		ticket,
+		agents = [],
+		currentUser
+	}: {
+		ticket: TicketDetails;
+		agents?: { id: string; name: string }[];
+		currentUser?: { id: string; role?: string | null };
+	} = $props();
 
 	onMount(() => {
 		const events = new EventSource('/tickets/events');
@@ -90,7 +98,7 @@
 
 		<!-- Right: Sidebar -->
 		<div class="xl:col-span-4 2xl:col-span-3">
-			<TicketDetailsSidebar {ticket} />
+			<TicketDetailsSidebar {ticket} {agents} {currentUser} />
 			<div class="mt-5">
 				<TicketPriorityForm {ticket} />
 			</div>
