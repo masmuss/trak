@@ -11,6 +11,7 @@
 	import * as Popover from '$lib/components/ui/popover';
 	import { BellIcon } from 'phosphor-svelte';
 	import { invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 
 	const autoBreadcrumbs = $derived.by(() => {
 		if (page.data.breadcrumbs) {
@@ -35,6 +36,16 @@
 		events.addEventListener('agent-notification', () => void invalidateAll());
 		return () => events.close();
 	});
+
+	async function openNotification(event: MouseEvent, notificationId: string, reportId: string) {
+		event.preventDefault();
+		const response = await fetch(`/notifications/${notificationId}/read`, { method: 'POST' });
+		if (!response.ok) {
+			throw new Error('Unable to mark notification as read');
+		}
+		await invalidateAll();
+		await goto(resolve('/(authenticated)/tickets/[id]', { id: reportId }));
+	}
 </script>
 
 <Sidebar.Provider>
@@ -90,6 +101,8 @@
 											href={resolve('/(authenticated)/tickets/[id]', {
 												id: notification.reportId
 											})}
+											onclick={(event) =>
+												openNotification(event, notification.id, notification.reportId)}
 											class="block rounded-md p-2 text-sm hover:bg-muted"
 										>
 											{notification.message}
