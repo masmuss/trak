@@ -1,0 +1,2 @@
+ALTER TABLE "report_attachments" ADD COLUMN "message_id" uuid;--> statement-breakpoint
+ALTER TABLE "report_attachments" ADD CONSTRAINT "report_attachments_message_id_ticket_messages_id_fk" FOREIGN KEY ("message_id") REFERENCES "public"."ticket_messages"("id") ON DELETE cascade ON UPDATE no action;

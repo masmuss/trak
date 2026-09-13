@@ -49,6 +49,8 @@ export type CreateAttachmentInput = {
 	storageUrl: string;
 };
 
+export type CreateMessageAttachmentInput = Omit<CreateAttachmentInput, 'reportId'>;
+
 export type CreateTicketMessageInput = {
 	reportId: string;
 	senderType: 'agent' | 'reporter' | 'system';
@@ -56,4 +58,5 @@ export type CreateTicketMessageInput = {
 	senderReporterId?: string;
 	body: string;
 	isInternal?: boolean;
+	attachments?: CreateMessageAttachmentInput[];
 };

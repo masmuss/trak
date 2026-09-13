@@ -10,6 +10,7 @@ import type {
 	DistributionResult,
 	CreateReportInput,
 	CreateAttachmentInput,
+	CreateMessageAttachmentInput,
 	CreateTicketMessageInput
 } from './report.types';
 import { publishAgentNotification } from './notification.service';
@@ -23,7 +24,7 @@ const ticketDetailsWith = {
 		orderBy: (statusHistories: any, { desc }: any) => [desc(statusHistories.changedAt)]
 	},
 	messages: {
-		with: { senderUser: true, senderReporter: true },
+		with: { senderUser: true, senderReporter: true, attachments: true },
 		orderBy: (ticketMessages: any, { asc }: any) => [asc(ticketMessages.createdAt)]
 	}
 } as const;
@@ -238,12 +239,24 @@ export async function createTicketMessage(input: CreateTicketMessageInput) {
 				.where(eq(reports.id, input.reportId));
 		}
 
+		if (input.attachments?.length) {
+			await tx.insert(reportAttachments).values(
+				input.attachments.map((attachment: CreateMessageAttachmentInput) => ({
+					reportId: input.reportId,
+					messageId: message.id,
+					fileId: attachment.fileId,
+					fileType: attachment.fileType,
+					storageUrl: `telegram://${attachment.fileId}`
+				}))
+			);
+		}
+
 		return message;
 	});
 }
 
 export async function createReporterTicketMessage(
-	input: Pick<CreateTicketMessageInput, 'reportId' | 'body' | 'senderReporterId'>
+	input: Pick<CreateTicketMessageInput, 'reportId' | 'body' | 'senderReporterId' | 'attachments'>
 ) {
 	const body = input.body.trim();
 	if (!input.senderReporterId) throw new Error('Reporter is required');
@@ -291,6 +304,18 @@ export async function createReporterTicketMessage(
 				isInternal: false
 			})
 			.returning();
+
+		if (input.attachments?.length) {
+			await tx.insert(reportAttachments).values(
+				input.attachments.map((attachment: CreateMessageAttachmentInput) => ({
+					reportId: input.reportId,
+					messageId: message.id,
+					fileId: attachment.fileId,
+					fileType: attachment.fileType,
+					storageUrl: `telegram://${attachment.fileId}`
+				}))
+			);
+		}
 
 		return message;
 	});

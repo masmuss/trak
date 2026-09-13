@@ -156,7 +156,8 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 			await createReporterTicketMessage({
 				reportId: session.replyTicketId,
 				senderReporterId: session.reporterId,
-				body: session.replyBody
+				body: session.replyBody,
+				attachments: session.attachments
 			});
 			await ctx.answerCallbackQuery({ text: 'Balasan terkirim.' });
 			await ctx.editMessageText('✅ Balasan berhasil dikirim ke tim IT.');
@@ -166,6 +167,17 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 			await ctx.answerCallbackQuery({ text: 'Gagal mengirim balasan.' });
 			await ctx.editMessageText('❌ Balasan gagal dikirim. Silakan coba lagi.');
 		}
+	});
+
+	bot.callbackQuery('reply_attachment', async (ctx) => {
+		if (ctx.session.step !== 'reply_body' || !ctx.session.replyBody) {
+			await ctx.answerCallbackQuery({ text: 'Tulis pesan terlebih dahulu.' });
+			return;
+		}
+
+		ctx.session.step = 'reply_attachment';
+		await ctx.answerCallbackQuery();
+		await ctx.reply('Kirim foto atau dokumen yang ingin dilampirkan, lalu gunakan /done.');
 	});
 
 	bot.callbackQuery('cancel_reply', async (ctx) => {

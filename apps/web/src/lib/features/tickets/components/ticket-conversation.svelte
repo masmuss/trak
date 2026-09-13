@@ -155,6 +155,35 @@
 						{#each group.messages as message (message.id)}
 							<Bubble.Root variant={message.senderType === 'agent' ? 'default' : 'muted'}>
 								<Bubble.Content>{message.body}</Bubble.Content>
+								{#if message.attachments.length}
+									<Attachment.Group class="mt-px">
+										{#each message.attachments as attachment (attachment.id)}
+											<Attachment.Root
+												size="sm"
+												class="max-w-64"
+												aria-label={`Open attachment ${attachment.fileType}`}
+											>
+												<Attachment.Media><FileIcon class="size-4" /></Attachment.Media>
+												<Attachment.Content>
+													<Attachment.Title class="truncate">
+														{attachment.fileType.split('/')[1]?.toUpperCase() ?? 'FILE'}
+													</Attachment.Title>
+													<Attachment.Description>Open attachment</Attachment.Description>
+												</Attachment.Content>
+												<Attachment.Actions>
+													<Attachment.Action
+														href={`/attachments/${attachment.id}`}
+														target="_blank"
+														rel="noopener noreferrer"
+														aria-label="Open attachment"
+													>
+														<PaperclipIcon class="size-3" />
+													</Attachment.Action>
+												</Attachment.Actions>
+											</Attachment.Root>
+										{/each}
+									</Attachment.Group>
+								{/if}
 							</Bubble.Root>
 						{/each}
 					</Bubble.Group>
