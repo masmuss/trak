@@ -1,9 +1,4 @@
-export const STATUS_LABEL: Record<string, string> = {
-	open: '🔴 Open',
-	in_progress: '🟡 In Progress',
-	resolved: '🟢 Resolved',
-	closed: '⚪ Closed'
-};
+export { STATUS_LABEL, getStatusLabel } from '@trak/shared';
 
 export const HELP_TEXT =
 	'Bantuan Bot Pelaporan:\n\n' +

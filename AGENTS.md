@@ -54,6 +54,10 @@
   - `report.ts` — handler signatures fixed from `Context` to `BotContext` for type safety
   - `commands.ts` — removed dead `Keyboard` import (was imported but never used)
   - `bot.ts` — now only bootstraps middleware, registers handlers, and schedules cron
+- **Bot full split (branch `refactor/bot-and-tests`)**: `submitReportWithAttachments` facade (single tx: ticket + attachments + `ticket.created` audit); `createReport` delegates to facade; `presenters/ticket-status.ts` pure renderer; `utils/callbacks.ts` central `STATIC_CALLBACK` + encode/parse for dynamic payloads; `replyTicketStatus` now fetch + `formatTicketStatusMessage` + keyboard.
+- **Types centralized**: `ticket_status` + `agent_notification_type` pgEnums (migration 0015), `TicketStatus`/`AgentNotificationType`/`MessageSenderType` inferred from DB; dotted `AuditAction` union (`ticket.*`, `user.*`, `category.*`, `invite_code.*`); `AuditEntityType` incl. `ticket_message`; `UserRole` + `isUserRole` + `Actor` + `ForbiddenError` + `requireActorRole`; `STATUS_LABEL: Record<TicketStatus,string>` + `getStatusLabel` + `toTicketStatusList`/`toPriorityList` + limits in `@trak/shared`. Zero `any` / `as never` / `as Promise` in services/bot/shared. Fixed latent crash: `changedByUser` now `User | null` (`oleh Sistem` fallback for reopen-by-system rows).
+- **RBAC enforced in services**: `claimTicket`/`updateTicketStatus` require agent/admin, `assignTicket`/`updateTicketPriority` require admin via `Actor`; routes pass `toActor(user)`.
+- **Tests (23 green, real Postgres `trak_test`)**: `packages/services` vitest (`fileParallelism: false`, per-test TRUNCATE). Suites: claim atomic (incl. concurrent), assignment auth, reopen (+SLA/audit/assignee notif), attachment ownership/relasi, notification read (incl. cross-user mark scoping), RBAC matrix, submit facade validation.
 
 ### Blocked
 

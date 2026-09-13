@@ -1,4 +1,4 @@
-import type { TicketWithRelations } from '@trak/shared';
+import type { MessageSenderType, TicketWithRelations } from '@trak/shared';
 
 export type TicketListItem = TicketWithRelations;
 
@@ -14,7 +14,9 @@ export type TicketStats = {
 };
 
 export type TicketFilters = {
+	/** Comma-separated TicketStatus values (validated at the boundary, see toTicketStatusList). */
 	status?: string;
+	/** Comma-separated Priority values (validated at the boundary, see toPriorityList). */
 	priority?: string;
 	slaBreached?: string;
 	search?: string;
@@ -54,7 +56,7 @@ export type CreateMessageAttachmentInput = Omit<CreateAttachmentInput, 'reportId
 
 export type CreateTicketMessageInput = {
 	reportId: string;
-	senderType: 'agent' | 'reporter' | 'system';
+	senderType: MessageSenderType;
 	senderUserId?: string;
 	senderReporterId?: string;
 	body: string;

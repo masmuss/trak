@@ -1,9 +1,9 @@
 import { eq } from 'drizzle-orm';
-import { db, reports, statusHistories } from '@trak/database';
-import type { Priority } from '@trak/shared';
+import { db, reports, statusHistories, type DatabaseTransaction } from '@trak/database';
+import { requireActorRole, type Actor, type Priority, type TicketStatus } from '@trak/shared';
 import { calculateSLA } from './ticket-sla.service';
 
-async function requireTicket(tx: any, id: string) {
+async function requireTicket(tx: DatabaseTransaction, id: string) {
 	const existing = await tx.query.reports.findFirst({ where: eq(reports.id, id) });
 	if (!existing) throw new Error('Ticket not found');
 	return existing;
@@ -11,10 +11,12 @@ async function requireTicket(tx: any, id: string) {
 
 export async function updateTicketStatus(
 	id: string,
-	newStatus: string,
-	changedByUserId: string,
+	newStatus: TicketStatus,
+	actor: Actor,
 	note?: string
 ): Promise<void> {
+	requireActorRole(actor, 'agent', 'admin');
+
 	await db.transaction(async (tx) => {
 		const existing = await requireTicket(tx, id);
 		const now = new Date();
@@ -33,7 +35,7 @@ export async function updateTicketStatus(
 			.where(eq(reports.id, id));
 		await tx.insert(statusHistories).values({
 			reportId: id,
-			changedBy: changedByUserId,
+			changedBy: actor.id,
 			oldStatus: existing.status,
 			newStatus,
 			note: note || null
@@ -44,8 +46,10 @@ export async function updateTicketStatus(
 export async function updateTicketPriority(
 	id: string,
 	priority: Priority,
-	changedByUserId: string
+	actor: Actor
 ): Promise<void> {
+	requireActorRole(actor, 'admin');
+
 	await db.transaction(async (tx) => {
 		const existing = await requireTicket(tx, id);
 		const { responseDue, resolveDue } = calculateSLA(priority, existing.createdAt);
@@ -61,7 +65,7 @@ export async function updateTicketPriority(
 			.where(eq(reports.id, id));
 		await tx.insert(statusHistories).values({
 			reportId: id,
-			changedBy: changedByUserId,
+			changedBy: actor.id,
 			oldStatus: existing.status,
 			newStatus: existing.status,
 			note: `Priority changed from ${existing.priority} to ${priority}`

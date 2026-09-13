@@ -1,10 +1,11 @@
 import { and, desc, eq, ilike, or } from 'drizzle-orm';
 import { auditLogs, db, user } from '@trak/database';
+import type { AuditAction, AuditEntityType } from '@trak/shared';
 
 export type AuditLogInput = {
 	actorUserId?: string | null;
-	action: string;
-	entityType: string;
+	action: AuditAction;
+	entityType: AuditEntityType;
 	entityId: string;
 	beforeData?: unknown;
 	afterData?: unknown;

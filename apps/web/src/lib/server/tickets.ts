@@ -1,24 +1,11 @@
-import { priorityEnum } from '@trak/database';
-
-const validStatusValues = new Set(['open', 'in_progress', 'resolved', 'closed']);
-const validPriorityValues = new Set(priorityEnum.enumValues);
+import { isPriority, isTicketStatus } from '@trak/shared';
 
 export function parseTicketFilters(url: URL, context?: { userId?: string }) {
 	const rawStatus = url.searchParams.get('status');
-	const status = rawStatus
-		? rawStatus
-				.split(',')
-				.filter((v) => validStatusValues.has(v))
-				.join(',')
-		: undefined;
+	const status = rawStatus ? rawStatus.split(',').filter(isTicketStatus).join(',') : undefined;
 
 	const rawPriority = url.searchParams.get('priority');
-	const priority = rawPriority
-		? rawPriority
-				.split(',')
-				.filter((v) => validPriorityValues.has(v as never))
-				.join(',')
-		: undefined;
+	const priority = rawPriority ? rawPriority.split(',').filter(isPriority).join(',') : undefined;
 
 	const slaBreached = url.searchParams.get('sla_breached');
 	const isValidSla = slaBreached === 'true' || slaBreached === 'false';

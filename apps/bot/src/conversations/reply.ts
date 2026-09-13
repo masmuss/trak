@@ -1,4 +1,6 @@
+import { MAX_MESSAGE_LENGTH } from '@trak/shared';
 import { BotContext } from '../types';
+import { STATIC_CALLBACK } from '../utils/callbacks';
 
 export async function startReplyFlow(
 	ctx: BotContext,
@@ -19,8 +21,8 @@ export async function handleReplyBodyInput(ctx: BotContext): Promise<void> {
 	const body = ctx.message?.text?.trim();
 	if (!body) return;
 
-	if (body.length > 5000) {
-		await ctx.reply('Pesan terlalu panjang. Maksimal 5000 karakter.');
+	if (body.length > MAX_MESSAGE_LENGTH) {
+		await ctx.reply(`Pesan terlalu panjang. Maksimal ${MAX_MESSAGE_LENGTH} karakter.`);
 		return;
 	}
 
@@ -29,9 +31,9 @@ export async function handleReplyBodyInput(ctx: BotContext): Promise<void> {
 		reply_markup: {
 			inline_keyboard: [
 				[
-					{ text: '✅ Kirim', callback_data: 'confirm_reply' },
-					{ text: '📎 Tambah lampiran', callback_data: 'reply_attachment' },
-					{ text: '❌ Batal', callback_data: 'cancel_reply' }
+					{ text: '✅ Kirim', callback_data: STATIC_CALLBACK.CONFIRM_REPLY },
+					{ text: '📎 Tambah lampiran', callback_data: STATIC_CALLBACK.REPLY_ATTACHMENT },
+					{ text: '❌ Batal', callback_data: STATIC_CALLBACK.CANCEL_REPLY }
 				]
 			]
 		}
@@ -50,8 +52,8 @@ export async function promptReplyConfirmation(ctx: BotContext): Promise<void> {
 		reply_markup: {
 			inline_keyboard: [
 				[
-					{ text: '✅ Kirim', callback_data: 'confirm_reply' },
-					{ text: '❌ Batal', callback_data: 'cancel_reply' }
+					{ text: '✅ Kirim', callback_data: STATIC_CALLBACK.CONFIRM_REPLY },
+					{ text: '❌ Batal', callback_data: STATIC_CALLBACK.CANCEL_REPLY }
 				]
 			]
 		}

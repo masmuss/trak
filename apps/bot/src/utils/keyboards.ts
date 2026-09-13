@@ -1,3 +1,10 @@
+import {
+	STATIC_CALLBACK,
+	encodeCategoryCallback,
+	encodeReplyCallback,
+	encodeStatusCallback
+} from './callbacks';
+
 type ReplyKeyboard = {
 	keyboard: { text: string }[][];
 	resize_keyboard: boolean;
@@ -22,7 +29,7 @@ export const doneKeyboard: ReplyKeyboard = {
 
 export function buildCategoryKeyboard(categories: { id: string; name: string }[]): InlineKeyboard {
 	const keyboard = categories.map((cat) => [
-		{ text: cat.name, callback_data: `category_${cat.id}` }
+		{ text: cat.name, callback_data: encodeCategoryCallback(cat.id) }
 	]);
 	return { inline_keyboard: keyboard };
 }
@@ -31,8 +38,8 @@ export function buildConfirmKeyboard(): InlineKeyboard {
 	return {
 		inline_keyboard: [
 			[
-				{ text: 'Ya, kirim', callback_data: 'confirm_report' },
-				{ text: 'Batal', callback_data: 'cancel_report' }
+				{ text: 'Ya, kirim', callback_data: STATIC_CALLBACK.CONFIRM_REPORT },
+				{ text: 'Batal', callback_data: STATIC_CALLBACK.CANCEL_REPORT }
 			]
 		]
 	};
@@ -41,8 +48,8 @@ export function buildConfirmKeyboard(): InlineKeyboard {
 export function buildWelcomeKeyboard(): InlineKeyboard {
 	return {
 		inline_keyboard: [
-			[{ text: '📝 Buat laporan baru', callback_data: 'new_report' }],
-			[{ text: '❓ Bantuan', callback_data: 'show_commands' }]
+			[{ text: '📝 Buat laporan baru', callback_data: STATIC_CALLBACK.NEW_REPORT }],
+			[{ text: '❓ Bantuan', callback_data: STATIC_CALLBACK.SHOW_COMMANDS }]
 		]
 	};
 }
@@ -51,19 +58,19 @@ export function buildPostSubmitKeyboard(ticketCode: string): InlineKeyboard {
 	return {
 		inline_keyboard: [
 			[
-				{ text: '📝 Buat laporan baru', callback_data: 'new_report' },
-				{ text: '🔍 Cek status', callback_data: `status_${ticketCode}` }
+				{ text: '📝 Buat laporan baru', callback_data: STATIC_CALLBACK.NEW_REPORT },
+				{ text: '🔍 Cek status', callback_data: encodeStatusCallback(ticketCode) }
 			],
-			[{ text: '💬 Balas ticket', callback_data: `reply_${ticketCode}` }],
-			[{ text: '📋 Perintah', callback_data: 'show_commands' }]
+			[{ text: '💬 Balas ticket', callback_data: encodeReplyCallback(ticketCode) }],
+			[{ text: '📋 Perintah', callback_data: STATIC_CALLBACK.SHOW_COMMANDS }]
 		]
 	};
 }
 
 export function buildTicketStatusKeyboard(ticketCode: string, canReply: boolean): InlineKeyboard {
-	const actions = [{ text: '🔄 Refresh status', callback_data: `status_${ticketCode}` }];
+	const actions = [{ text: '🔄 Refresh status', callback_data: encodeStatusCallback(ticketCode) }];
 	if (canReply) {
-		actions.unshift({ text: '💬 Balas ticket', callback_data: `reply_${ticketCode}` });
+		actions.unshift({ text: '💬 Balas ticket', callback_data: encodeReplyCallback(ticketCode) });
 	}
 
 	return { inline_keyboard: [actions] };

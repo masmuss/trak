@@ -1,4 +1,5 @@
 import { error, type RequestEvent } from '@sveltejs/kit';
+import { isUserRole, type Actor, type UserRole } from '@trak/shared';
 
 export function requireAuth(event: RequestEvent) {
 	const user = event.locals.user;
@@ -9,12 +10,21 @@ export function requireAuth(event: RequestEvent) {
 	return user;
 }
 
-export function requireRole(event: RequestEvent, ...roles: string[]) {
+export function requireRole(event: RequestEvent, ...roles: UserRole[]) {
 	const user = requireAuth(event);
-	if (!roles.includes(user.role ?? 'agent')) {
+	const role = user.role ?? 'agent';
+	if (!isUserRole(role) || !roles.includes(role)) {
 		throw error(403, 'Forbidden');
 	}
 	return user;
+}
+
+export function toActor(user: { id: string; role?: string | null }): Actor {
+	const role = user.role ?? 'agent';
+	if (!isUserRole(role)) {
+		throw error(403, 'Forbidden');
+	}
+	return { id: user.id, role };
 }
 
 export function getFormString(formData: FormData, name: string): string {

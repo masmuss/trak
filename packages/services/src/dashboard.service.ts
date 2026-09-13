@@ -45,7 +45,7 @@ export async function getRecentTickets(limit = 5): Promise<TicketWithRelations[]
 			assignee: true
 		},
 		orderBy: (reports, { desc }) => [desc(reports.createdAt)]
-	}) as Promise<TicketWithRelations[]>;
+	});
 }
 
 export async function getCriticalTickets(limit = 5): Promise<TicketWithRelations[]> {
@@ -59,7 +59,7 @@ export async function getCriticalTickets(limit = 5): Promise<TicketWithRelations
 			assignee: true
 		},
 		orderBy: (reports, { desc }) => [desc(reports.createdAt)]
-	}) as Promise<TicketWithRelations[]>;
+	});
 }
 
 export async function getTopInviteCodes(limit = 5): Promise<TopInviteCode[]> {
@@ -71,7 +71,7 @@ export async function getTopInviteCodes(limit = 5): Promise<TopInviteCode[]> {
 			}
 		},
 		orderBy: (inviteCodes, { desc }) => [desc(inviteCodes.createdAt)]
-	}) as Promise<TopInviteCode[]>;
+	});
 }
 
 export async function getPerformanceOverview(): Promise<PerformanceOverviewData> {
