@@ -272,11 +272,15 @@ export async function createReporterTicketMessage(
 		return message;
 	});
 
-	await publishAgentNotification({
-		reportId: input.reportId,
-		messageId: message.id,
-		message: body
-	});
+	try {
+		await publishAgentNotification({
+			reportId: input.reportId,
+			messageId: message.id,
+			message: body
+		});
+	} catch (error) {
+		console.error(`Failed to publish agent notification for message ${message.id}:`, error);
+	}
 
 	return message;
 }
