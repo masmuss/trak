@@ -52,6 +52,8 @@
 				page={data.page}
 				limit={data.limit}
 				categories={data.categories}
+				agents={data.agents}
+				currentUser={data.currentUser}
 			/>
 		</Card.Content>
 	</Card.Root>

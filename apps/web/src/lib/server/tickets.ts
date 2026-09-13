@@ -3,7 +3,7 @@ import { priorityEnum } from '@trak/database';
 const validStatusValues = new Set(['open', 'in_progress', 'resolved', 'closed']);
 const validPriorityValues = new Set(priorityEnum.enumValues);
 
-export function parseTicketFilters(url: URL) {
+export function parseTicketFilters(url: URL, context?: { userId?: string }) {
 	const rawStatus = url.searchParams.get('status');
 	const status = rawStatus
 		? rawStatus
@@ -24,7 +24,8 @@ export function parseTicketFilters(url: URL) {
 	const isValidSla = slaBreached === 'true' || slaBreached === 'false';
 
 	const categoryId = url.searchParams.get('categoryId');
-	const assignedTo = url.searchParams.get('assignedTo');
+	const rawAssignedTo = url.searchParams.get('assignedTo');
+	const assignedTo = rawAssignedTo === 'my' && context?.userId ? context.userId : rawAssignedTo;
 
 	const search = url.searchParams.get('search');
 

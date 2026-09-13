@@ -10,21 +10,30 @@
 		totalCount = 0,
 		page = 1,
 		limit = 10,
-		categories = []
+		categories = [],
+		agents = [],
+		currentUser
 	}: {
 		tickets?: TicketWithRelations[];
 		totalCount?: number;
 		page?: number;
 		limit?: number;
 		categories?: Category[];
+		agents?: { id: string; name: string }[];
+		currentUser?: { role?: string | null };
 	} = $props();
 
 	let columns: ColumnDef<TicketWithRelations, unknown>[] = $state([]);
 
 	// svelte-ignore state_referenced_locally
 	const initialCategories = categories;
+	// svelte-ignore state_referenced_locally
+	const initialAgents = agents;
 	// Table configuration (state because it needs to be mutated)
-	let tableConfig = $state(createTicketsTableConfig(initialCategories));
+	// svelte-ignore state_referenced_locally
+	let tableConfig = $state(
+		createTicketsTableConfig(initialCategories, initialAgents, currentUser?.role)
+	);
 
 	// Update columns in config when columns change
 	$effect(() => {

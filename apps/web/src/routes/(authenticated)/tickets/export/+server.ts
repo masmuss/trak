@@ -2,9 +2,11 @@ import type { RequestHandler } from './$types';
 import { getTicketsForExport } from '@trak/services';
 import { convertToCSV } from '$lib/utils/csv';
 import { parseTicketFilters } from '$lib/server/tickets';
+import { requireAuth } from '$lib/server/helpers';
 
-export const GET: RequestHandler = async ({ url }) => {
-	const filters = parseTicketFilters(url);
+export const GET: RequestHandler = async (event) => {
+	const user = requireAuth(event);
+	const filters = parseTicketFilters(event.url, { userId: user.id });
 	const tickets = await getTicketsForExport(filters);
 
 	const headers = [

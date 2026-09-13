@@ -1,16 +1,19 @@
-import { listTickets, getTicketStats, getCategories } from '@trak/services';
+import { listTickets, getTicketStats, getCategories, getUsers } from '@trak/services';
 import type { PageServerLoad } from './$types';
 import { parsePaginationParams } from '$lib/utils/pagination';
 import { parseTicketFilters } from '$lib/server/tickets';
+import { requireAuth } from '$lib/server/helpers';
 
-export const load: PageServerLoad = async ({ url }) => {
-	const filters = parseTicketFilters(url);
-	const { page, limit, offset } = parsePaginationParams(url);
+export const load: PageServerLoad = async (event) => {
+	const user = requireAuth(event);
+	const filters = parseTicketFilters(event.url, { userId: user.id });
+	const { page, limit, offset } = parsePaginationParams(event.url);
 
-	const [ticketResult, stats, categories] = await Promise.all([
+	const [ticketResult, stats, categories, users] = await Promise.all([
 		listTickets({ ...filters, limit, offset }),
 		getTicketStats(),
-		getCategories()
+		getCategories(),
+		getUsers()
 	]);
 
 	return {
@@ -19,6 +22,8 @@ export const load: PageServerLoad = async ({ url }) => {
 		page,
 		limit,
 		stats,
-		categories
+		categories,
+		agents: users.filter((candidate) => candidate.isActive && candidate.role === 'agent'),
+		currentUser: user
 	};
 };

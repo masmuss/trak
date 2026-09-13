@@ -6,11 +6,22 @@ import {
 } from '$lib/components/shared/data-table';
 import type { TicketWithRelations, Category } from '@trak/shared';
 
-export function createTicketsTableConfig(categories: Category[]): TableConfig<TicketWithRelations> {
+export function createTicketsTableConfig(
+	categories: Category[],
+	agents: { id: string; name: string }[],
+	role?: string | null
+): TableConfig<TicketWithRelations> {
 	const categoryOptions = categories.map((c) => ({
 		label: c.name,
 		value: c.id
 	}));
+	const assignmentOptions =
+		role === 'admin'
+			? [
+					{ label: 'Unassigned', value: 'unassigned' },
+					...agents.map((agent) => ({ label: agent.name, value: agent.id }))
+				]
+			: [{ label: 'My tickets', value: 'my' }];
 
 	return {
 		columns: [], // Will be set by Columns component
@@ -31,7 +42,7 @@ export function createTicketsTableConfig(categories: Category[]): TableConfig<Ti
 				key: 'assignedTo',
 				title: 'Assignment',
 				serverKey: 'assignedTo',
-				options: [{ label: 'Unassigned', value: 'unassigned' }]
+				options: assignmentOptions
 			}),
 			createMultiSelectFilter({
 				key: 'priority',
