@@ -19,8 +19,19 @@
 		});
 	}
 
+	function getAttachmentName(fileId: string, fileType: string): string {
+		const generatedName = fileId.match(
+			/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-(.+)$/i
+		)?.[1];
+
+		return generatedName ?? fileType.split('/')[1]?.toUpperCase() ?? 'FILE';
+	}
+
 	const statusHistories = $derived(ticket.statusHistories ?? []);
 	const messages = $derived(ticket.messages ?? []);
+	const initialAttachments = $derived(
+		(ticket.attachments ?? []).filter((attachment) => attachment.messageId === null)
+	);
 	const timeline = $derived.by(() => {
 		const events = [
 			...statusHistories.map((history) => ({ kind: 'status' as const, history })),
@@ -82,14 +93,14 @@
 				<Bubble.Content>{ticket.body}</Bubble.Content>
 			</Bubble.Root>
 
-			{#if ticket.attachments && ticket.attachments.length > 0}
+			{#if initialAttachments.length > 0}
 				<Attachment.Group class="mt-px">
-					{#each ticket.attachments as attachment (attachment.id)}
+					{#each initialAttachments as attachment (attachment.id)}
 						<Attachment.Root size="sm" aria-label={`Open attachment ${attachment.fileType}`}>
 							<Attachment.Media><FileIcon class="size-4" /></Attachment.Media>
 							<Attachment.Content>
 								<Attachment.Title class="truncate">
-									{attachment.fileType.split('/')[1]?.toUpperCase() ?? 'FILE'}
+									{getAttachmentName(attachment.fileId, attachment.fileType)}
 								</Attachment.Title>
 								<Attachment.Description>Open attachment</Attachment.Description>
 							</Attachment.Content>
@@ -151,40 +162,42 @@
 						{/if}
 						<span>{formatDateTime(lastMessage.createdAt)}</span>
 					</Message.Header>
-					<Bubble.Group>
+					<Bubble.Group
+						class={firstMessage.senderType === 'agent' ? 'w-full items-end' : undefined}
+					>
 						{#each group.messages as message (message.id)}
 							<Bubble.Root variant={message.senderType === 'agent' ? 'default' : 'muted'}>
 								<Bubble.Content>{message.body}</Bubble.Content>
-								{#if message.attachments.length}
-									<Attachment.Group class="mt-px">
-										{#each message.attachments as attachment (attachment.id)}
-											<Attachment.Root
-												size="sm"
-												class="max-w-64"
-												aria-label={`Open attachment ${attachment.fileType}`}
-											>
-												<Attachment.Media><FileIcon class="size-4" /></Attachment.Media>
-												<Attachment.Content>
-													<Attachment.Title class="truncate">
-														{attachment.fileType.split('/')[1]?.toUpperCase() ?? 'FILE'}
-													</Attachment.Title>
-													<Attachment.Description>Open attachment</Attachment.Description>
-												</Attachment.Content>
-												<Attachment.Actions>
-													<Attachment.Action
-														href={`/attachments/${attachment.id}`}
-														target="_blank"
-														rel="noopener noreferrer"
-														aria-label="Open attachment"
-													>
-														<PaperclipIcon class="size-3" />
-													</Attachment.Action>
-												</Attachment.Actions>
-											</Attachment.Root>
-										{/each}
-									</Attachment.Group>
-								{/if}
 							</Bubble.Root>
+							{#if message.attachments.length}
+								<Attachment.Group>
+									{#each message.attachments as attachment (attachment.id)}
+										<Attachment.Root
+											size="sm"
+											class="max-w-64"
+											aria-label={`Open attachment ${attachment.fileType}`}
+										>
+											<Attachment.Media><FileIcon class="size-4" /></Attachment.Media>
+											<Attachment.Content>
+												<Attachment.Title class="truncate">
+													{getAttachmentName(attachment.fileId, attachment.fileType)}
+												</Attachment.Title>
+												<Attachment.Description>Open attachment</Attachment.Description>
+											</Attachment.Content>
+											<Attachment.Actions>
+												<Attachment.Action
+													href={`/attachments/${attachment.id}`}
+													target="_blank"
+													rel="noopener noreferrer"
+													aria-label="Open attachment"
+												>
+													<PaperclipIcon class="size-3" />
+												</Attachment.Action>
+											</Attachment.Actions>
+										</Attachment.Root>
+									{/each}
+								</Attachment.Group>
+							{/if}
 						{/each}
 					</Bubble.Group>
 				</Message.Content>

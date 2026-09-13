@@ -278,7 +278,7 @@ export async function createTicketMessage(input: CreateTicketMessageInput) {
 					messageId: message.id,
 					fileId: attachment.fileId,
 					fileType: attachment.fileType,
-					storageUrl: `telegram://${attachment.fileId}`
+					storageUrl: attachment.storageUrl
 				}))
 			);
 		}
@@ -344,7 +344,7 @@ export async function createReporterTicketMessage(
 					messageId: message.id,
 					fileId: attachment.fileId,
 					fileType: attachment.fileType,
-					storageUrl: `telegram://${attachment.fileId}`
+					storageUrl: attachment.storageUrl
 				}))
 			);
 		}
@@ -367,7 +367,8 @@ export async function createReporterTicketMessage(
 
 export async function getReportAttachmentById(id: string) {
 	return db.query.reportAttachments.findFirst({
-		where: eq(reportAttachments.id, id)
+		where: eq(reportAttachments.id, id),
+		with: { message: true }
 	});
 }
 

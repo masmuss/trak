@@ -14,7 +14,8 @@ export const GET: RequestHandler = async ({ locals, params, fetch }) => {
 	}
 
 	const botToken = process.env.TELEGRAM_BOT_TOKEN;
-	if (attachment.storageUrl.startsWith('s3://')) {
+	const isAgentMessageAttachment = attachment.message?.senderType === 'agent';
+	if (attachment.storageUrl.startsWith('s3://') || isAgentMessageAttachment) {
 		const content = await downloadAttachment(attachment.fileId);
 		return new Response(content.Body as ReadableStream, {
 			headers: {
