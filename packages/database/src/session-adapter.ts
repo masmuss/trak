@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { db } from './index';
+import { db } from './client';
 import { botSessions } from './schema';
 
 export function createPgSessionAdapter<T>() {
@@ -17,10 +17,10 @@ export function createPgSessionAdapter<T>() {
 		write: async (key: string, value: T): Promise<void> => {
 			await db
 				.insert(botSessions)
-				.values({ key, data: value as any })
+				.values({ key, data: value })
 				.onConflictDoUpdate({
 					target: botSessions.key,
-					set: { data: value as any, updatedAt: new Date() }
+					set: { data: value, updatedAt: new Date() }
 				});
 		},
 
