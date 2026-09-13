@@ -1,6 +1,6 @@
-import { eq, and, inArray, count, sql, isNull, type SQL } from 'drizzle-orm';
-import { db, reports, reportAttachments, statusHistories, ticketMessages } from '@trak/database';
-import type { Ticket, TicketDetails, Priority } from '@trak/shared';
+import { eq, and, inArray, count, sql, type SQL, isNull } from 'drizzle-orm';
+import { db, reports, reportAttachments, statusHistories } from '@trak/database';
+import type { Priority, Ticket, TicketDetails } from '@trak/shared';
 import { randomBytes } from 'crypto';
 import type {
 	TicketListItem,
@@ -9,12 +9,10 @@ import type {
 	TicketStats,
 	DistributionResult,
 	CreateReportInput,
-	CreateAttachmentInput,
-	CreateMessageAttachmentInput,
-	CreateTicketMessageInput
+	CreateAttachmentInput
 } from './report.types';
-import { createAgentNotification, publishAgentNotification } from './notification.service';
 import { createAuditLog } from './audit.service';
+import { calculateSLA } from './ticket-sla.service';
 
 const ticketDetailsWith = {
 	reporter: true,
@@ -111,30 +109,6 @@ export async function listTickets(filters: TicketFilters): Promise<TicketListRes
 	};
 }
 
-export async function claimTicket(ticketId: string, userId: string): Promise<boolean> {
-	const result = await db
-		.update(reports)
-		.set({ assignedTo: userId, assignedAt: new Date(), assignedBy: userId })
-		.where(and(eq(reports.id, ticketId), isNull(reports.assignedTo)))
-		.returning({ id: reports.id });
-	return result.length > 0;
-}
-
-export async function assignTicket(
-	ticketId: string,
-	assigneeId: string | null,
-	assignedBy: string
-): Promise<void> {
-	await db
-		.update(reports)
-		.set({
-			assignedTo: assigneeId,
-			assignedAt: assigneeId ? new Date() : null,
-			assignedBy
-		})
-		.where(eq(reports.id, ticketId));
-}
-
 export async function getTicketByIdSimple(id: string): Promise<Ticket | undefined> {
 	return db.query.reports.findFirst({
 		where: eq(reports.id, id)
@@ -195,25 +169,6 @@ function generateTicketCode(): string {
 	return `TKT-${dateStr}-${randomStr}`;
 }
 
-const SLA_WINDOWS: Record<Priority, { responseMins: number; resolveMins: number }> = {
-	CRITICAL: { responseMins: 15, resolveMins: 120 },
-	HIGH: { responseMins: 60, resolveMins: 480 },
-	MEDIUM: { responseMins: 240, resolveMins: 1440 },
-	LOW: { responseMins: 1440, resolveMins: 10080 }
-};
-
-export function calculateSLA(
-	priority: Priority,
-	from?: Date
-): { responseDue: Date; resolveDue: Date } {
-	const now = from ?? new Date();
-	const window = SLA_WINDOWS[priority];
-	return {
-		responseDue: new Date(now.getTime() + window.responseMins * 60000),
-		resolveDue: new Date(now.getTime() + window.resolveMins * 60000)
-	};
-}
-
 export async function createReport(
 	input: CreateReportInput
 ): Promise<{ id: string; ticketCode: string }> {
@@ -253,158 +208,12 @@ export async function addReportAttachment(input: CreateAttachmentInput): Promise
 		action: 'ticket.attachment_added',
 		entityType: 'ticket_attachment',
 		entityId: attachment.id,
-		afterData: { reportId: input.reportId, fileType: input.fileType, source: 'telegram' }
-	});
-}
-
-export async function createTicketMessage(input: CreateTicketMessageInput) {
-	const body = input.body.trim();
-	if (!body) throw new Error('Message body is required');
-
-	return db.transaction(async (tx) => {
-		const ticket = await requireTicket(tx, input.reportId);
-		const [message] = await tx
-			.insert(ticketMessages)
-			.values({
-				reportId: input.reportId,
-				senderType: input.senderType,
-				senderUserId: input.senderUserId,
-				senderReporterId: input.senderReporterId,
-				body,
-				isInternal: input.isInternal ?? false
-			})
-			.returning();
-
-		if (input.senderType === 'agent' && !input.isInternal && !ticket.firstRespondedAt) {
-			await tx
-				.update(reports)
-				.set({ firstRespondedAt: message.createdAt })
-				.where(eq(reports.id, input.reportId));
-		}
-
-		if (input.attachments?.length) {
-			await tx.insert(reportAttachments).values(
-				input.attachments.map((attachment: CreateMessageAttachmentInput) => ({
-					reportId: input.reportId,
-					messageId: message.id,
-					fileId: attachment.fileId,
-					fileType: attachment.fileType,
-					storageUrl: attachment.storageUrl
-				}))
-			);
-		}
-
-		return message;
-	});
-}
-
-export async function createReporterTicketMessage(
-	input: Pick<CreateTicketMessageInput, 'reportId' | 'body' | 'senderReporterId' | 'attachments'>
-) {
-	const body = input.body.trim();
-	if (!input.senderReporterId) throw new Error('Reporter is required');
-	if (!body) throw new Error('Message body is required');
-
-	const { message, assigneeId, reopened } = await db.transaction(async (tx) => {
-		const ticket = await requireTicket(tx, input.reportId);
-		if (ticket.reporterId !== input.senderReporterId) {
-			throw new Error('Reporter does not own this ticket');
-		}
-		if (ticket.status === 'closed') {
-			throw new Error('Closed tickets cannot receive messages');
-		}
-
-		const reopened = ticket.status === 'resolved';
-		if (reopened) {
-			const { responseDue, resolveDue } = calculateSLA(ticket.priority);
-			await tx
-				.update(reports)
-				.set({
-					status: 'open',
-					resolvedAt: null,
-					slaResponseDue: responseDue,
-					slaResolveDue: resolveDue,
-					isSlaBreached: false
-				})
-				.where(eq(reports.id, input.reportId));
-
-			await tx.insert(statusHistories).values({
-				reportId: input.reportId,
-				changedBy: null,
-				oldStatus: 'resolved',
-				newStatus: 'open',
-				note: 'Ticket reopened because the reporter replied'
-			});
-		}
-
-		const [message] = await tx
-			.insert(ticketMessages)
-			.values({
-				reportId: input.reportId,
-				senderType: 'reporter',
-				senderReporterId: input.senderReporterId,
-				body,
-				isInternal: false
-			})
-			.returning();
-
-		if (input.attachments?.length) {
-			await tx.insert(reportAttachments).values(
-				input.attachments.map((attachment: CreateMessageAttachmentInput) => ({
-					reportId: input.reportId,
-					messageId: message.id,
-					fileId: attachment.fileId,
-					fileType: attachment.fileType,
-					storageUrl: attachment.storageUrl
-				}))
-			);
-		}
-
-		return { message, assigneeId: ticket.assignedTo, reopened };
-	});
-
-	await createAuditLog({
-		action: 'ticket.message_created',
-		entityType: 'ticket_message',
-		entityId: message.id,
 		afterData: {
 			reportId: input.reportId,
-			senderType: 'reporter',
-			attachmentCount: input.attachments?.length ?? 0
+			fileType: input.fileType,
+			source: 'telegram'
 		}
 	});
-
-	if (reopened) {
-		await createAuditLog({
-			action: 'ticket.reopened',
-			entityType: 'ticket',
-			entityId: input.reportId,
-			beforeData: { status: 'resolved' },
-			afterData: { status: 'open', reason: 'reporter_reply' }
-		});
-	}
-
-	if (assigneeId) {
-		await createAgentNotification({
-			recipientUserId: assigneeId,
-			reportId: input.reportId,
-			messageId: message.id,
-			type: 'reporter_reply',
-			message: `Reporter membalas ticket ${input.reportId}`
-		});
-	}
-
-	try {
-		await publishAgentNotification({
-			reportId: input.reportId,
-			messageId: message.id,
-			message: body
-		});
-	} catch (error) {
-		console.error(`Failed to publish agent notification for message ${message.id}:`, error);
-	}
-
-	return message;
 }
 
 export async function getReportAttachmentById(id: string) {
@@ -442,25 +251,6 @@ export async function updateTicketPriority(
 			note: `Priority changed from ${existing.priority} to ${priority}`
 		});
 	});
-}
-
-export async function checkSlaBreach(id: string): Promise<boolean> {
-	const ticket = await getTicketByIdSimple(id);
-	if (!ticket) throw new Error('Ticket not found');
-
-	if (ticket.status === 'resolved' || ticket.status === 'closed') return false;
-
-	const now = new Date();
-	const breached = !!(
-		(ticket.slaResponseDue && ticket.slaResponseDue < now && !ticket.firstRespondedAt) ||
-		(ticket.slaResolveDue && ticket.slaResolveDue < now && !ticket.resolvedAt)
-	);
-
-	if (breached && !ticket.isSlaBreached) {
-		await db.update(reports).set({ isSlaBreached: true }).where(eq(reports.id, id));
-	}
-
-	return breached;
 }
 
 export async function getTicketByTicketCode(code: string): Promise<TicketDetails | undefined> {

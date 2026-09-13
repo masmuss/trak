@@ -36,19 +36,16 @@ export {
 	getTicketByTicketCodeForReporter,
 	updateTicketStatus,
 	updateTicketPriority,
-	claimTicket,
-	assignTicket,
-	checkSlaBreach,
-	calculateSLA,
 	createReport,
 	addReportAttachment,
-	createTicketMessage,
-	createReporterTicketMessage,
 	getReportAttachmentById,
 	getCategoryDistribution,
 	getTicketsForExport,
 	getTicketStats
 } from './report.service';
+export { createTicketMessage, createReporterTicketMessage } from './ticket-message.service';
+export { claimTicket, assignTicket } from './ticket-assignment.service';
+export { calculateSLA, checkSlaBreach } from './ticket-sla.service';
 export type {
 	TicketListItem,
 	TicketListResult,
