@@ -41,7 +41,8 @@ export {
 	getTicketsForExport,
 	getStaleTickets,
 	getTicketStats,
-	isTicketSortKey
+	isTicketSortKey,
+	parseStaleHours
 } from './ticket-query.service';
 export { updateTicketStatus, updateTicketPriority } from './ticket-status.service';
 export { addReportAttachment, getReportAttachmentById } from './ticket-attachment.service';

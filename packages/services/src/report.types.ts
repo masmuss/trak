@@ -14,7 +14,7 @@ export type TicketStats = {
 };
 
 export type TicketSortKey =
-	'createdAt' | 'ticketCode' | 'title' | 'status' | 'priority' | 'slaResolveDue';
+	'createdAt' | 'ticketCode' | 'title' | 'status' | 'priority' | 'slaResolveDue' | 'lastActivityAt';
 
 export type TicketFilters = {
 	/** Comma-separated TicketStatus values (validated at the boundary, see toTicketStatusList). */
@@ -22,6 +22,8 @@ export type TicketFilters = {
 	/** Comma-separated Priority values (validated at the boundary, see toPriorityList). */
 	priority?: string;
 	slaBreached?: string;
+	/** Hours of inactivity that mark an open ticket stale (validated at the boundary). */
+	staleHours?: string;
 	search?: string;
 	categoryId?: string;
 	assignedTo?: string;

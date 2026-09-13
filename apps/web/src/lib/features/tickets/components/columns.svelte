@@ -11,8 +11,16 @@
 	import SlaBadge from './sla-badge.svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { formatDate } from '../utils/formatters';
+	import { formatRelativeTime } from '$lib/utils/date';
 
 	let { columns = $bindable() }: { columns: ColumnDef<TicketWithRelations, unknown>[] } = $props();
+
+	const STALE_AFTER_MS = 24 * 60 * 60 * 1000;
+
+	function isStale(lastActivityAt: string | Date, status: string): boolean {
+		if (status !== 'open' && status !== 'in_progress') return false;
+		return Date.now() - new Date(lastActivityAt).getTime() > STALE_AFTER_MS;
+	}
 
 	$effect(() => {
 		columns = [
@@ -73,6 +81,13 @@
 					renderComponent(DataTableColumnHeader, { column, title: 'Created' }),
 				cell: (context) => renderSnippet(dateCell, context),
 				meta: { label: 'Created Date' }
+			},
+			{
+				accessorKey: 'lastActivityAt',
+				header: ({ column }) =>
+					renderComponent(DataTableColumnHeader, { column, title: 'Last Activity' }),
+				cell: (context) => renderSnippet(activityCell, context),
+				meta: { label: 'Last Activity' }
 			}
 		];
 	});
@@ -134,5 +149,21 @@
 {#snippet dateCell({ row }: CellContext<TicketWithRelations, unknown>)}
 	<span class="text-sm text-muted-foreground">
 		{formatDate(new Date(row.original.createdAt))}
+	</span>
+{/snippet}
+
+{#snippet activityCell({ row }: CellContext<TicketWithRelations, unknown>)}
+	<span class="flex items-center gap-2">
+		<span class="text-sm text-muted-foreground">
+			{formatRelativeTime(new Date(row.original.lastActivityAt))}
+		</span>
+		{#if isStale(row.original.lastActivityAt, row.original.status)}
+			<Badge
+				variant="outline"
+				class="border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-400"
+			>
+				Stale
+			</Badge>
+		{/if}
 	</span>
 {/snippet}

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { db, reports } from '@trak/database';
-import { getStaleTickets } from '../ticket-query.service';
+import { getStaleTickets, listTickets } from '../ticket-query.service';
 import { createTicketMessage } from '../ticket-message.service';
 import { createTestReporter, createTestTicket, createTestUser } from './helpers';
 
@@ -55,5 +55,38 @@ describe('getStaleTickets', () => {
 		await expect(getStaleTickets(0)).rejects.toThrow(/positive/);
 		await expect(getStaleTickets(-5)).rejects.toThrow(/positive/);
 		await expect(getStaleTickets(Number.NaN)).rejects.toThrow(/positive/);
+	});
+});
+
+describe('listTickets stale filter and activity sort', () => {
+	it('filters stale open tickets via staleHours and ignores garbage', async () => {
+		const reporter = await createTestReporter();
+		const fresh = await createTestTicket(reporter.id, { title: 'Fresh ticket' });
+		const stale = await createTestTicket(reporter.id, { title: 'Stale ticket' });
+		await backdateActivity(stale.id, 72);
+
+		const filtered = await listTickets({ staleHours: '24', limit: 10, offset: 0 });
+		expect(filtered.tickets.map((t) => t.id)).toEqual([stale.id]);
+		expect(filtered.total).toBe(1);
+
+		const garbage = await listTickets({ staleHours: 'banana', limit: 10, offset: 0 });
+		expect(garbage.total).toBe(2);
+		expect(garbage.tickets.map((t) => t.id)).toContain(fresh.id);
+	});
+
+	it('sorts by lastActivityAt ascending', async () => {
+		const reporter = await createTestReporter();
+		const first = await createTestTicket(reporter.id, { title: 'First ticket' });
+		const second = await createTestTicket(reporter.id, { title: 'Second ticket' });
+		await backdateActivity(first.id, 72);
+
+		const result = await listTickets({
+			sort: 'lastActivityAt',
+			order: 'asc',
+			limit: 10,
+			offset: 0
+		});
+
+		expect(result.tickets.map((t) => t.id)).toEqual([first.id, second.id]);
 	});
 });

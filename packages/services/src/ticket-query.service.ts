@@ -14,7 +14,15 @@ import type {
 
 type ReportFilterInput = Pick<
 	TicketFilters,
-	'status' | 'priority' | 'slaBreached' | 'search' | 'categoryId' | 'assignedTo' | 'sort' | 'order'
+	| 'status'
+	| 'priority'
+	| 'slaBreached'
+	| 'staleHours'
+	| 'search'
+	| 'categoryId'
+	| 'assignedTo'
+	| 'sort'
+	| 'order'
 >;
 
 const TICKET_SORT_KEYS: readonly TicketSortKey[] = [
@@ -23,7 +31,8 @@ const TICKET_SORT_KEYS: readonly TicketSortKey[] = [
 	'title',
 	'status',
 	'priority',
-	'slaResolveDue'
+	'slaResolveDue',
+	'lastActivityAt'
 ];
 
 export function isTicketSortKey(value: unknown): value is TicketSortKey {
@@ -41,6 +50,8 @@ function resolveTicketOrder(filters: Pick<TicketFilters, 'sort' | 'order'>): SQL
 			return ascending ? asc(reports.status) : desc(reports.status);
 		case 'slaResolveDue':
 			return ascending ? asc(reports.slaResolveDue) : desc(reports.slaResolveDue);
+		case 'lastActivityAt':
+			return ascending ? asc(reports.lastActivityAt) : desc(reports.lastActivityAt);
 		case 'priority': {
 			const severity = sql`CASE ${reports.priority} WHEN 'CRITICAL' THEN 0 WHEN 'HIGH' THEN 1 WHEN 'MEDIUM' THEN 2 WHEN 'LOW' THEN 3 ELSE 4 END`;
 			return ascending ? asc(severity) : desc(severity);
@@ -49,6 +60,19 @@ function resolveTicketOrder(filters: Pick<TicketFilters, 'sort' | 'order'>): SQL
 		default:
 			return ascending ? asc(reports.createdAt) : desc(reports.createdAt);
 	}
+}
+
+export function parseStaleHours(value: unknown): number | undefined {
+	const hours = typeof value === 'string' ? Number(value) : value;
+	if (typeof hours !== 'number' || !Number.isFinite(hours) || hours <= 0) return undefined;
+	return hours;
+}
+
+function staleCondition(hours: number): SQL | undefined {
+	return and(
+		inArray(reports.status, toTicketStatusList('open,in_progress')),
+		lt(reports.lastActivityAt, new Date(Date.now() - hours * 3_600_000))
+	);
 }
 
 function buildReportFilters(filters: ReportFilterInput): SQL | undefined {
@@ -61,6 +85,12 @@ function buildReportFilters(filters: ReportFilterInput): SQL | undefined {
 
 	if (filters.slaBreached === 'true') conditions.push(eq(reports.isSlaBreached, true));
 	if (filters.slaBreached === 'false') conditions.push(eq(reports.isSlaBreached, false));
+
+	const staleHours = parseStaleHours(filters.staleHours);
+	if (staleHours !== undefined) {
+		const stale = staleCondition(staleHours);
+		if (stale) conditions.push(stale);
+	}
 	if (filters.categoryId)
 		conditions.push(inArray(reports.categoryId, filters.categoryId.split(',')));
 
@@ -169,15 +199,11 @@ export async function getStaleTickets(
 	maxInactiveHours: number,
 	limit = 50
 ): Promise<TicketListItem[]> {
-	if (!Number.isFinite(maxInactiveHours) || maxInactiveHours <= 0) {
+	if (parseStaleHours(maxInactiveHours) === undefined) {
 		throw new Error('maxInactiveHours must be a positive number');
 	}
-	const cutoff = new Date(Date.now() - maxInactiveHours * 3_600_000);
 	return db.query.reports.findMany({
-		where: and(
-			inArray(reports.status, toTicketStatusList('open,in_progress')),
-			lt(reports.lastActivityAt, cutoff)
-		),
+		where: staleCondition(maxInactiveHours),
 		with: { reporter: true, category: true, assignee: true },
 		orderBy: [asc(reports.lastActivityAt)],
 		limit

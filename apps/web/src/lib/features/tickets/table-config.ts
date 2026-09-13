@@ -64,6 +64,17 @@ export function createTicketsTableConfig(
 					{ label: 'Safe', value: 'false' }
 				]
 			}),
+			createSelectFilter({
+				key: 'stale_hours',
+				title: 'Activity',
+				serverKey: 'stale_hours',
+				options: [
+					{ label: 'Stale > 24h', value: '24' },
+					{ label: 'Stale > 48h', value: '48' },
+					{ label: 'Stale > 72h', value: '72' },
+					{ label: 'Stale > 7d', value: '168' }
+				]
+			}),
 			createMultiSelectFilter({
 				key: 'categoryId',
 				title: 'Category',
