@@ -1,5 +1,4 @@
 import { error } from '@sveltejs/kit';
-import { env } from '$env/dynamic/private';
 import { getReportAttachmentById } from '@trak/services';
 import type { RequestHandler } from './$types';
 
@@ -13,11 +12,11 @@ export const GET: RequestHandler = async ({ locals, params, fetch }) => {
 		throw error(404, 'Attachment not found');
 	}
 
-	const botToken = env.TELEGRAM_BOT_TOKEN;
+	const botToken = process.env.TELEGRAM_BOT_TOKEN;
 	if (!botToken) {
 		throw error(
 			503,
-			'Attachment service is not configured. Set TELEGRAM_BOT_TOKEN in apps/web/.env and restart the web server.'
+			'Attachment service is not configured. Set TELEGRAM_BOT_TOKEN in the root .env and restart the web server.'
 		);
 	}
 
