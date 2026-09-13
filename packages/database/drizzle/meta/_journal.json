@@ -71,6 +71,13 @@
       "when": 1789210545773,
       "tag": "0009_nappy_red_hulk",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1789273985449,
+      "tag": "0010_dark_the_phantom",
+      "breakpoints": true
     }
   ]
 }

@@ -258,6 +258,29 @@ export async function createReporterTicketMessage(
 			throw new Error('Closed tickets cannot receive messages');
 		}
 
+		const reopened = ticket.status === 'resolved';
+		if (reopened) {
+			const { responseDue, resolveDue } = calculateSLA(ticket.priority);
+			await tx
+				.update(reports)
+				.set({
+					status: 'open',
+					resolvedAt: null,
+					slaResponseDue: responseDue,
+					slaResolveDue: resolveDue,
+					isSlaBreached: false
+				})
+				.where(eq(reports.id, input.reportId));
+
+			await tx.insert(statusHistories).values({
+				reportId: input.reportId,
+				changedBy: null,
+				oldStatus: 'resolved',
+				newStatus: 'open',
+				note: 'Ticket reopened because the reporter replied'
+			});
+		}
+
 		const [message] = await tx
 			.insert(ticketMessages)
 			.values({
