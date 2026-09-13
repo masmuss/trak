@@ -28,21 +28,19 @@ export type { CreateUserInput, UpdateUserInput } from './user.types';
 export { getPasswordAccount, updateAccountPassword, createAccount } from './account.service';
 export type { PasswordAccount, CreateAccountInput } from './account.types';
 
+export { createReport } from './report.service';
 export {
 	getTicketById,
 	listTickets,
 	getTicketByIdSimple,
 	getTicketByTicketCode,
 	getTicketByTicketCodeForReporter,
-	updateTicketStatus,
-	updateTicketPriority,
-	createReport,
-	addReportAttachment,
-	getReportAttachmentById,
 	getCategoryDistribution,
 	getTicketsForExport,
 	getTicketStats
-} from './report.service';
+} from './ticket-query.service';
+export { updateTicketStatus, updateTicketPriority } from './ticket-status.service';
+export { addReportAttachment, getReportAttachmentById } from './ticket-attachment.service';
 export { createTicketMessage, createReporterTicketMessage } from './ticket-message.service';
 export { claimTicket, assignTicket } from './ticket-assignment.service';
 export { calculateSLA, checkSlaBreach } from './ticket-sla.service';
