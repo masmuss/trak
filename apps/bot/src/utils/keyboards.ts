@@ -54,9 +54,19 @@ export function buildPostSubmitKeyboard(ticketCode: string): InlineKeyboard {
 				{ text: '📝 Buat laporan baru', callback_data: 'new_report' },
 				{ text: '🔍 Cek status', callback_data: `status_${ticketCode}` }
 			],
+			[{ text: '💬 Balas ticket', callback_data: `reply_${ticketCode}` }],
 			[{ text: '📋 Perintah', callback_data: 'show_commands' }]
 		]
 	};
+}
+
+export function buildTicketStatusKeyboard(ticketCode: string, canReply: boolean): InlineKeyboard {
+	const actions = [{ text: '🔄 Refresh status', callback_data: `status_${ticketCode}` }];
+	if (canReply) {
+		actions.unshift({ text: '💬 Balas ticket', callback_data: `reply_${ticketCode}` });
+	}
+
+	return { inline_keyboard: [actions] };
 }
 
 export const removeKeyboard = { remove_keyboard: true } as const;

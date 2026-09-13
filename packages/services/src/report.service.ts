@@ -241,6 +241,37 @@ export async function createTicketMessage(input: CreateTicketMessageInput) {
 	});
 }
 
+export async function createReporterTicketMessage(
+	input: Pick<CreateTicketMessageInput, 'reportId' | 'body' | 'senderReporterId'>
+) {
+	const body = input.body.trim();
+	if (!input.senderReporterId) throw new Error('Reporter is required');
+	if (!body) throw new Error('Message body is required');
+
+	return db.transaction(async (tx) => {
+		const ticket = await requireTicket(tx, input.reportId);
+		if (ticket.reporterId !== input.senderReporterId) {
+			throw new Error('Reporter does not own this ticket');
+		}
+		if (ticket.status === 'closed') {
+			throw new Error('Closed tickets cannot receive messages');
+		}
+
+		const [message] = await tx
+			.insert(ticketMessages)
+			.values({
+				reportId: input.reportId,
+				senderType: 'reporter',
+				senderReporterId: input.senderReporterId,
+				body,
+				isInternal: false
+			})
+			.returning();
+
+		return message;
+	});
+}
+
 export async function getReportAttachmentById(id: string) {
 	return db.query.reportAttachments.findFirst({
 		where: eq(reportAttachments.id, id)
@@ -301,6 +332,14 @@ export async function getTicketByTicketCode(code: string): Promise<TicketDetails
 		where: eq(reports.ticketCode, code.toUpperCase()),
 		with: ticketDetailsWith
 	}) as Promise<TicketDetails | undefined>;
+}
+
+export async function getTicketByTicketCodeForReporter(
+	code: string,
+	reporterId: string
+): Promise<TicketDetails | undefined> {
+	const ticket = await getTicketByTicketCode(code);
+	return ticket?.reporterId === reporterId ? ticket : undefined;
 }
 
 export async function getTicketStats(): Promise<TicketStats> {

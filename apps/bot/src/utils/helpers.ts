@@ -1,4 +1,8 @@
-import { getReporterByTelegramId, getTicketByTicketCode } from '@trak/services';
+import {
+	getReporterByTelegramId,
+	getTicketByTicketCode,
+	getTicketByTicketCodeForReporter
+} from '@trak/services';
 import { BotContext, BotSession } from '../types';
 import {
 	NO_REPORTER_SHORT,
@@ -7,7 +11,7 @@ import {
 	ticketNotFound,
 	buildReportSummary
 } from './messages';
-import { buildConfirmKeyboard } from './keyboards';
+import { buildConfirmKeyboard, buildTicketStatusKeyboard } from './keyboards';
 
 export async function requireReporter(ctx: BotContext, short = false): Promise<string | null> {
 	const from = ctx.from;
@@ -33,6 +37,9 @@ export function resetSession(session: BotSession): void {
 		categoryId: undefined,
 		categoryName: undefined,
 		inviteCode: undefined,
+		replyTicketId: undefined,
+		replyTicketCode: undefined,
+		replyBody: undefined,
 		attachments: []
 	});
 }
@@ -84,4 +91,29 @@ export async function replyTicketStatus(ctx: BotContext, ticketCode: string): Pr
 			(ticket.updatedAt ? `\nDiperbarui: ${ticket.updatedAt.toLocaleString('id-ID')}` : '') +
 			history
 	);
+
+	const reporter = ctx.from ? await getReporterByTelegramId(BigInt(ctx.from.id)) : undefined;
+	if (reporter?.id === ticket.reporterId) {
+		await ctx.reply('Pilih tindakan untuk ticket ini:', {
+			reply_markup: buildTicketStatusKeyboard(ticket.ticketCode, ticket.status !== 'closed')
+		});
+	}
+}
+
+export async function getOwnedTicketForReply(ctx: BotContext, ticketCode: string) {
+	const reporterId = await requireReporter(ctx, true);
+	if (!reporterId) return null;
+
+	const ticket = await getTicketByTicketCodeForReporter(ticketCode, reporterId);
+	if (!ticket) {
+		await ctx.reply(ticketNotFound(ticketCode));
+		return null;
+	}
+
+	if (ticket.status === 'closed') {
+		await ctx.reply('Ticket ini sudah ditutup dan tidak dapat menerima balasan baru.');
+		return null;
+	}
+
+	return { reporterId, ticket };
 }

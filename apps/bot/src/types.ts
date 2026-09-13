@@ -1,6 +1,7 @@
 import { Context, SessionFlavor } from 'grammy';
 
-export type SessionStep = 'awaiting_invite' | 'title' | 'body' | 'category' | 'attachment' | 'idle';
+export type SessionStep =
+	'awaiting_invite' | 'title' | 'body' | 'category' | 'attachment' | 'reply_body' | 'idle';
 
 export type BotSession = {
 	step?: SessionStep;
@@ -10,6 +11,9 @@ export type BotSession = {
 	categoryId?: string;
 	categoryName?: string;
 	inviteCode?: string;
+	replyTicketId?: string;
+	replyTicketCode?: string;
+	replyBody?: string;
 	attachments: { fileId: string; fileType: string; storageUrl: string }[];
 };
 
