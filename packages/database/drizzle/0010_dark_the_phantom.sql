@@ -1,0 +1,1 @@
+ALTER TABLE "status_histories" ALTER COLUMN "changed_by" DROP NOT NULL;

@@ -97,9 +97,7 @@ export const statusHistories = pgTable('status_histories', {
 	reportId: uuid('report_id')
 		.notNull()
 		.references(() => reports.id, { onDelete: 'cascade' }),
-	changedBy: text('changed_by')
-		.notNull()
-		.references(() => user.id),
+	changedBy: text('changed_by').references(() => user.id),
 	oldStatus: varchar('old_status', { length: 50 }).notNull(),
 	newStatus: varchar('new_status', { length: 50 }).notNull(),
 	note: text('note'),
