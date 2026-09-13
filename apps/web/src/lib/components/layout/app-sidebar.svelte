@@ -61,6 +61,11 @@
 						title: 'Settings',
 						url: '/settings',
 						icon: GearSixIcon
+					},
+					{
+						title: 'Audit Logs',
+						url: '/audit-logs',
+						icon: ShieldIcon
 					}
 				]
 			}
@@ -83,6 +88,14 @@
 	}: ComponentProps<typeof Sidebar.Root> = $props();
 
 	const user = $derived(page.data.user);
+	const navGroups = $derived(
+		user?.role === 'admin'
+			? data.navGroups
+			: data.navGroups.map((group) => ({
+					...group,
+					items: group.items.filter((item) => item.title !== 'Audit Logs')
+				}))
+	);
 </script>
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>
@@ -96,7 +109,7 @@
 		</Sidebar.Menu>
 	</Sidebar.Header>
 	<Sidebar.Content>
-		<NavMain groups={data.navGroups} />
+		<NavMain groups={navGroups} />
 	</Sidebar.Content>
 	<Sidebar.Footer>
 		{#if user}
