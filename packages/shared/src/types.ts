@@ -6,17 +6,9 @@ import type {
 	user,
 	reporters,
 	categories,
-	inviteCodes,
-	priorityEnum,
-	ticketStatusEnum,
-	agentNotificationTypeEnum,
-	messageSenderTypeEnum
+	inviteCodes
 } from '@trak/database';
 
-export type Priority = (typeof priorityEnum.enumValues)[number];
-export type TicketStatus = (typeof ticketStatusEnum.enumValues)[number];
-export type AgentNotificationType = (typeof agentNotificationTypeEnum.enumValues)[number];
-export type MessageSenderType = (typeof messageSenderTypeEnum.enumValues)[number];
 export type Ticket = typeof reports.$inferSelect;
 export type Attachment = typeof reportAttachments.$inferSelect;
 export type User = typeof user.$inferSelect;
@@ -51,27 +43,6 @@ export function requireActorRole(actor: Actor, ...roles: UserRole[]): void {
 }
 
 export type MessageVisibility = 'public' | 'internal';
-
-export type AuditAction =
-	| 'ticket.created'
-	| 'ticket.assigned'
-	| 'ticket.status_changed'
-	| 'ticket.priority_changed'
-	| 'ticket.message_created'
-	| 'ticket.attachment_added'
-	| 'ticket.reopened'
-	| 'category.created'
-	| 'category.updated'
-	| 'category.deleted'
-	| 'user.created'
-	| 'user.updated'
-	| 'user.deleted'
-	| 'invite_code.created'
-	| 'invite_code.updated'
-	| 'invite_code.deleted';
-
-export type AuditEntityType =
-	'ticket' | 'ticket_message' | 'attachment' | 'category' | 'user' | 'invite_code';
 
 export type StatusHistoryWithUser = StatusHistory & {
 	changedByUser: User | null;

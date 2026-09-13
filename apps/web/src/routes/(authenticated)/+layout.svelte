@@ -12,6 +12,8 @@
 	import { BellIcon } from 'phosphor-svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { goto } from '$app/navigation';
+	import { getAgentNotificationTypeLabel } from '@trak/shared';
+	import { formatRelativeTime } from '$lib/utils/date';
 
 	const autoBreadcrumbs = $derived.by(() => {
 		if (page.data.breadcrumbs) {
@@ -45,6 +47,14 @@
 		}
 		await invalidateAll();
 		await goto(resolve('/(authenticated)/tickets/[id]', { id: reportId }));
+	}
+
+	async function markAllNotificationsRead() {
+		const response = await fetch('/notifications/read-all', { method: 'POST' });
+		if (!response.ok) {
+			throw new Error('Unable to mark all notifications as read');
+		}
+		await invalidateAll();
 	}
 </script>
 
@@ -93,7 +103,14 @@
 							</Button>
 						</Popover.Trigger>
 						<Popover.Content class="w-80">
-							<Popover.Title>Notifications</Popover.Title>
+							<div class="flex items-center justify-between">
+								<Popover.Title>Notifications</Popover.Title>
+								{#if page.data.unreadNotificationCount}
+									<Button variant="ghost" size="sm" onclick={markAllNotificationsRead}>
+										Mark all read
+									</Button>
+								{/if}
+							</div>
 							<div class="mt-3 space-y-2">
 								{#if page.data.notifications?.length}
 									{#each page.data.notifications as notification (notification.id)}
@@ -105,6 +122,14 @@
 												openNotification(event, notification.id, notification.reportId)}
 											class="block rounded-md p-2 text-sm hover:bg-muted"
 										>
+											<span class="mb-1 flex items-center justify-between gap-2">
+												<span class="text-xs font-medium text-muted-foreground">
+													{getAgentNotificationTypeLabel(notification.type)}
+												</span>
+												<span class="text-xs text-muted-foreground">
+													{formatRelativeTime(notification.createdAt)}
+												</span>
+											</span>
 											{notification.message}
 										</a>
 									{/each}

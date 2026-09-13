@@ -10,7 +10,7 @@
 		agents,
 		onEdit
 	}: {
-		agents: Agent[];
+		agents: (Agent & { activeTickets: number })[];
 		onEdit: (agent: Agent) => void;
 	} = $props();
 
@@ -39,6 +39,7 @@
 				<Table.Head class="h-11 p-3 font-medium">Email</Table.Head>
 				<Table.Head class="h-11 p-3 font-medium">Role</Table.Head>
 				<Table.Head class="h-11 p-3 font-medium">Status</Table.Head>
+				<Table.Head class="h-11 p-3 font-medium">Active tickets</Table.Head>
 				<Table.Head class="h-11 p-3 font-medium">Created</Table.Head>
 				<Table.Head class="h-11 w-25 p-3 font-medium">Actions</Table.Head>
 			</Table.Row>
@@ -59,6 +60,11 @@
 						{:else}
 							<Badge variant="destructive">Inactive</Badge>
 						{/if}
+					</Table.Cell>
+					<Table.Cell class="p-3 align-middle">
+						<Badge variant={agent.activeTickets > 0 ? 'default' : 'secondary'}>
+							{agent.activeTickets}
+						</Badge>
 					</Table.Cell>
 					<Table.Cell class="p-3 align-middle text-sm text-muted-foreground">
 						{formatDate(agent.createdAt)}

@@ -3,7 +3,6 @@ import {
 	assignTicket,
 	claimTicket,
 	createAgentNotification,
-	createAuditLog,
 	createNotification,
 	createTicketMessage,
 	getTicketById,
@@ -41,13 +40,6 @@ export async function claimTicketAction(event: RequestEvent) {
 		return fail(409, { error: 'Ticket is already assigned' });
 	}
 
-	await createAuditLog({
-		actorUserId: user.id,
-		action: 'ticket.assigned',
-		entityType: 'ticket',
-		entityId: id,
-		afterData: { assignedTo: user.id, method: 'claim' }
-	});
 	await createAgentNotification({
 		recipientUserId: user.id,
 		reportId: id,
@@ -70,23 +62,6 @@ export async function assignTicketAction(event: RequestEvent) {
 	const ticket = await getTicketById(id);
 	requireExists(ticket, 'Ticket');
 	await assignTicket(id, assigneeId || null, toActor(user));
-	await createAuditLog({
-		actorUserId: user.id,
-		action: 'ticket.assigned',
-		entityType: 'ticket',
-		entityId: id,
-		beforeData: { assignedTo: ticket.assignee?.id ?? null },
-		afterData: { assignedTo: assigneeId || null, method: 'manual' }
-	});
-
-	if (assigneeId) {
-		await createAgentNotification({
-			recipientUserId: assigneeId,
-			reportId: id,
-			type: 'assignment',
-			message: `Ticket ${id} ditugaskan kepada Anda`
-		});
-	}
 
 	return { success: true };
 }
@@ -109,17 +84,10 @@ export async function updateStatusAction(event: RequestEvent) {
 	}
 
 	await updateTicketStatus(id, newStatus, toActor(user), note || undefined);
-	await createAuditLog({
-		actorUserId: user.id,
-		action: 'ticket.status_changed',
-		entityType: 'ticket',
-		entityId: id,
-		beforeData: { status: ticket.status },
-		afterData: { status: newStatus, note: note || null }
-	});
 	await createNotification({
 		reporterTelegramId: ticket.reporter.telegramId,
 		reportId: id,
+		type: 'status_changed',
 		message:
 			`🔄 Status tiket ${ticket.ticketCode} diperbarui\n\n` +
 			`Judul: ${ticket.title}\n` +
@@ -166,18 +134,12 @@ export async function sendMessageAction(event: RequestEvent) {
 		isInternal: visibility === 'internal',
 		attachments
 	});
-	await createAuditLog({
-		actorUserId: user.id,
-		action: 'ticket.message_created',
-		entityType: 'ticket_message',
-		entityId: ticket.id,
-		afterData: { visibility, attachmentCount: attachments.length }
-	});
 
 	if (visibility === 'public') {
 		await createNotification({
 			reporterTelegramId: ticket.reporter.telegramId,
 			reportId: ticket.id,
+			type: 'agent_reply',
 			message: `💬 Balasan baru untuk tiket ${ticket.ticketCode}\n\n${body}`
 		});
 	}
@@ -202,17 +164,10 @@ export async function updatePriorityAction(event: RequestEvent) {
 	}
 
 	await updateTicketPriority(id, newPriority, toActor(user));
-	await createAuditLog({
-		actorUserId: user.id,
-		action: 'ticket.priority_changed',
-		entityType: 'ticket',
-		entityId: id,
-		beforeData: { priority: ticket.priority },
-		afterData: { priority: newPriority }
-	});
 	await createNotification({
 		reporterTelegramId: ticket.reporter.telegramId,
 		reportId: id,
+		type: 'priority_changed',
 		message:
 			`🏷 Prioritas tiket ${ticket.ticketCode} diperbarui\n\n` +
 			`Judul: ${ticket.title}\n` +

@@ -71,6 +71,13 @@ export const agentNotificationTypeEnum = pgEnum('agent_notification_type', [
 	'assignment'
 ]);
 
+export const reporterNotificationTypeEnum = pgEnum('reporter_notification_type', [
+	'general',
+	'status_changed',
+	'priority_changed',
+	'agent_reply'
+]);
+
 export const reports = pgTable('reports', {
 	id: uuid('id')
 		.primaryKey()
@@ -246,6 +253,8 @@ export const notifications = pgTable('notifications', {
 		.notNull()
 		.references(() => reports.id, { onDelete: 'cascade' }),
 	message: text('message').notNull(),
+	type: reporterNotificationTypeEnum('type').notNull().default('general'),
+	dedupKey: text('dedup_key').unique(),
 	isRead: boolean('is_read').notNull().default(false),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 });
@@ -263,6 +272,7 @@ export const agentNotifications = pgTable('agent_notifications', {
 	messageId: uuid('message_id').references(() => ticketMessages.id, { onDelete: 'cascade' }),
 	type: agentNotificationTypeEnum('type').notNull(),
 	message: text('message').notNull(),
+	dedupKey: text('dedup_key').unique(),
 	isRead: boolean('is_read').notNull().default(false),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 });

@@ -57,6 +57,22 @@ export async function createTicketMessage(input: CreateTicketMessageInput) {
 			);
 		}
 
+		await createAuditLog(
+			{
+				actorUserId: input.senderUserId ?? null,
+				action: 'ticket.message_created',
+				entityType: 'ticket_message',
+				entityId: message.id,
+				afterData: {
+					reportId: input.reportId,
+					senderType: input.senderType,
+					visibility: input.isInternal ? 'internal' : 'public',
+					attachmentCount: input.attachments?.length ?? 0
+				}
+			},
+			tx
+		);
+
 		return message;
 	});
 }
@@ -123,29 +139,35 @@ export async function createReporterTicketMessage(
 			);
 		}
 
+		await createAuditLog(
+			{
+				action: 'ticket.message_created',
+				entityType: 'ticket_message',
+				entityId: message.id,
+				afterData: {
+					reportId: input.reportId,
+					senderType: 'reporter',
+					attachmentCount: input.attachments?.length ?? 0
+				}
+			},
+			tx
+		);
+
+		if (reopened) {
+			await createAuditLog(
+				{
+					action: 'ticket.reopened',
+					entityType: 'ticket',
+					entityId: input.reportId,
+					beforeData: { status: 'resolved' },
+					afterData: { status: 'open', reason: 'reporter_reply' }
+				},
+				tx
+			);
+		}
+
 		return { message, assigneeId: ticket.assignedTo, reopened };
 	});
-
-	await createAuditLog({
-		action: 'ticket.message_created',
-		entityType: 'ticket_message',
-		entityId: message.id,
-		afterData: {
-			reportId: input.reportId,
-			senderType: 'reporter',
-			attachmentCount: input.attachments?.length ?? 0
-		}
-	});
-
-	if (reopened) {
-		await createAuditLog({
-			action: 'ticket.reopened',
-			entityType: 'ticket',
-			entityId: input.reportId,
-			beforeData: { status: 'resolved' },
-			afterData: { status: 'open', reason: 'reporter_reply' }
-		});
-	}
 
 	if (assigneeId) {
 		await createAgentNotification({

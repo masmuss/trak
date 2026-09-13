@@ -7,6 +7,7 @@ import {
 	deleteUser,
 	findUserByEmail,
 	findUserByEmailExcluding,
+	getActiveTicketCounts,
 	getUserById,
 	getUsers,
 	updateUser,
@@ -25,8 +26,13 @@ function generatePassword(length: number): string {
 
 export const load: PageServerLoad = async (event) => {
 	requireRole(event, 'admin');
-	const allUsers = await getUsers();
-	return { agents: allUsers };
+	const [allUsers, workload] = await Promise.all([getUsers(), getActiveTicketCounts()]);
+	const activeByUser = new Map(workload.map((row) => [row.userId, row.activeTickets]));
+	const agents = allUsers.map((agent) => ({
+		...agent,
+		activeTickets: activeByUser.get(agent.id) ?? 0
+	}));
+	return { agents };
 };
 
 export const actions: Actions = {

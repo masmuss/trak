@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 import { db, reports, statusHistories, type DatabaseTransaction } from '@trak/database';
 import { requireActorRole, type Actor, type Priority, type TicketStatus } from '@trak/shared';
 import { calculateSLA } from './ticket-sla.service';
+import { createAuditLog } from './audit.service';
 
 async function requireTicket(tx: DatabaseTransaction, id: string) {
 	const existing = await tx.query.reports.findFirst({ where: eq(reports.id, id) });
@@ -40,6 +41,17 @@ export async function updateTicketStatus(
 			newStatus,
 			note: note || null
 		});
+		await createAuditLog(
+			{
+				actorUserId: actor.id,
+				action: 'ticket.status_changed',
+				entityType: 'ticket',
+				entityId: id,
+				beforeData: { status: existing.status },
+				afterData: { status: newStatus, note: note || null }
+			},
+			tx
+		);
 	});
 }
 
@@ -70,5 +82,16 @@ export async function updateTicketPriority(
 			newStatus: existing.status,
 			note: `Priority changed from ${existing.priority} to ${priority}`
 		});
+		await createAuditLog(
+			{
+				actorUserId: actor.id,
+				action: 'ticket.priority_changed',
+				entityType: 'ticket',
+				entityId: id,
+				beforeData: { priority: existing.priority },
+				afterData: { priority }
+			},
+			tx
+		);
 	});
 }

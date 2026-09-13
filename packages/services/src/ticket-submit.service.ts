@@ -69,18 +69,21 @@ export async function submitReportWithAttachments(
 			);
 		}
 
-		return { id: report.id };
-	});
+		await createAuditLog(
+			{
+				action: 'ticket.created',
+				entityType: 'ticket',
+				entityId: report.id,
+				afterData: {
+					ticketCode,
+					categoryId: input.categoryId ?? null,
+					attachmentCount: input.attachments.length
+				}
+			},
+			tx
+		);
 
-	await createAuditLog({
-		action: 'ticket.created',
-		entityType: 'ticket',
-		entityId: id,
-		afterData: {
-			ticketCode,
-			categoryId: input.categoryId ?? null,
-			attachmentCount: input.attachments.length
-		}
+		return { id: report.id };
 	});
 
 	return { id, ticketCode };

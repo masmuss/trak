@@ -11,7 +11,6 @@ config({ path: path.resolve(__dirname, '../../.env') });
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
 	test: {
-		include: ['src/**/*.{test,spec}.{js,ts}'],
-		exclude: ['src/lib/server/**']
+		include: ['src/**/*.{test,spec}.{js,ts}']
 	}
 });

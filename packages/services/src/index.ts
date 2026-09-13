@@ -1,6 +1,6 @@
 export { cleanUpStaleSessions } from './bot.service';
 export { createAuditLog } from './audit.service';
-export { getAuditLogs } from './audit.service';
+export { getAuditLogs, getAuditLogsCount } from './audit.service';
 export type { AuditLogInput, AuditLogFilters } from './audit.service';
 
 export {
@@ -44,7 +44,8 @@ export {
 export { updateTicketStatus, updateTicketPriority } from './ticket-status.service';
 export { addReportAttachment, getReportAttachmentById } from './ticket-attachment.service';
 export { createTicketMessage, createReporterTicketMessage } from './ticket-message.service';
-export { claimTicket, assignTicket } from './ticket-assignment.service';
+export { claimTicket, assignTicket, getActiveTicketCounts } from './ticket-assignment.service';
+export type { AgentWorkload } from './ticket-assignment.service';
 export { calculateSLA, checkSlaBreach } from './ticket-sla.service';
 export type {
 	TicketListItem,
@@ -99,12 +100,16 @@ export {
 	createNotification,
 	publishAgentNotification,
 	getPendingNotifications,
-	markNotificationRead
+	markNotificationRead,
+	markAllNotificationsRead,
+	purgeReadNotifications,
+	NOTIFICATION_RETENTION_DAYS
 } from './notification.service';
 export {
 	createAgentNotification,
 	getAgentNotifications,
 	getUnreadAgentNotificationCount,
-	markAgentNotificationRead
+	markAgentNotificationRead,
+	markAllAgentNotificationsRead
 } from './notification.service';
 export type { CreateNotificationInput } from './notification.types';

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { eq } from 'drizzle-orm';
 import { ForbiddenError } from '@trak/shared';
-import { claimTicket, assignTicket } from '../ticket-assignment.service';
+import { db, user } from '@trak/database';
+import { assignTicket, claimTicket, getActiveTicketCounts } from '../ticket-assignment.service';
+import { getAgentNotifications } from '../notification.service';
 import { getTicketByIdSimple } from '../ticket-query.service';
 import { createTestReporter, createTestTicket, createTestUser } from './helpers';
 
@@ -84,5 +87,92 @@ describe('assignTicket (authorization + behavior)', () => {
 
 		const updated = await getTicketByIdSimple(ticket.id);
 		expect(updated?.assignedTo).toBeNull();
+	});
+
+	it('notifies the new assignee on manual assignment', async () => {
+		const admin = await createTestUser('admin');
+		const agent = await createTestUser('agent');
+		const reporter = await createTestReporter();
+		const ticket = await createTestTicket(reporter.id);
+
+		await assignTicket(ticket.id, agent.id, { id: admin.id, role: 'admin' });
+
+		const notifications = await getAgentNotifications(agent.id);
+		expect(notifications.some((n) => n.reportId === ticket.id && n.type === 'assignment')).toBe(
+			true
+		);
+	});
+
+	it('rejects unknown, inactive, or wrong-role assignees', async () => {
+		const admin = await createTestUser('admin');
+		const adminActor = { id: admin.id, role: 'admin' } as const;
+		const reporter = await createTestReporter();
+		const ticket = await createTestTicket(reporter.id);
+
+		await expect(assignTicket(ticket.id, 'no-such-user', adminActor)).rejects.toThrow(/not found/i);
+
+		const inactive = await createTestUser('agent');
+		await db.update(user).set({ isActive: false }).where(eq(user.id, inactive.id));
+		await expect(assignTicket(ticket.id, inactive.id, adminActor)).rejects.toThrow(/not active/i);
+
+		const viewerId = `viewer-${Date.now()}`;
+		await db.insert(user).values({
+			id: viewerId,
+			name: 'Viewer',
+			email: `${viewerId}@test.local`,
+			role: 'viewer',
+			isActive: true
+		});
+		await expect(assignTicket(ticket.id, viewerId, adminActor)).rejects.toBeInstanceOf(
+			ForbiddenError
+		);
+
+		const updated = await getTicketByIdSimple(ticket.id);
+		expect(updated?.assignedTo).toBeNull();
+	});
+
+	it('notifies the previous assignee on reassign and unassign', async () => {
+		const admin = await createTestUser('admin');
+		const adminActor = { id: admin.id, role: 'admin' } as const;
+		const first = await createTestUser('agent');
+		const second = await createTestUser('agent');
+		const reporter = await createTestReporter();
+		const ticket = await createTestTicket(reporter.id);
+
+		await assignTicket(ticket.id, first.id, adminActor);
+		await assignTicket(ticket.id, second.id, adminActor);
+
+		let firstNotes = await getAgentNotifications(first.id);
+		expect(firstNotes.some((n) => n.reportId === ticket.id && /dipindahkan/i.test(n.message))).toBe(
+			true
+		);
+		let secondNotes = await getAgentNotifications(second.id);
+		expect(secondNotes.some((n) => n.reportId === ticket.id && /ditugaskan/i.test(n.message))).toBe(
+			true
+		);
+
+		await assignTicket(ticket.id, null, adminActor);
+		secondNotes = await getAgentNotifications(second.id);
+		expect(secondNotes.some((n) => n.reportId === ticket.id && /dihapus/i.test(n.message))).toBe(
+			true
+		);
+	});
+
+	it('counts active tickets per agent', async () => {
+		const admin = await createTestUser('admin');
+		const adminActor = { id: admin.id, role: 'admin' } as const;
+		const busy = await createTestUser('agent');
+		const idle = await createTestUser('agent');
+		const reporter = await createTestReporter();
+		const first = await createTestTicket(reporter.id);
+		const second = await createTestTicket(reporter.id);
+
+		await assignTicket(first.id, busy.id, adminActor);
+		await assignTicket(second.id, busy.id, adminActor);
+
+		const counts = await getActiveTicketCounts();
+		const busyRow = counts.find((row) => row.userId === busy.id);
+		expect(busyRow?.activeTickets).toBe(2);
+		expect(counts.some((row) => row.userId === idle.id)).toBe(false);
 	});
 });

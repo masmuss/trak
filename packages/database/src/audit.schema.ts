@@ -6,7 +6,9 @@ export const auditLogs = pgTable('audit_logs', {
 	id: uuid('id')
 		.primaryKey()
 		.$defaultFn(() => uuidv7()),
-	actorUserId: text('actor_user_id').references(() => user.id, { onDelete: 'set null' }),
+	actorUserId: text('actor_user_id').references(() => user.id, {
+		onDelete: 'set null'
+	}),
 	action: text('action').notNull(),
 	entityType: text('entity_type').notNull(),
 	entityId: text('entity_id').notNull(),

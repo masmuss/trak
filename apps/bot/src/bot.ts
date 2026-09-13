@@ -1,6 +1,6 @@
 import { Bot, session } from 'grammy';
 import { createPgSessionAdapter } from '@trak/database';
-import { cleanUpStaleSessions } from '@trak/services';
+import { cleanUpStaleSessions, purgeReadNotifications } from '@trak/services';
 import { config } from './config';
 import { registerCommands } from './handlers/commands';
 import { registerCallbacks } from './handlers/callbacks';
@@ -97,6 +97,9 @@ nodeCron.schedule(
 		console.log('Running daily cleanup of stale sessions...');
 		const deletedCount = await cleanUpStaleSessions();
 		console.log(`Deleted ${deletedCount} stale sessions.`);
+		console.log('Purging old read notifications...');
+		const purged = await purgeReadNotifications();
+		console.log(`Purged ${purged.reporter} reporter + ${purged.agent} agent notifications.`);
 	},
 	{
 		timezone: 'Asia/Jakarta',
