@@ -1,11 +1,18 @@
 import { eq } from 'drizzle-orm';
-import { db, reports, reportAttachments, statusHistories, ticketMessages } from '@trak/database';
+import {
+	db,
+	reports,
+	reportAttachments,
+	statusHistories,
+	ticketMessages,
+	type DatabaseTransaction
+} from '@trak/database';
 import type { CreateMessageAttachmentInput, CreateTicketMessageInput } from './report.types';
 import { calculateSLA } from './ticket-sla.service';
 import { createAgentNotification, publishAgentNotification } from './notification.service';
 import { createAuditLog } from './audit.service';
 
-async function requireTicket(tx: any, id: string) {
+async function requireTicket(tx: DatabaseTransaction, id: string) {
 	const existing = await tx.query.reports.findFirst({
 		where: eq(reports.id, id)
 	});

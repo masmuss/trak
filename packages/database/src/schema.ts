@@ -59,6 +59,18 @@ export const categories = pgTable('categories', {
 
 export const priorityEnum = pgEnum('priority', ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']);
 
+export const ticketStatusEnum = pgEnum('ticket_status', [
+	'open',
+	'in_progress',
+	'resolved',
+	'closed'
+]);
+
+export const agentNotificationTypeEnum = pgEnum('agent_notification_type', [
+	'reporter_reply',
+	'assignment'
+]);
+
 export const reports = pgTable('reports', {
 	id: uuid('id')
 		.primaryKey()
@@ -72,7 +84,7 @@ export const reports = pgTable('reports', {
 	}),
 	title: text('title').notNull(),
 	body: text('body').notNull(),
-	status: varchar('status', { length: 50 }).notNull().default('open'),
+	status: ticketStatusEnum('status').notNull().default('open'),
 	priority: priorityEnum('priority').notNull().default('MEDIUM'),
 	slaResponseDue: timestamp('sla_response_due', { withTimezone: true }),
 	slaResolveDue: timestamp('sla_resolve_due', { withTimezone: true }),
@@ -109,8 +121,8 @@ export const statusHistories = pgTable('status_histories', {
 		.notNull()
 		.references(() => reports.id, { onDelete: 'cascade' }),
 	changedBy: text('changed_by').references(() => user.id),
-	oldStatus: varchar('old_status', { length: 50 }).notNull(),
-	newStatus: varchar('new_status', { length: 50 }).notNull(),
+	oldStatus: ticketStatusEnum('old_status').notNull(),
+	newStatus: ticketStatusEnum('new_status').notNull(),
 	note: text('note'),
 	changedAt: timestamp('changed_at', { withTimezone: true }).notNull().defaultNow()
 });
@@ -249,7 +261,7 @@ export const agentNotifications = pgTable('agent_notifications', {
 		.notNull()
 		.references(() => reports.id, { onDelete: 'cascade' }),
 	messageId: uuid('message_id').references(() => ticketMessages.id, { onDelete: 'cascade' }),
-	type: text('type').notNull(),
+	type: agentNotificationTypeEnum('type').notNull(),
 	message: text('message').notNull(),
 	isRead: boolean('is_read').notNull().default(false),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()

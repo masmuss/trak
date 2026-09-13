@@ -29,6 +29,8 @@ export { getPasswordAccount, updateAccountPassword, createAccount } from './acco
 export type { PasswordAccount, CreateAccountInput } from './account.types';
 
 export { createReport } from './report.service';
+export { submitReportWithAttachments } from './ticket-submit.service';
+export type { SubmitReportInput } from './ticket-submit.service';
 export {
 	getTicketById,
 	listTickets,

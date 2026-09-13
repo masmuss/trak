@@ -16,9 +16,13 @@ export async function addReportAttachment(input: CreateAttachmentInput): Promise
 
 	await createAuditLog({
 		action: 'ticket.attachment_added',
-		entityType: 'ticket_attachment',
+		entityType: 'attachment',
 		entityId: attachment.id,
-		afterData: { reportId: input.reportId, fileType: input.fileType, source: 'telegram' }
+		afterData: {
+			reportId: input.reportId,
+			fileType: input.fileType,
+			source: 'telegram'
+		}
 	});
 }
 

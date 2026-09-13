@@ -10,30 +10,16 @@ import {
 	updateTicketPriority,
 	updateTicketStatus
 } from '@trak/services';
-import { priorityEnum } from '@trak/database';
-import type { Priority } from '@trak/shared';
-import { getFormString, requireExists, requireRole } from '$lib/server/helpers';
+import {
+	getStatusLabel,
+	isPriority,
+	isTicketStatus,
+	MAX_ATTACHMENT_SIZE,
+	MAX_ATTACHMENTS,
+	MAX_MESSAGE_LENGTH
+} from '@trak/shared';
+import { getFormString, requireExists, requireRole, toActor } from '$lib/server/helpers';
 import { uploadAttachment } from '$lib/server/storage';
-
-const validStatuses = ['open', 'in_progress', 'resolved', 'closed'] as const;
-const statusLabels: Record<(typeof validStatuses)[number], string> = {
-	open: '🔴 Open',
-	in_progress: '🟡 In Progress',
-	resolved: '🟢 Resolved',
-	closed: '⚪ Closed'
-};
-
-const MAX_MESSAGE_LENGTH = 5000;
-const MAX_ATTACHMENTS = 5;
-const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
-
-function isStatus(value: string): value is (typeof validStatuses)[number] {
-	return validStatuses.includes(value as (typeof validStatuses)[number]);
-}
-
-function isPriority(value: string): value is Priority {
-	return priorityEnum.enumValues.includes(value as Priority);
-}
 
 function getAttachments(formData: FormData): File[] {
 	return formData
@@ -47,14 +33,10 @@ function getTicketId(event: RequestEvent): string {
 	return id;
 }
 
-function getStatusLabel(status: string): string {
-	return isStatus(status) ? statusLabels[status] : status;
-}
-
 export async function claimTicketAction(event: RequestEvent) {
 	const user = requireRole(event, 'agent', 'admin');
 	const id = getTicketId(event);
-	const claimed = await claimTicket(id, user.id);
+	const claimed = await claimTicket(id, toActor(user));
 	if (!claimed) {
 		return fail(409, { error: 'Ticket is already assigned' });
 	}
@@ -87,7 +69,7 @@ export async function assignTicketAction(event: RequestEvent) {
 
 	const ticket = await getTicketById(id);
 	requireExists(ticket, 'Ticket');
-	await assignTicket(id, assigneeId || null, user.id);
+	await assignTicket(id, assigneeId || null, toActor(user));
 	await createAuditLog({
 		actorUserId: user.id,
 		action: 'ticket.assigned',
@@ -116,7 +98,7 @@ export async function updateStatusAction(event: RequestEvent) {
 	const newStatus = getFormString(formData, 'status');
 	const note = getFormString(formData, 'note');
 
-	if (!isStatus(newStatus)) {
+	if (!isTicketStatus(newStatus)) {
 		return fail(400, { error: 'Invalid status' });
 	}
 
@@ -126,7 +108,7 @@ export async function updateStatusAction(event: RequestEvent) {
 		return fail(400, { error: `Status is already set to ${newStatus}` });
 	}
 
-	await updateTicketStatus(id, newStatus, user.id, note || undefined);
+	await updateTicketStatus(id, newStatus, toActor(user), note || undefined);
 	await createAuditLog({
 		actorUserId: user.id,
 		action: 'ticket.status_changed',
@@ -219,7 +201,7 @@ export async function updatePriorityAction(event: RequestEvent) {
 		return fail(400, { error: `Priority is already set to ${newPriority}` });
 	}
 
-	await updateTicketPriority(id, newPriority, user.id);
+	await updateTicketPriority(id, newPriority, toActor(user));
 	await createAuditLog({
 		actorUserId: user.id,
 		action: 'ticket.priority_changed',

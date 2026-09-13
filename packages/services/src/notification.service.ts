@@ -1,6 +1,7 @@
 import { and, eq, sql } from 'drizzle-orm';
 import { db } from '@trak/database';
 import { agentNotifications, notifications } from '@trak/database/schema';
+import type { AgentNotificationType } from '@trak/shared';
 import type { CreateNotificationInput } from './notification.types';
 
 export async function createNotification(input: CreateNotificationInput) {
@@ -51,7 +52,7 @@ export async function createAgentNotification(input: {
 	recipientUserId: string;
 	reportId: string;
 	messageId?: string;
-	type: 'reporter_reply' | 'assignment';
+	type: AgentNotificationType;
 	message: string;
 }) {
 	const [notification] = await db.insert(agentNotifications).values(input).returning();

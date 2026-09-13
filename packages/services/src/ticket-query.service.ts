@@ -1,5 +1,6 @@
 import { and, count, eq, inArray, isNull, sql, type SQL } from 'drizzle-orm';
 import { db, reports } from '@trak/database';
+import { toPriorityList, toTicketStatusList } from '@trak/shared';
 import type { Ticket, TicketDetails } from '@trak/shared';
 import type {
 	CategoryDistribution,
@@ -10,21 +11,6 @@ import type {
 	TicketStats
 } from './report.types';
 
-const ticketDetailsWith = {
-	reporter: true,
-	category: true,
-	attachments: true,
-	assignee: true,
-	statusHistories: {
-		with: { changedByUser: true },
-		orderBy: (statusHistories: any, { desc }: any) => [desc(statusHistories.changedAt)]
-	},
-	messages: {
-		with: { senderUser: true, senderReporter: true, attachments: true },
-		orderBy: (ticketMessages: any, { asc }: any) => [asc(ticketMessages.createdAt)]
-	}
-} as const;
-
 type ReportFilterInput = Pick<
 	TicketFilters,
 	'status' | 'priority' | 'slaBreached' | 'search' | 'categoryId' | 'assignedTo'
@@ -33,9 +19,10 @@ type ReportFilterInput = Pick<
 function buildReportFilters(filters: ReportFilterInput): SQL | undefined {
 	const conditions: SQL[] = [];
 
-	if (filters.status) conditions.push(inArray(reports.status, filters.status.split(',')));
-	if (filters.priority)
-		conditions.push(inArray(reports.priority, filters.priority.split(',') as any));
+	const statuses = toTicketStatusList(filters.status);
+	if (statuses.length > 0) conditions.push(inArray(reports.status, statuses));
+	const priorities = toPriorityList(filters.priority);
+	if (priorities.length > 0) conditions.push(inArray(reports.priority, priorities));
 
 	if (filters.slaBreached === 'true') conditions.push(eq(reports.isSlaBreached, true));
 	if (filters.slaBreached === 'false') conditions.push(eq(reports.isSlaBreached, false));
@@ -62,19 +49,45 @@ function buildReportFilters(filters: ReportFilterInput): SQL | undefined {
 export async function getTicketById(id: string): Promise<TicketDetails | undefined> {
 	return db.query.reports.findFirst({
 		where: eq(reports.id, id),
-		with: ticketDetailsWith
-	}) as Promise<TicketDetails | undefined>;
+		with: {
+			reporter: true,
+			category: true,
+			attachments: true,
+			assignee: true,
+			statusHistories: {
+				with: { changedByUser: true },
+				orderBy: (statusHistories, { desc }) => [desc(statusHistories.changedAt)]
+			},
+			messages: {
+				with: { senderUser: true, senderReporter: true, attachments: true },
+				orderBy: (ticketMessages, { asc }) => [asc(ticketMessages.createdAt)]
+			}
+		}
+	});
 }
 
 export async function getTicketByIdSimple(id: string): Promise<Ticket | undefined> {
-	return db.query.reports.findFirst({ where: eq(reports.id, id) }) as Promise<Ticket | undefined>;
+	return db.query.reports.findFirst({ where: eq(reports.id, id) });
 }
 
 export async function getTicketByTicketCode(code: string): Promise<TicketDetails | undefined> {
 	return db.query.reports.findFirst({
 		where: eq(reports.ticketCode, code.toUpperCase()),
-		with: ticketDetailsWith
-	}) as Promise<TicketDetails | undefined>;
+		with: {
+			reporter: true,
+			category: true,
+			attachments: true,
+			assignee: true,
+			statusHistories: {
+				with: { changedByUser: true },
+				orderBy: (statusHistories, { desc }) => [desc(statusHistories.changedAt)]
+			},
+			messages: {
+				with: { senderUser: true, senderReporter: true, attachments: true },
+				orderBy: (ticketMessages, { asc }) => [asc(ticketMessages.createdAt)]
+			}
+		}
+	});
 }
 
 export async function getTicketByTicketCodeForReporter(
@@ -109,7 +122,7 @@ export async function getTicketsForExport(filters: ReportFilterInput): Promise<T
 		where: buildReportFilters(filters),
 		with: { reporter: true, category: true, assignee: true },
 		orderBy: (reports, { desc }) => [desc(reports.createdAt)]
-	}) as Promise<TicketListItem[]>;
+	});
 }
 
 export async function getTicketStats(): Promise<TicketStats> {

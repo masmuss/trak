@@ -13,8 +13,7 @@ import {
 	createAuditLog
 } from '@trak/services';
 import { requireRole, getFormString, getFormBool, requireExists } from '$lib/server/helpers';
-
-const validRoles = ['agent', 'admin'] as const;
+import { isUserRole } from '@trak/shared';
 
 const CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
@@ -45,7 +44,7 @@ export const actions: Actions = {
 		if (!email.trim()) {
 			return fail(400, { error: 'Email is required' });
 		}
-		if (!validRoles.includes(role as (typeof validRoles)[number])) {
+		if (!isUserRole(role)) {
 			return fail(400, { error: 'Invalid role' });
 		}
 
@@ -103,7 +102,7 @@ export const actions: Actions = {
 		if (!email.trim()) {
 			return fail(400, { error: 'Email is required' });
 		}
-		if (!validRoles.includes(role as (typeof validRoles)[number])) {
+		if (!isUserRole(role)) {
 			return fail(400, { error: 'Invalid role' });
 		}
 

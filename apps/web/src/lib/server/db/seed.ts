@@ -194,7 +194,7 @@ async function main() {
 				categoryId: categoryRecords[2].id,
 				title: 'Gagal Menerima Kode OTP WhatsApp saat Registrasi',
 				body: 'Saya mencoba mendaftar akun baru menggunakan nomor WhatsApp +628123456789, namun setelah menekan tombol kirim OTP sebanyak 5 kali dan menunggu masing-masing 2 menit, tidak ada pesan masuk dari sistem. Mohon dicek apakah gateway WhatsApp sedang bermasalah.',
-				status: 'open',
+				status: 'open' as const,
 				priority: 'HIGH' as const,
 				createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000)
 			},
@@ -204,7 +204,7 @@ async function main() {
 				categoryId: categoryRecords[1].id,
 				title: 'Saldo LinkAja Terpotong tapi Pembayaran Langganan Premium Gagal',
 				body: 'Saya melakukan checkout untuk paket langganan 1 bulan seharga Rp 150.000 menggunakan pembayaran LinkAja. Di aplikasi LinkAja saldo sudah terpotong sukses, namun halaman checkout aplikasi Trak menyatakan transaksi expired/gagal dan akun saya belum berubah status ke Premium.',
-				status: 'in_progress',
+				status: 'in_progress' as const,
 				priority: 'HIGH' as const,
 				createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000)
 			},
@@ -214,7 +214,7 @@ async function main() {
 				categoryId: categoryRecords[0].id,
 				title: 'Aplikasi Crash Saat Membuka Halaman Riwayat Transaksi',
 				body: 'Setiap kali saya menekan tombol "Riwayat Transaksi" di navigasi utama, aplikasi Trak langsung menutup sendiri (force close) tanpa ada pesan eror. Saya menggunakan HP Android Samsung S21 dengan OS Android 13.',
-				status: 'resolved',
+				status: 'resolved' as const,
 				priority: 'MEDIUM' as const,
 				createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000)
 			},
@@ -224,7 +224,7 @@ async function main() {
 				categoryId: categoryRecords[1].id,
 				title: 'Double Charge Pada Tagihan Bulanan Kartu Kredit',
 				body: 'Pada tagihan kartu kredit bulan ini untuk pembayaran langganan aplikasi Trak, muncul dua kali transaksi dengan nominal masing-masing Rp 89.000 pada hari yang sama (15 Mei). Mohon bantuannya untuk memproses refund satu transaksi yang double.',
-				status: 'resolved',
+				status: 'resolved' as const,
 				priority: 'HIGH' as const,
 				createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 			},
@@ -234,7 +234,7 @@ async function main() {
 				categoryId: categoryRecords[2].id,
 				title: 'Isu Akun Terkunci Otomatis Setelah Ganti Password',
 				body: 'Saya baru saja mengganti password melalui menu pengaturan kemarin malam. Setelah sukses mengganti password, saya log out dan mencoba login kembali dengan password baru. Namun muncul pesan "Akun Anda dinonaktifkan sementara karena alasan keamanan". Tolong buka kunci akun saya.',
-				status: 'open',
+				status: 'open' as const,
 				priority: 'CRITICAL' as const,
 				createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000)
 			},
@@ -244,7 +244,7 @@ async function main() {
 				categoryId: categoryRecords[3].id,
 				title: 'Usulan Fitur Export Laporan Bulanan ke Format Excel/PDF',
 				body: 'Sebagai administrator di tim kami, saya butuh fitur untuk mendownload/export data rekap laporan support bulanan ke dalam format file Excel (.xlsx) atau laporan PDF. Saat ini kami harus menyalinnya secara manual satu per satu, yang memakan waktu.',
-				status: 'in_progress',
+				status: 'in_progress' as const,
 				priority: 'LOW' as const,
 				createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
 			},
@@ -254,7 +254,7 @@ async function main() {
 				categoryId: categoryRecords[3].id,
 				title: 'Tampilan Dark Mode Terlalu Terang Pada Bagian Sidebar',
 				body: 'Kontras teks warna abu-abu di atas latar belakang sidebar dark mode saat ini agak susah dibaca, terutama jika pencahayaan ruangan redup. Usulan saya, latar belakang sidebar dibuat sedikit lebih gelap atau warna teks abu-abunya diperterang agar kontrasnya pas.',
-				status: 'resolved',
+				status: 'resolved' as const,
 				priority: 'LOW' as const,
 				createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000)
 			},
@@ -264,7 +264,7 @@ async function main() {
 				categoryId: categoryRecords[1].id,
 				title: 'Permohonan Refund Karena Salah Pilih Paket Premium',
 				body: 'Saya berniat membeli paket langganan tahunan, tetapi salah mengklik dan membeli paket langganan 1 bulan (non-recurring). Apakah bisa transaksi tersebut di-refund sehingga saya bisa mengulang transaksi pembelian paket tahunan?',
-				status: 'closed',
+				status: 'closed' as const,
 				priority: 'MEDIUM' as const,
 				createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000)
 			},
@@ -274,7 +274,7 @@ async function main() {
 				categoryId: categoryRecords[1].id,
 				title: 'Metode Pembayaran QRIS Tidak Menampilkan Kode QR',
 				body: 'Saya mencoba mengupgrade akun menggunakan metode pembayaran QRIS di halaman billing. Setelah memilih QRIS dan menekan tombol Bayar, layar loading terus berjalan dan kode QR-nya tidak muncul sama sekali. Saya sudah coba di browser Chrome dan Firefox hasilnya sama.',
-				status: 'in_progress',
+				status: 'in_progress' as const,
 				priority: 'HIGH' as const,
 				createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000)
 			},
@@ -284,7 +284,7 @@ async function main() {
 				categoryId: categoryRecords[2].id,
 				title: 'Upaya Akses Mencurigakan Dari Luar Kota',
 				body: 'Saya mendapatkan email notifikasi keamanan bahwa ada upaya login ke akun saya dari IP address berlokasi di Surabaya, Jawa Timur pada jam 2 dini hari tadi, padahal saya berdomisili di Jakarta dan sedang tertidur saat itu. Saya ingin mengganti password dan memaksa log out dari seluruh device.',
-				status: 'closed',
+				status: 'closed' as const,
 				priority: 'CRITICAL' as const,
 				createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000)
 			},
@@ -294,7 +294,7 @@ async function main() {
 				categoryId: categoryRecords[0].id,
 				title: 'Tombol "Batal Kirim" di Laporan Tidak Bisa Diklik',
 				body: 'Setelah membuat keluhan baru di portal, ada tombol "Batal Kirim Laporan" yang muncul selama 5 detik pertama. Namun ketika diklik, tombol tersebut tidak merespon dan laporan tetap terkirim ke agent. Mohon perbaiki fungsionalitas pembatalan ini.',
-				status: 'open',
+				status: 'open' as const,
 				priority: 'MEDIUM' as const,
 				createdAt: new Date(Date.now() - 30 * 60 * 1000)
 			}

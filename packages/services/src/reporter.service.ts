@@ -14,7 +14,7 @@ export async function getReporters(): Promise<ReporterWithRelations[]> {
 			}
 		},
 		orderBy: (reporters, { desc }) => [desc(reporters.createdAt)]
-	}) as Promise<ReporterWithRelations[]>;
+	});
 }
 
 export async function getReporterByTelegramId(telegramId: bigint): Promise<Reporter | undefined> {
