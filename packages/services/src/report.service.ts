@@ -14,6 +14,7 @@ import type {
 	CreateTicketMessageInput
 } from './report.types';
 import { createAgentNotification, publishAgentNotification } from './notification.service';
+import { createAuditLog } from './audit.service';
 
 const ticketDetailsWith = {
 	reporter: true,
@@ -238,11 +239,21 @@ export async function createReport(
 }
 
 export async function addReportAttachment(input: CreateAttachmentInput): Promise<void> {
-	await db.insert(reportAttachments).values({
-		reportId: input.reportId,
-		fileId: input.fileId,
-		fileType: input.fileType,
-		storageUrl: `telegram://${input.fileId}`
+	const [attachment] = await db
+		.insert(reportAttachments)
+		.values({
+			reportId: input.reportId,
+			fileId: input.fileId,
+			fileType: input.fileType,
+			storageUrl: `telegram://${input.fileId}`
+		})
+		.returning({ id: reportAttachments.id });
+
+	await createAuditLog({
+		action: 'ticket.attachment_added',
+		entityType: 'ticket_attachment',
+		entityId: attachment.id,
+		afterData: { reportId: input.reportId, fileType: input.fileType, source: 'telegram' }
 	});
 }
 
@@ -294,7 +305,7 @@ export async function createReporterTicketMessage(
 	if (!input.senderReporterId) throw new Error('Reporter is required');
 	if (!body) throw new Error('Message body is required');
 
-	const { message, assigneeId } = await db.transaction(async (tx) => {
+	const { message, assigneeId, reopened } = await db.transaction(async (tx) => {
 		const ticket = await requireTicket(tx, input.reportId);
 		if (ticket.reporterId !== input.senderReporterId) {
 			throw new Error('Reporter does not own this ticket');
@@ -349,8 +360,29 @@ export async function createReporterTicketMessage(
 			);
 		}
 
-		return { message, assigneeId: ticket.assignedTo };
+		return { message, assigneeId: ticket.assignedTo, reopened };
 	});
+
+	await createAuditLog({
+		action: 'ticket.message_created',
+		entityType: 'ticket_message',
+		entityId: message.id,
+		afterData: {
+			reportId: input.reportId,
+			senderType: 'reporter',
+			attachmentCount: input.attachments?.length ?? 0
+		}
+	});
+
+	if (reopened) {
+		await createAuditLog({
+			action: 'ticket.reopened',
+			entityType: 'ticket',
+			entityId: input.reportId,
+			beforeData: { status: 'resolved' },
+			afterData: { status: 'open', reason: 'reporter_reply' }
+		});
+	}
 
 	if (assigneeId) {
 		await createAgentNotification({
