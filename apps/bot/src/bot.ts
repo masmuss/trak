@@ -7,6 +7,7 @@ import { registerCallbacks } from './handlers/callbacks';
 import { registerAttachmentHandlers } from './handlers/attachments';
 import { startNotificationListener } from './handlers/notifications';
 import { handleTitleInput, handleBodyInput } from './conversations/report';
+import { handleReplyBodyInput } from './conversations/reply';
 import { handleInviteInput } from './conversations/invite';
 import { BotContext, BotSession } from './types';
 import { resetSession, promptConfirmReport } from './utils/helpers';
@@ -65,6 +66,8 @@ bot.on('message:text', async (ctx) => {
 		await handleTitleInput(ctx);
 	} else if (s.step === 'body') {
 		await handleBodyInput(ctx);
+	} else if (s.step === 'reply_body') {
+		await handleReplyBodyInput(ctx);
 	} else {
 		await ctx.reply(UNKNOWN_MESSAGE);
 	}

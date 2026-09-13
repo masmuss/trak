@@ -3,12 +3,15 @@ import {
 	getActiveCategories,
 	getCategoryById,
 	createReport,
-	addReportAttachment
+	addReportAttachment,
+	createReporterTicketMessage
 } from '@trak/services';
 import { startReportFlow } from '../conversations/report';
+import { startReplyFlow } from '../conversations/reply';
 import { BotContext } from '../types';
 import {
 	requireReporter,
+	getOwnedTicketForReply,
 	resetSession,
 	replyTicketStatus,
 	promptConfirmReport
@@ -130,5 +133,44 @@ export function registerCallbacks(bot: Bot<BotContext>): void {
 		const ticketCode = ctx.match[1];
 		await ctx.answerCallbackQuery();
 		await replyTicketStatus(ctx, ticketCode);
+	});
+
+	bot.callbackQuery(/^reply_(.+)$/, async (ctx) => {
+		const ticketCode = ctx.match[1];
+		const owned = await getOwnedTicketForReply(ctx, ticketCode);
+		await ctx.answerCallbackQuery();
+		if (!owned) return;
+
+		ctx.session.reporterId = owned.reporterId;
+		await startReplyFlow(ctx, owned.ticket.id, owned.ticket.ticketCode);
+	});
+
+	bot.callbackQuery('confirm_reply', async (ctx) => {
+		const session = ctx.session;
+		if (!session.replyTicketId || !session.replyBody || !session.reporterId) {
+			await ctx.answerCallbackQuery({ text: 'Sesi balasan tidak ditemukan.' });
+			return;
+		}
+
+		try {
+			await createReporterTicketMessage({
+				reportId: session.replyTicketId,
+				senderReporterId: session.reporterId,
+				body: session.replyBody
+			});
+			await ctx.answerCallbackQuery({ text: 'Balasan terkirim.' });
+			await ctx.editMessageText('✅ Balasan berhasil dikirim ke tim IT.');
+			resetSession(session);
+		} catch (error) {
+			console.error('Failed to create reporter reply:', error);
+			await ctx.answerCallbackQuery({ text: 'Gagal mengirim balasan.' });
+			await ctx.editMessageText('❌ Balasan gagal dikirim. Silakan coba lagi.');
+		}
+	});
+
+	bot.callbackQuery('cancel_reply', async (ctx) => {
+		resetSession(ctx.session);
+		await ctx.answerCallbackQuery();
+		await ctx.editMessageText('🚫 Balasan dibatalkan.');
 	});
 }
