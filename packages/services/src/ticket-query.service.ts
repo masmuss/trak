@@ -1,4 +1,4 @@
-import { and, count, eq, inArray, isNull, sql, type SQL } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNull, sql, type SQL } from 'drizzle-orm';
 import { db, reports } from '@trak/database';
 import { toPriorityList, toTicketStatusList } from '@trak/shared';
 import type { Ticket, TicketDetails } from '@trak/shared';
@@ -8,13 +8,48 @@ import type {
 	TicketFilters,
 	TicketListItem,
 	TicketListResult,
+	TicketSortKey,
 	TicketStats
 } from './report.types';
 
 type ReportFilterInput = Pick<
 	TicketFilters,
-	'status' | 'priority' | 'slaBreached' | 'search' | 'categoryId' | 'assignedTo'
+	'status' | 'priority' | 'slaBreached' | 'search' | 'categoryId' | 'assignedTo' | 'sort' | 'order'
 >;
+
+const TICKET_SORT_KEYS: readonly TicketSortKey[] = [
+	'createdAt',
+	'ticketCode',
+	'title',
+	'status',
+	'priority',
+	'slaResolveDue'
+];
+
+export function isTicketSortKey(value: unknown): value is TicketSortKey {
+	return typeof value === 'string' && (TICKET_SORT_KEYS as readonly string[]).includes(value);
+}
+
+function resolveTicketOrder(filters: Pick<TicketFilters, 'sort' | 'order'>): SQL {
+	const ascending = filters.order === 'asc';
+	switch (filters.sort) {
+		case 'ticketCode':
+			return ascending ? asc(reports.ticketCode) : desc(reports.ticketCode);
+		case 'title':
+			return ascending ? asc(reports.title) : desc(reports.title);
+		case 'status':
+			return ascending ? asc(reports.status) : desc(reports.status);
+		case 'slaResolveDue':
+			return ascending ? asc(reports.slaResolveDue) : desc(reports.slaResolveDue);
+		case 'priority': {
+			const severity = sql`CASE ${reports.priority} WHEN 'CRITICAL' THEN 0 WHEN 'HIGH' THEN 1 WHEN 'MEDIUM' THEN 2 WHEN 'LOW' THEN 3 ELSE 4 END`;
+			return ascending ? asc(severity) : desc(severity);
+		}
+		case 'createdAt':
+		default:
+			return ascending ? asc(reports.createdAt) : desc(reports.createdAt);
+	}
+}
 
 function buildReportFilters(filters: ReportFilterInput): SQL | undefined {
 	const conditions: SQL[] = [];
@@ -110,7 +145,7 @@ export async function listTickets(filters: TicketFilters): Promise<TicketListRes
 			limit: filters.limit ?? 10,
 			offset: filters.offset ?? 0,
 			with: { reporter: true, category: true, assignee: true },
-			orderBy: (reports, { desc }) => [desc(reports.createdAt)]
+			orderBy: [resolveTicketOrder(filters)]
 		})
 	]);
 
@@ -121,7 +156,7 @@ export async function getTicketsForExport(filters: ReportFilterInput): Promise<T
 	return db.query.reports.findMany({
 		where: buildReportFilters(filters),
 		with: { reporter: true, category: true, assignee: true },
-		orderBy: (reports, { desc }) => [desc(reports.createdAt)]
+		orderBy: [resolveTicketOrder(filters)]
 	});
 }
 

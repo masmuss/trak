@@ -13,6 +13,9 @@ export type TicketStats = {
 	solved: number;
 };
 
+export type TicketSortKey =
+	'createdAt' | 'ticketCode' | 'title' | 'status' | 'priority' | 'slaResolveDue';
+
 export type TicketFilters = {
 	/** Comma-separated TicketStatus values (validated at the boundary, see toTicketStatusList). */
 	status?: string;
@@ -22,6 +25,10 @@ export type TicketFilters = {
 	search?: string;
 	categoryId?: string;
 	assignedTo?: string;
+	/** Server-side sort column (validated against whitelist at the boundary). */
+	sort?: string;
+	/** Server-side sort direction. */
+	order?: string;
 	limit?: number;
 	offset?: number;
 };

@@ -1,4 +1,5 @@
 import { isPriority, isTicketStatus } from '@trak/shared';
+import { isTicketSortKey } from '@trak/services';
 
 export function parseTicketFilters(url: URL, context?: { userId?: string }) {
 	const rawStatus = url.searchParams.get('status');
@@ -16,12 +17,19 @@ export function parseTicketFilters(url: URL, context?: { userId?: string }) {
 
 	const search = url.searchParams.get('search');
 
+	const rawSort = url.searchParams.get('sort');
+	const sort = rawSort && isTicketSortKey(rawSort) ? rawSort : undefined;
+	const rawOrder = url.searchParams.get('order');
+	const order = rawOrder === 'asc' || rawOrder === 'desc' ? rawOrder : undefined;
+
 	return {
 		status: status || undefined,
 		priority: priority || undefined,
 		slaBreached: isValidSla ? slaBreached : undefined,
 		categoryId: categoryId || undefined,
 		assignedTo: assignedTo || undefined,
-		search: search || undefined
+		search: search || undefined,
+		sort: sort || undefined,
+		order: order || undefined
 	};
 }

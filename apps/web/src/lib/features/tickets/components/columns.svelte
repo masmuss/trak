@@ -119,6 +119,7 @@
 		isSlaBreached={row.original.isSlaBreached}
 		slaResolveDue={row.original.slaResolveDue}
 		status={row.original.status}
+		createdAt={row.original.createdAt}
 	/>
 {/snippet}
 

@@ -6,11 +6,13 @@
 	let {
 		isSlaBreached,
 		slaResolveDue,
-		status = 'open'
+		status = 'open',
+		createdAt = null
 	}: {
 		isSlaBreached: boolean;
 		slaResolveDue: string | Date | null;
 		status?: string;
+		createdAt?: string | Date | null;
 	} = $props();
 
 	const state = $derived.by(() => {
@@ -25,7 +27,18 @@
 		const diffMs = due.getTime() - now.getTime();
 		const diffHours = diffMs / (1000 * 60 * 60);
 
-		// If within 2 hours of deadline, show warning
+		// Proportional warning: <=25% of SLA window remaining counts as at risk.
+		// Fixed-hour thresholds misfire across priorities (CRITICAL window is 2h,
+		// LOW window is 7 days), so scale against elapsed window instead.
+		if (createdAt) {
+			const totalMs = due.getTime() - new Date(createdAt).getTime();
+			if (totalMs > 0 && diffMs / totalMs <= 0.25) {
+				return 'warning';
+			}
+			return 'on_track';
+		}
+
+		// Fallback when creation time is unavailable.
 		if (diffHours <= 2) {
 			return 'warning';
 		}

@@ -39,7 +39,8 @@ export {
 	getTicketByTicketCodeForReporter,
 	getCategoryDistribution,
 	getTicketsForExport,
-	getTicketStats
+	getTicketStats,
+	isTicketSortKey
 } from './ticket-query.service';
 export { updateTicketStatus, updateTicketPriority } from './ticket-status.service';
 export { addReportAttachment, getReportAttachmentById } from './ticket-attachment.service';
@@ -51,6 +52,7 @@ export type {
 	TicketListItem,
 	TicketListResult,
 	TicketFilters,
+	TicketSortKey,
 	TicketStats,
 	CategoryDistribution,
 	DistributionResult,
