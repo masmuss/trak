@@ -5,4 +5,6 @@ dist
 test-results
 .turbo
 .bot-sessions
+pnpm-lock.yaml
 attachments
+CHANGELOG.md
