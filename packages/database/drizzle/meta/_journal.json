@@ -85,6 +85,13 @@
       "when": 1789275076458,
       "tag": "0011_elite_wild_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1789282072401,
+      "tag": "0012_lean_magik",
+      "breakpoints": true
     }
   ]
 }

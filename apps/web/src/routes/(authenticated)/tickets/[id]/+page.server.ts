@@ -4,11 +4,12 @@ import {
 	updateTicketStatus,
 	updateTicketPriority,
 	createTicketMessage,
-	createNotification
+	createNotification,
+	createAuditLog
 } from '@trak/services';
 import type { PageServerLoad, Actions } from './$types';
 import { priorityEnum } from '@trak/database';
-import { requireAuth, requireExists } from '$lib/server/helpers';
+import { requireRole, requireExists } from '$lib/server/helpers';
 import { uploadAttachment } from '$lib/server/storage';
 
 const validStatuses = ['open', 'in_progress', 'resolved', 'closed'] as const;
@@ -35,7 +36,7 @@ export const load: PageServerLoad = async (event) => {
 
 export const actions: Actions = {
 	updateStatus: async (event) => {
-		const user = requireAuth(event);
+		const user = requireRole(event, 'agent', 'admin');
 		const { id } = event.params;
 		const formData = await event.request.formData();
 		const newStatus = formData.get('status') as string;
@@ -53,6 +54,14 @@ export const actions: Actions = {
 		}
 
 		await updateTicketStatus(id, newStatus, user.id, note || undefined);
+		await createAuditLog({
+			actorUserId: user.id,
+			action: 'ticket.status_changed',
+			entityType: 'ticket',
+			entityId: id,
+			beforeData: { status: ticket.status },
+			afterData: { status: newStatus, note: note || null }
+		});
 
 		await createNotification({
 			reporterTelegramId: ticket.reporter.telegramId,
@@ -68,7 +77,7 @@ export const actions: Actions = {
 	},
 
 	sendMessage: async (event) => {
-		const user = requireAuth(event);
+		const user = requireRole(event, 'agent', 'admin');
 		const formData = await event.request.formData();
 		const body = formData.get('body');
 		const visibility = formData.get('visibility');
@@ -107,6 +116,13 @@ export const actions: Actions = {
 			isInternal: visibility === 'internal',
 			attachments
 		});
+		await createAuditLog({
+			actorUserId: user.id,
+			action: 'ticket.message_created',
+			entityType: 'ticket_message',
+			entityId: ticket.id,
+			afterData: { visibility, attachmentCount: attachments.length }
+		});
 
 		if (visibility === 'public') {
 			await createNotification({
@@ -120,7 +136,7 @@ export const actions: Actions = {
 	},
 
 	updatePriority: async (event) => {
-		const user = requireAuth(event);
+		const user = requireRole(event, 'admin');
 		const { id } = event.params;
 		const formData = await event.request.formData();
 		const newPriority = formData.get('priority') as string;
@@ -138,6 +154,14 @@ export const actions: Actions = {
 		}
 
 		await updateTicketPriority(id, newPriority as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL', user.id);
+		await createAuditLog({
+			actorUserId: user.id,
+			action: 'ticket.priority_changed',
+			entityType: 'ticket',
+			entityId: id,
+			beforeData: { priority: ticket.priority },
+			afterData: { priority: newPriority }
+		});
 
 		await createNotification({
 			reporterTelegramId: ticket.reporter.telegramId,

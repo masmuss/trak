@@ -5,24 +5,26 @@ import {
 	deleteInviteCode,
 	getInviteCodeById,
 	getInviteCodes,
-	updateInviteCode
+	updateInviteCode,
+	createAuditLog
 } from '@trak/services';
 import {
-	requireAuth,
+	requireRole,
 	getFormString,
 	getFormNullableString,
 	getFormBool,
 	requireExists
 } from '$lib/server/helpers';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async (event) => {
+	requireRole(event, 'admin');
 	const all = await getInviteCodes();
 	return { inviteCodes: all };
 };
 
 export const actions: Actions = {
 	create: async (event) => {
-		requireAuth(event);
+		const user = requireRole(event, 'admin');
 		const formData = await event.request.formData();
 		const code = getFormString(formData, 'code');
 		const expiresAt = getFormNullableString(formData, 'expiresAt');
@@ -31,13 +33,20 @@ export const actions: Actions = {
 			return fail(400, { error: 'Code is required' });
 		}
 
-		await createInviteCode({ code, expiresAt: expiresAt ? new Date(expiresAt) : null });
+		const id = await createInviteCode({ code, expiresAt: expiresAt ? new Date(expiresAt) : null });
+		await createAuditLog({
+			actorUserId: user.id,
+			action: 'invite_code.created',
+			entityType: 'invite_code',
+			entityId: id,
+			afterData: { code, expiresAt }
+		});
 
 		return { success: true };
 	},
 
 	update: async (event) => {
-		requireAuth(event);
+		const user = requireRole(event, 'admin');
 		const formData = await event.request.formData();
 		const id = getFormString(formData, 'id');
 		const code = getFormString(formData, 'code');
@@ -60,12 +69,20 @@ export const actions: Actions = {
 			isActive,
 			expiresAt: expiresAt ? new Date(expiresAt) : null
 		});
+		await createAuditLog({
+			actorUserId: user.id,
+			action: 'invite_code.updated',
+			entityType: 'invite_code',
+			entityId: id,
+			beforeData: existing,
+			afterData: { code, isActive, expiresAt }
+		});
 
 		return { success: true };
 	},
 
 	delete: async (event) => {
-		requireAuth(event);
+		const user = requireRole(event, 'admin');
 		const formData = await event.request.formData();
 		const id = getFormString(formData, 'id');
 
@@ -77,6 +94,13 @@ export const actions: Actions = {
 		requireExists(existing, 'Invite code');
 
 		await deleteInviteCode(id);
+		await createAuditLog({
+			actorUserId: user.id,
+			action: 'invite_code.deleted',
+			entityType: 'invite_code',
+			entityId: id,
+			beforeData: existing
+		});
 
 		return { success: true };
 	}

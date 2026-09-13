@@ -1,4 +1,6 @@
 export { cleanUpStaleSessions } from './bot.service';
+export { createAuditLog } from './audit.service';
+export type { AuditLogInput } from './audit.service';
 
 export {
 	getCategories,

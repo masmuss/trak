@@ -22,11 +22,15 @@ export async function getCategoryById(id: string): Promise<Category | undefined>
 	});
 }
 
-export async function createCategory(input: CreateCategoryInput): Promise<void> {
-	await db.insert(categories).values({
-		name: input.name.trim(),
-		description: input.description?.trim() || null
-	});
+export async function createCategory(input: CreateCategoryInput): Promise<string> {
+	const [category] = await db
+		.insert(categories)
+		.values({
+			name: input.name.trim(),
+			description: input.description?.trim() || null
+		})
+		.returning({ id: categories.id });
+	return category.id;
 }
 
 export async function updateCategory(id: string, input: UpdateCategoryInput): Promise<void> {

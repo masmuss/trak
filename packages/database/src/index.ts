@@ -52,4 +52,5 @@ export const db: Database = new Proxy({} as Database, {
 
 export { schema };
 export * from './schema';
+export * from './audit.schema';
 export { createPgSessionAdapter } from './session-adapter';
