@@ -13,7 +13,7 @@ import type {
 	CreateMessageAttachmentInput,
 	CreateTicketMessageInput
 } from './report.types';
-import { publishAgentNotification } from './notification.service';
+import { createAgentNotification, publishAgentNotification } from './notification.service';
 
 const ticketDetailsWith = {
 	reporter: true,
@@ -294,7 +294,7 @@ export async function createReporterTicketMessage(
 	if (!input.senderReporterId) throw new Error('Reporter is required');
 	if (!body) throw new Error('Message body is required');
 
-	const message = await db.transaction(async (tx) => {
+	const { message, assigneeId } = await db.transaction(async (tx) => {
 		const ticket = await requireTicket(tx, input.reportId);
 		if (ticket.reporterId !== input.senderReporterId) {
 			throw new Error('Reporter does not own this ticket');
@@ -349,8 +349,18 @@ export async function createReporterTicketMessage(
 			);
 		}
 
-		return message;
+		return { message, assigneeId: ticket.assignedTo };
 	});
+
+	if (assigneeId) {
+		await createAgentNotification({
+			recipientUserId: assigneeId,
+			reportId: input.reportId,
+			messageId: message.id,
+			type: 'reporter_reply',
+			message: `Reporter membalas ticket ${input.reportId}`
+		});
+	}
 
 	try {
 		await publishAgentNotification({

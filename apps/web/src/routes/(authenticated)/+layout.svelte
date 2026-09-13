@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import AppSidebar from '$lib/components/layout/app-sidebar.svelte';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
@@ -7,6 +8,9 @@
 	import { Button } from '$lib/components/ui/button';
 	import { GithubLogo } from 'phosphor-svelte';
 	import ThemeSwitcher from '$lib/components/layout/theme-switcher.svelte';
+	import * as Popover from '$lib/components/ui/popover';
+	import { BellIcon } from 'phosphor-svelte';
+	import { invalidateAll } from '$app/navigation';
 
 	const autoBreadcrumbs = $derived.by(() => {
 		if (page.data.breadcrumbs) {
@@ -25,6 +29,12 @@
 	});
 
 	let { children } = $props();
+
+	$effect(() => {
+		const events = new EventSource('/tickets/events');
+		events.addEventListener('agent-notification', () => void invalidateAll());
+		return () => events.close();
+	});
 </script>
 
 <Sidebar.Provider>
@@ -58,6 +68,39 @@
 					</Breadcrumb.Root>
 				</div>
 				<div class="flex items-center gap-2">
+					<Popover.Root>
+						<Popover.Trigger>
+							<Button variant="ghost" size="icon" class="relative" aria-label="Notifications">
+								<BellIcon class="size-4" />
+								{#if page.data.unreadNotificationCount}
+									<span
+										class="text-destructive-foreground absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px]"
+									>
+										{page.data.unreadNotificationCount}
+									</span>
+								{/if}
+							</Button>
+						</Popover.Trigger>
+						<Popover.Content class="w-80">
+							<Popover.Title>Notifications</Popover.Title>
+							<div class="mt-3 space-y-2">
+								{#if page.data.notifications?.length}
+									{#each page.data.notifications as notification (notification.id)}
+										<a
+											href={resolve('/(authenticated)/tickets/[id]', {
+												id: notification.reportId
+											})}
+											class="block rounded-md p-2 text-sm hover:bg-muted"
+										>
+											{notification.message}
+										</a>
+									{/each}
+								{:else}
+									<p class="text-sm text-muted-foreground">No notifications</p>
+								{/if}
+							</div>
+						</Popover.Content>
+					</Popover.Root>
 					<ThemeSwitcher />
 					<Button
 						variant="ghost"

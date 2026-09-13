@@ -103,4 +103,10 @@ export {
 	getPendingNotifications,
 	markNotificationRead
 } from './notification.service';
+export {
+	createAgentNotification,
+	getAgentNotifications,
+	getUnreadAgentNotificationCount,
+	markAgentNotificationRead
+} from './notification.service';
 export type { CreateNotificationInput } from './notification.types';

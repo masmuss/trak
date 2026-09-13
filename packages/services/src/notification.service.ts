@@ -1,7 +1,6 @@
-import { sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { db } from '@trak/database';
-import { notifications } from '@trak/database/schema';
-import { eq } from 'drizzle-orm';
+import { agentNotifications, notifications } from '@trak/database/schema';
 import type { CreateNotificationInput } from './notification.types';
 
 export async function createNotification(input: CreateNotificationInput) {
@@ -44,4 +43,55 @@ export async function getPendingNotifications() {
 
 export async function markNotificationRead(id: string) {
 	await db.update(notifications).set({ isRead: true }).where(eq(notifications.id, id));
+}
+
+export type AgentNotification = typeof agentNotifications.$inferSelect;
+
+export async function createAgentNotification(input: {
+	recipientUserId: string;
+	reportId: string;
+	messageId?: string;
+	type: 'reporter_reply' | 'assignment';
+	message: string;
+}) {
+	const [notification] = await db.insert(agentNotifications).values(input).returning();
+
+	await db.execute(
+		sql`SELECT pg_notify('agent_notifications', ${JSON.stringify({
+			notificationId: notification.id,
+			recipientUserId: input.recipientUserId,
+			reportId: input.reportId,
+			messageId: input.messageId,
+			type: input.type,
+			message: input.message
+		})})`
+	);
+
+	return notification;
+}
+
+export async function getAgentNotifications(userId: string, limit = 20) {
+	return db
+		.select()
+		.from(agentNotifications)
+		.where(eq(agentNotifications.recipientUserId, userId))
+		.orderBy(agentNotifications.createdAt)
+		.limit(limit);
+}
+
+export async function getUnreadAgentNotificationCount(userId: string) {
+	const result = await db
+		.select({ count: sql<number>`count(*)` })
+		.from(agentNotifications)
+		.where(
+			and(eq(agentNotifications.recipientUserId, userId), eq(agentNotifications.isRead, false))
+		);
+	return Number(result[0]?.count ?? 0);
+}
+
+export async function markAgentNotificationRead(id: string, userId: string) {
+	await db
+		.update(agentNotifications)
+		.set({ isRead: true })
+		.where(and(eq(agentNotifications.id, id), eq(agentNotifications.recipientUserId, userId)));
 }

@@ -8,7 +8,8 @@ import {
 	updateTicketPriority,
 	createTicketMessage,
 	createNotification,
-	createAuditLog
+	createAuditLog,
+	createAgentNotification
 } from '@trak/services';
 import type { PageServerLoad, Actions } from './$types';
 import { priorityEnum } from '@trak/database';
@@ -53,6 +54,12 @@ export const actions: Actions = {
 			entityId: event.params.id,
 			afterData: { assignedTo: user.id, method: 'claim' }
 		});
+		await createAgentNotification({
+			recipientUserId: user.id,
+			reportId: event.params.id,
+			type: 'assignment',
+			message: `Ticket ${event.params.id} berhasil di-claim`
+		});
 		return { success: true };
 	},
 
@@ -74,6 +81,14 @@ export const actions: Actions = {
 			beforeData: { assignedTo: ticket.assignee?.id ?? null },
 			afterData: { assignedTo: assigneeId || null, method: 'manual' }
 		});
+		if (assigneeId) {
+			await createAgentNotification({
+				recipientUserId: assigneeId,
+				reportId: event.params.id,
+				type: 'assignment',
+				message: `Ticket ${event.params.id} ditugaskan kepada Anda`
+			});
+		}
 		return { success: true };
 	},
 

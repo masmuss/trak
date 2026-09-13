@@ -27,7 +27,15 @@ export const GET: RequestHandler = async ({ locals, request }) => {
 
 			send('ready', '{}');
 			listener = listen('agent_notifications', (payload) => {
-				send('ticket-message', payload);
+				const data = JSON.parse(payload) as {
+					recipientUserId?: string;
+					type?: string;
+				};
+				if (data.recipientUserId && data.recipientUserId !== locals.user?.id) return;
+				if (data.type === 'reporter_reply') {
+					send('ticket-message', payload);
+				}
+				send('agent-notification', payload);
 			});
 			heartbeat = setInterval(() => send('heartbeat', '{}'), 30_000);
 		},

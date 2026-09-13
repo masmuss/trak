@@ -237,3 +237,20 @@ export const notifications = pgTable('notifications', {
 	isRead: boolean('is_read').notNull().default(false),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 });
+
+export const agentNotifications = pgTable('agent_notifications', {
+	id: uuid('id')
+		.default(sql`uuid_generate_v7()`)
+		.primaryKey(),
+	recipientUserId: text('recipient_user_id')
+		.notNull()
+		.references(() => user.id, { onDelete: 'cascade' }),
+	reportId: uuid('report_id')
+		.notNull()
+		.references(() => reports.id, { onDelete: 'cascade' }),
+	messageId: uuid('message_id').references(() => ticketMessages.id, { onDelete: 'cascade' }),
+	type: text('type').notNull(),
+	message: text('message').notNull(),
+	isRead: boolean('is_read').notNull().default(false),
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+});

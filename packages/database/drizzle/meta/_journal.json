@@ -99,6 +99,13 @@
       "when": 1789284995427,
       "tag": "0013_white_lilith",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1789292078746,
+      "tag": "0014_left_korvac",
+      "breakpoints": true
     }
   ]
 }
