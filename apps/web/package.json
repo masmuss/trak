@@ -54,6 +54,7 @@
 		"vitest-browser-svelte": "^2.2.1"
 	},
 	"dependencies": {
+		"@aws-sdk/client-s3": "^3.1131.0",
 		"@tanstack/table-core": "^8.21.3",
 		"@trak/database": "workspace:*",
 		"@trak/services": "workspace:*",

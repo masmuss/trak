@@ -78,6 +78,13 @@
       "when": 1789273985449,
       "tag": "0010_dark_the_phantom",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1789275076458,
+      "tag": "0011_elite_wild_pack",
+      "breakpoints": true
     }
   ]
 }

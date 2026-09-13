@@ -40,7 +40,9 @@ export const reporters = pgTable('reporters', {
 	telegramId: bigint('telegram_id', { mode: 'bigint' }).notNull().unique(),
 	username: text('username'),
 	fullName: text('full_name').notNull(),
-	inviteCodeId: uuid('invite_code_id').references(() => inviteCodes.id, { onDelete: 'set null' }),
+	inviteCodeId: uuid('invite_code_id').references(() => inviteCodes.id, {
+		onDelete: 'set null'
+	}),
 	...lifecycleDates
 });
 
@@ -64,7 +66,9 @@ export const reports = pgTable('reports', {
 	reporterId: uuid('reporter_id')
 		.notNull()
 		.references(() => reporters.id, { onDelete: 'cascade' }),
-	categoryId: uuid('category_id').references(() => categories.id, { onDelete: 'set null' }),
+	categoryId: uuid('category_id').references(() => categories.id, {
+		onDelete: 'set null'
+	}),
 	title: text('title').notNull(),
 	body: text('body').notNull(),
 	status: varchar('status', { length: 50 }).notNull().default('open'),
@@ -84,6 +88,9 @@ export const reportAttachments = pgTable('report_attachments', {
 	reportId: uuid('report_id')
 		.notNull()
 		.references(() => reports.id, { onDelete: 'cascade' }),
+	messageId: uuid('message_id').references(() => ticketMessages.id, {
+		onDelete: 'cascade'
+	}),
 	fileId: text('file_id').notNull(),
 	fileType: text('file_type').notNull(),
 	storageUrl: text('storage_url').notNull(),
@@ -114,7 +121,9 @@ export const ticketMessages = pgTable('ticket_messages', {
 		.notNull()
 		.references(() => reports.id, { onDelete: 'cascade' }),
 	senderType: messageSenderTypeEnum('sender_type').notNull(),
-	senderUserId: text('sender_user_id').references(() => user.id, { onDelete: 'set null' }),
+	senderUserId: text('sender_user_id').references(() => user.id, {
+		onDelete: 'set null'
+	}),
 	senderReporterId: uuid('sender_reporter_id').references(() => reporters.id, {
 		onDelete: 'set null'
 	}),
@@ -157,10 +166,14 @@ export const reportAttachmentsRelations = relations(reportAttachments, ({ one })
 	report: one(reports, {
 		fields: [reportAttachments.reportId],
 		references: [reports.id]
+	}),
+	message: one(ticketMessages, {
+		fields: [reportAttachments.messageId],
+		references: [ticketMessages.id]
 	})
 }));
 
-export const ticketMessagesRelations = relations(ticketMessages, ({ one }) => ({
+export const ticketMessagesRelations = relations(ticketMessages, ({ one, many }) => ({
 	report: one(reports, {
 		fields: [ticketMessages.reportId],
 		references: [reports.id]
@@ -172,7 +185,8 @@ export const ticketMessagesRelations = relations(ticketMessages, ({ one }) => ({
 	senderReporter: one(reporters, {
 		fields: [ticketMessages.senderReporterId],
 		references: [reporters.id]
-	})
+	}),
+	attachments: many(reportAttachments)
 }));
 
 export const statusHistoriesRelations = relations(statusHistories, ({ one }) => ({
@@ -199,7 +213,9 @@ export const notifications = pgTable('notifications', {
 	id: uuid('id')
 		.default(sql`uuid_generate_v7()`)
 		.primaryKey(),
-	reporterTelegramId: bigint('reporter_telegram_id', { mode: 'bigint' }).notNull(),
+	reporterTelegramId: bigint('reporter_telegram_id', {
+		mode: 'bigint'
+	}).notNull(),
 	reportId: uuid('report_id')
 		.notNull()
 		.references(() => reports.id, { onDelete: 'cascade' }),

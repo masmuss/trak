@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { getReportAttachmentById } from '@trak/services';
+import { downloadAttachment } from '$lib/server/storage';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ locals, params, fetch }) => {
@@ -13,6 +14,17 @@ export const GET: RequestHandler = async ({ locals, params, fetch }) => {
 	}
 
 	const botToken = process.env.TELEGRAM_BOT_TOKEN;
+	if (attachment.storageUrl.startsWith('s3://')) {
+		const content = await downloadAttachment(attachment.fileId);
+		return new Response(content.Body as ReadableStream, {
+			headers: {
+				'Cache-Control': 'private, max-age=300',
+				'Content-Disposition': 'inline',
+				'Content-Type': attachment.fileType
+			}
+		});
+	}
+
 	if (!botToken) {
 		throw error(
 			503,

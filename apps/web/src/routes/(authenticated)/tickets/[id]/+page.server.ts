@@ -9,6 +9,7 @@ import {
 import type { PageServerLoad, Actions } from './$types';
 import { priorityEnum } from '@trak/database';
 import { requireAuth, requireExists } from '$lib/server/helpers';
+import { uploadAttachment } from '$lib/server/storage';
 
 const validStatuses = ['open', 'in_progress', 'resolved', 'closed'] as const;
 
@@ -71,12 +72,21 @@ export const actions: Actions = {
 		const formData = await event.request.formData();
 		const body = formData.get('body');
 		const visibility = formData.get('visibility');
+		const files = formData
+			.getAll('attachments')
+			.filter((value): value is File => value instanceof File && value.size > 0);
 
-		if (typeof body !== 'string' || !body.trim()) {
-			return fail(400, { error: 'Message cannot be empty' });
+		if (typeof body !== 'string') {
+			return fail(400, { error: 'Message is required' });
 		}
 		if (body.length > 5000) {
 			return fail(400, { error: 'Message is too long' });
+		}
+		if (!body.trim() && files.length === 0) {
+			return fail(400, { error: 'Message or attachment is required' });
+		}
+		if (files.length > 5 || files.some((file) => file.size > 10 * 1024 * 1024)) {
+			return fail(400, { error: 'Maximum 5 attachments, 10 MB per file' });
 		}
 		if (visibility !== 'public' && visibility !== 'internal') {
 			return fail(400, { error: 'Invalid message type' });
@@ -88,12 +98,14 @@ export const actions: Actions = {
 			return fail(400, { error: 'Closed tickets cannot receive messages' });
 		}
 
+		const attachments = await Promise.all(files.map(uploadAttachment));
 		await createTicketMessage({
 			reportId: ticket.id,
 			senderType: 'agent',
 			senderUserId: user.id,
 			body,
-			isInternal: visibility === 'internal'
+			isInternal: visibility === 'internal',
+			attachments
 		});
 
 		if (visibility === 'public') {

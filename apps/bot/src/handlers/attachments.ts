@@ -6,7 +6,7 @@ import { attachmentReceived } from '../utils/messages';
 export function registerAttachmentHandlers(bot: Bot<BotContext>): void {
 	bot.on('message:photo', async (ctx) => {
 		const s = ctx.session;
-		if (s.step !== 'attachment') return;
+		if (s.step !== 'attachment' && s.step !== 'reply_attachment') return;
 
 		const photo = ctx.message.photo.at(-1);
 		if (!photo) return;
@@ -19,7 +19,7 @@ export function registerAttachmentHandlers(bot: Bot<BotContext>): void {
 
 	bot.on('message:document', async (ctx) => {
 		const s = ctx.session;
-		if (s.step !== 'attachment') return;
+		if (s.step !== 'attachment' && s.step !== 'reply_attachment') return;
 
 		const doc = ctx.message.document;
 		if (!doc) return;

@@ -35,5 +35,6 @@ export type TicketDetails = TicketWithRelations & {
 	messages: (TicketMessage & {
 		senderUser: User | null;
 		senderReporter: Reporter | null;
+		attachments: Attachment[];
 	})[];
 };

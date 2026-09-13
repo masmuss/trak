@@ -7,7 +7,7 @@ import { registerCallbacks } from './handlers/callbacks';
 import { registerAttachmentHandlers } from './handlers/attachments';
 import { startNotificationListener } from './handlers/notifications';
 import { handleTitleInput, handleBodyInput } from './conversations/report';
-import { handleReplyBodyInput } from './conversations/reply';
+import { handleReplyBodyInput, promptReplyConfirmation } from './conversations/reply';
 import { handleInviteInput } from './conversations/invite';
 import { BotContext, BotSession } from './types';
 import { resetSession, promptConfirmReport } from './utils/helpers';
@@ -37,6 +37,11 @@ bot.hears(/^(\/cancel|❌ Batal)$/, async (ctx) => {
 
 bot.hears(/^(\/selesai|\/done|✅ Selesai)$/, async (ctx) => {
 	const s = ctx.session;
+
+	if (s.step === 'reply_attachment') {
+		await promptReplyConfirmation(ctx);
+		return;
+	}
 
 	if (!s.step || !s.title || !s.body) {
 		await ctx.reply('Tidak ada sesi laporan aktif. Gunakan /report untuk membuat laporan baru.', {

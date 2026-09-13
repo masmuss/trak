@@ -5,6 +5,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Select from '$lib/components/ui/select';
 	import { Textarea } from '$lib/components/ui/textarea';
+	import { Input } from '$lib/components/ui/input';
 	import { handleFormError } from '$lib/utils/form';
 	import type { TicketDetails } from '@trak/shared';
 
@@ -31,7 +32,13 @@
 		This conversation is closed. Reopen the ticket to send a message.
 	</div>
 {:else}
-	<form method="POST" action="?/sendMessage" use:enhance={sendMessage} class="space-y-3">
+	<form
+		method="POST"
+		action="?/sendMessage"
+		enctype="multipart/form-data"
+		use:enhance={sendMessage}
+		class="space-y-3"
+	>
 		<Textarea
 			name="body"
 			bind:value={message}
@@ -40,7 +47,12 @@
 				: 'Write an internal note...'}
 			class="min-h-24"
 			maxlength={5000}
-			required
+		/>
+		<Input
+			name="attachments"
+			type="file"
+			multiple
+			accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
 		/>
 		<div class="flex items-center justify-between gap-3">
 			<label class="flex items-center gap-2 text-sm text-muted-foreground">
@@ -56,7 +68,7 @@
 				</Select.Root>
 				<input type="hidden" name="visibility" value={visibility} />
 			</label>
-			<Button type="submit" disabled={!message.trim()}>Send message</Button>
+			<Button type="submit">Send message</Button>
 		</div>
 	</form>
 {/if}
