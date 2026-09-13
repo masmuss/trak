@@ -3,10 +3,10 @@
 	import { FileIcon, PaperclipIcon } from 'phosphor-svelte';
 	import * as Attachment from '$lib/components/ui/attachment';
 	import * as Bubble from '$lib/components/ui/bubble';
+	import * as Marker from '$lib/components/ui/marker';
 	import * as Message from '$lib/components/ui/message';
 	import getInitials from '$lib/utils/initials';
 	import StatusBadge from './status-badge.svelte';
-	import * as Marker from '$lib/components/ui/marker';
 
 	let { ticket }: { ticket: TicketDetails } = $props();
 
@@ -21,10 +21,32 @@
 
 	const statusHistories = $derived(ticket.statusHistories ?? []);
 	const messages = $derived(ticket.messages ?? []);
-	const messageGroups = $derived.by(() => {
-		const groups: { key: string; messages: TicketDetails['messages'] }[] = [];
+	const timeline = $derived.by(() => {
+		const events = [
+			...statusHistories.map((history) => ({ kind: 'status' as const, history })),
+			...messages.map((message) => ({ kind: 'message' as const, message }))
+		];
 
-		for (const message of messages) {
+		return events.sort(
+			(a, b) =>
+				new Date(a.kind === 'status' ? a.history.changedAt : a.message.createdAt).getTime() -
+				new Date(b.kind === 'status' ? b.history.changedAt : b.message.createdAt).getTime()
+		);
+	});
+
+	const timelineGroups = $derived.by(() => {
+		const groups: (
+			| { kind: 'status'; history: (typeof statusHistories)[number] }
+			| { kind: 'messages'; key: string; messages: TicketDetails['messages'] }
+		)[] = [];
+
+		for (const event of timeline) {
+			if (event.kind === 'status') {
+				groups.push(event);
+				continue;
+			}
+
+			const message = event.message;
 			const key = [
 				message.senderType,
 				message.senderUserId ?? message.senderReporterId ?? 'system',
@@ -32,10 +54,10 @@
 			].join(':');
 			const currentGroup = groups.at(-1);
 
-			if (currentGroup?.key === key) {
+			if (currentGroup?.kind === 'messages' && currentGroup.key === key) {
 				currentGroup.messages.push(message);
 			} else {
-				groups.push({ key, messages: [message] });
+				groups.push({ kind: 'messages', key, messages: [message] });
 			}
 		}
 
@@ -68,9 +90,7 @@
 							class="max-w-64"
 							aria-label={`Open attachment ${attachment.fileType}`}
 						>
-							<Attachment.Media>
-								<FileIcon class="size-4" />
-							</Attachment.Media>
+							<Attachment.Media><FileIcon class="size-4" /></Attachment.Media>
 							<Attachment.Content>
 								<Attachment.Title class="truncate">
 									{attachment.fileType.split('/')[1]?.toUpperCase() ?? 'FILE'}
@@ -94,84 +114,57 @@
 		</Message.Content>
 	</Message.Root>
 
-	{#each statusHistories as history (history.id)}
-		{#if history.note}
-			<Message.Root align="end">
-				<Message.Avatar class="size-10 bg-secondary font-semibold text-secondary-foreground">
-					{getInitials(history.changedByUser?.name ?? 'System')}
-				</Message.Avatar>
-				<Message.Content>
-					<Message.Header>
-						<span class="font-semibold">{history.changedByUser?.name ?? 'System Agent'}</span>
-						<span>{formatDateTime(history.changedAt)}</span>
-					</Message.Header>
-					<Bubble.Root variant="muted">
-						<Bubble.Content class=" whitespace-pre-wrap">{history.note}</Bubble.Content>
-					</Bubble.Root>
-					<Message.Footer class="gap-1.5">
-						<span>Changed status from</span>
-						<StatusBadge status={history.oldStatus} />
-						<span>to</span>
-						<StatusBadge status={history.newStatus} />
-					</Message.Footer>
-				</Message.Content>
-			</Message.Root>
-		{:else}
-			<article class="flex items-center justify-center">
-				<div
-					class="flex items-center gap-2 rounded-full border bg-muted/30 px-4 py-1.5 text-xs text-muted-foreground shadow-xs backdrop-blur-sm"
-				>
+	{#each timelineGroups as group (group.kind === 'status' ? group.history.id : group.key + group.messages[0].id)}
+		{#if group.kind === 'status'}
+			{@const history = group.history}
+			<Marker.Root variant="separator" role="status">
+				<Marker.Content class="flex flex-wrap items-center justify-center gap-1.5 text-xs">
 					<span class="font-medium text-foreground">{history.changedByUser?.name ?? 'System'}</span>
 					<span>changed status to</span>
 					<StatusBadge status={history.newStatus} />
-					<span class="ml-1 text-[10px] opacity-70">{formatDateTime(history.changedAt)}</span>
-				</div>
-			</article>
-		{/if}
-	{/each}
-
-	{#each messageGroups as group (group.key + group.messages[0].id)}
-		{@const firstMessage = group.messages[0]}
-		{@const lastMessage = group.messages[group.messages.length - 1]}
-		<Message.Root align={firstMessage.senderType === 'agent' ? 'end' : 'start'}>
-			<Message.Avatar
-				class={`self-end ${
-					firstMessage.senderType === 'agent'
-						? 'size-10 bg-secondary font-semibold text-secondary-foreground'
-						: 'size-10 bg-primary/10 font-semibold text-primary'
-				}`}
-			>
-				{getInitials(
-					firstMessage.senderUser?.name ?? firstMessage.senderReporter?.fullName ?? 'System'
-				)}
-			</Message.Avatar>
-			<Message.Content>
-				<Message.Header>
-					<span class="font-semibold">
-						{firstMessage.senderUser?.name ?? firstMessage.senderReporter?.fullName ?? 'System'}
-					</span>
-					{#if firstMessage.isInternal}
-						<span class="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs text-amber-700"
-							>Internal</span
-						>
+					<span>{formatDateTime(history.changedAt)}</span>
+					{#if history.note}
+						<span class="basis-full text-center italic">“{history.note}”</span>
 					{/if}
-					<span>{formatDateTime(lastMessage.createdAt)}</span>
-				</Message.Header>
-				<Bubble.Group>
-					{#each group.messages as message (message.id)}
-						<Bubble.Root variant={message.senderType === 'agent' ? 'default' : 'muted'}>
-							<Bubble.Content
-								class={message.senderType === 'agent'
-									? 'whitespace-pre-wrap'
-									: 'whitespace-pre-wrap'}
+				</Marker.Content>
+			</Marker.Root>
+		{:else}
+			{@const firstMessage = group.messages[0]}
+			{@const lastMessage = group.messages[group.messages.length - 1]}
+			<Message.Root align={firstMessage.senderType === 'agent' ? 'end' : 'start'}>
+				<Message.Avatar
+					class={`self-end ${
+						firstMessage.senderType === 'agent'
+							? 'size-10 bg-secondary font-semibold text-secondary-foreground'
+							: 'size-10 bg-primary/10 font-semibold text-primary'
+					}`}
+				>
+					{getInitials(
+						firstMessage.senderUser?.name ?? firstMessage.senderReporter?.fullName ?? 'System'
+					)}
+				</Message.Avatar>
+				<Message.Content>
+					<Message.Header>
+						<span class="font-semibold">
+							{firstMessage.senderUser?.name ?? firstMessage.senderReporter?.fullName ?? 'System'}
+						</span>
+						{#if firstMessage.isInternal}
+							<span class="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs text-amber-700"
+								>Internal</span
 							>
-								{message.body}
-							</Bubble.Content>
-						</Bubble.Root>
-					{/each}
-				</Bubble.Group>
-			</Message.Content>
-		</Message.Root>
+						{/if}
+						<span>{formatDateTime(lastMessage.createdAt)}</span>
+					</Message.Header>
+					<Bubble.Group>
+						{#each group.messages as message (message.id)}
+							<Bubble.Root variant={message.senderType === 'agent' ? 'default' : 'muted'}>
+								<Bubble.Content class="whitespace-pre-wrap">{message.body}</Bubble.Content>
+							</Bubble.Root>
+						{/each}
+					</Bubble.Group>
+				</Message.Content>
+			</Message.Root>
+		{/if}
 	{/each}
 
 	{#if ticket.status === 'closed'}
