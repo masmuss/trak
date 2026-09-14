@@ -23,6 +23,25 @@ export type CreationTrend = {
 	pctChange: number | null;
 };
 
+export type SlaDeadline = {
+	id: string;
+	ticketCode: string;
+	title: string;
+	priority: string;
+	status: string;
+	slaResolveDue: Date;
+	isSlaBreached: boolean;
+};
+
+export type SlaCalendarData = {
+	year: number;
+	month: number;
+	/** Deadlines falling inside the requested month. */
+	deadlines: SlaDeadline[];
+	/** Still-open tickets past due before the month started. */
+	overdue: SlaDeadline[];
+};
+
 export type TopInviteCode = {
 	id: string;
 	code: string;

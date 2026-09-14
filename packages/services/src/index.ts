@@ -93,7 +93,8 @@ export {
 	getCriticalTickets,
 	getPerformanceOverview,
 	getTicketVolume,
-	getTicketCreationTrend
+	getTicketCreationTrend,
+	getSlaCalendar
 } from './dashboard.service';
 export type {
 	DashboardStats,
@@ -101,6 +102,8 @@ export type {
 	PerformanceOverviewData,
 	VolumeDayData,
 	CreationTrend,
+	SlaCalendarData,
+	SlaDeadline,
 	DayData
 } from './dashboard.types';
 

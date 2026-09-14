@@ -1,4 +1,4 @@
-import { eq, count, gte } from 'drizzle-orm';
+import { eq, count, gte, lt, and, isNotNull, or } from 'drizzle-orm';
 import { db, reports, reporters, inviteCodes } from '@trak/database';
 import type { TicketWithRelations } from '@trak/shared';
 import type {
@@ -6,6 +6,8 @@ import type {
 	DashboardStats,
 	DayData,
 	PerformanceOverviewData,
+	SlaCalendarData,
+	SlaDeadline,
 	TopInviteCode,
 	VolumeDayData
 } from './dashboard.types';
@@ -199,4 +201,56 @@ export async function getTicketCreationTrend(): Promise<CreationTrend> {
 		previous,
 		pctChange: previous === 0 ? null : Math.round(((current - previous) / previous) * 100)
 	};
+}
+
+/**
+ * SLA resolve deadlines for a calendar month plus still-open overdue tickets.
+ * Only open / in_progress tickets count — resolved ones met (or missed) their SLA already.
+ */
+export async function getSlaCalendar(year: number, month: number): Promise<SlaCalendarData> {
+	if (!Number.isInteger(year) || year < 2000 || year > 2100) {
+		throw new Error('year must be an integer between 2000 and 2100');
+	}
+	if (!Number.isInteger(month) || month < 1 || month > 12) {
+		throw new Error('month must be an integer between 1 and 12');
+	}
+	const monthStart = new Date(year, month - 1, 1);
+	const monthEnd = new Date(year, month, 1);
+
+	const rows = await db.query.reports.findMany({
+		columns: {
+			id: true,
+			ticketCode: true,
+			title: true,
+			priority: true,
+			status: true,
+			slaResolveDue: true,
+			isSlaBreached: true
+		},
+		where: and(
+			or(eq(reports.status, 'open'), eq(reports.status, 'in_progress')),
+			isNotNull(reports.slaResolveDue),
+			lt(reports.slaResolveDue, monthEnd)
+		),
+		orderBy: (reports, { asc }) => [asc(reports.slaResolveDue)]
+	});
+
+	const deadlines: SlaDeadline[] = [];
+	const overdue: SlaDeadline[] = [];
+	for (const row of rows) {
+		if (!row.slaResolveDue) continue;
+		const entry: SlaDeadline = {
+			id: row.id,
+			ticketCode: row.ticketCode,
+			title: row.title,
+			priority: row.priority,
+			status: row.status,
+			slaResolveDue: row.slaResolveDue,
+			isSlaBreached: row.isSlaBreached
+		};
+		if (new Date(row.slaResolveDue) >= monthStart) deadlines.push(entry);
+		else overdue.push(entry);
+	}
+
+	return { year, month, deadlines, overdue };
 }
