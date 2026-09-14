@@ -142,8 +142,15 @@
 											class="block rounded-md p-2 text-sm hover:bg-muted"
 										>
 											<span class="mb-1 flex items-center justify-between gap-2">
-												<span class="text-xs font-medium text-muted-foreground">
+												<span
+													class="flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
+												>
 													{getAgentNotificationTypeLabel(notification.type)}
+													{#if notification.ticketCode}
+														<span class="rounded border bg-muted px-1 font-mono text-[10px]">
+															{notification.ticketCode}
+														</span>
+													{/if}
 												</span>
 												<span class="text-xs text-muted-foreground">
 													{formatRelativeTime(notification.createdAt)}

@@ -1,6 +1,6 @@
-import { and, eq, lt, sql } from 'drizzle-orm';
+import { and, eq, lt, sql, getTableColumns } from 'drizzle-orm';
 import { db } from '@trak/database';
-import { agentNotifications, notifications } from '@trak/database/schema';
+import { agentNotifications, notifications, reports } from '@trak/database/schema';
 import type { AgentNotificationType } from '@trak/shared';
 import type { CreateNotificationInput } from './notification.types';
 
@@ -112,8 +112,9 @@ export async function createAgentNotification(input: {
 
 export async function getAgentNotifications(userId: string, limit = 20) {
 	return db
-		.select()
+		.select({ ...getTableColumns(agentNotifications), ticketCode: reports.ticketCode })
 		.from(agentNotifications)
+		.innerJoin(reports, eq(agentNotifications.reportId, reports.id))
 		.where(eq(agentNotifications.recipientUserId, userId))
 		.orderBy(agentNotifications.createdAt)
 		.limit(limit);

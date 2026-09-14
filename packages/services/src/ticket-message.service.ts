@@ -84,7 +84,7 @@ export async function createReporterTicketMessage(
 	if (!input.senderReporterId) throw new Error('Reporter is required');
 	if (!body) throw new Error('Message body is required');
 
-	const { message, assigneeId, reopened } = await db.transaction(async (tx) => {
+	const { message, assigneeId, ticketCode } = await db.transaction(async (tx) => {
 		const ticket = await requireTicket(tx, input.reportId);
 		if (ticket.reporterId !== input.senderReporterId) {
 			throw new Error('Reporter does not own this ticket');
@@ -166,7 +166,12 @@ export async function createReporterTicketMessage(
 			);
 		}
 
-		return { message, assigneeId: ticket.assignedTo, reopened };
+		return {
+			message,
+			assigneeId: ticket.assignedTo,
+			reopened,
+			ticketCode: ticket.ticketCode
+		};
 	});
 
 	if (assigneeId) {
@@ -175,7 +180,7 @@ export async function createReporterTicketMessage(
 			reportId: input.reportId,
 			messageId: message.id,
 			type: 'reporter_reply',
-			message: `Reporter membalas ticket ${input.reportId}`
+			message: `Reporter replied to ticket ${ticketCode}`
 		});
 	}
 

@@ -40,11 +40,13 @@ export async function claimTicketAction(event: RequestEvent) {
 		return fail(409, { error: 'Ticket is already assigned' });
 	}
 
+	const ticket = await getTicketById(id);
+	requireExists(ticket, 'Ticket');
 	await createAgentNotification({
 		recipientUserId: user.id,
 		reportId: id,
 		type: 'assignment',
-		message: `Ticket ${id} successfully claimed`
+		message: `Ticket ${ticket.ticketCode} successfully claimed`
 	});
 
 	return { success: true };

@@ -143,17 +143,17 @@ describe('assignTicket (authorization + behavior)', () => {
 		await assignTicket(ticket.id, second.id, adminActor);
 
 		let firstNotes = await getAgentNotifications(first.id);
-		expect(firstNotes.some((n) => n.reportId === ticket.id && /dipindahkan/i.test(n.message))).toBe(
+		expect(firstNotes.some((n) => n.reportId === ticket.id && /reassigned/i.test(n.message))).toBe(
 			true
 		);
 		let secondNotes = await getAgentNotifications(second.id);
-		expect(secondNotes.some((n) => n.reportId === ticket.id && /ditugaskan/i.test(n.message))).toBe(
-			true
-		);
+		expect(
+			secondNotes.some((n) => n.reportId === ticket.id && /assigned to you/i.test(n.message))
+		).toBe(true);
 
 		await assignTicket(ticket.id, null, adminActor);
 		secondNotes = await getAgentNotifications(second.id);
-		expect(secondNotes.some((n) => n.reportId === ticket.id && /dihapus/i.test(n.message))).toBe(
+		expect(secondNotes.some((n) => n.reportId === ticket.id && /removed/i.test(n.message))).toBe(
 			true
 		);
 	});

@@ -88,8 +88,8 @@ export async function assignTicket(
 			reportId: ticketId,
 			type: 'assignment',
 			message: assigneeId
-				? `Ticket ${ticketCode} dipindahkan dari Anda ke agent lain`
-				: `Assignment ticket ${ticketCode} untuk Anda telah dihapus`
+				? `Ticket ${ticketCode} was reassigned from you to another agent`
+				: `Ticket ${ticketCode} assignment was removed from you`
 		});
 	}
 
@@ -98,7 +98,7 @@ export async function assignTicket(
 			recipientUserId: assigneeId,
 			reportId: ticketId,
 			type: 'assignment',
-			message: `Ticket ${ticketCode} ditugaskan kepada Anda`
+			message: `Ticket ${ticketCode} was assigned to you`
 		});
 	}
 }
