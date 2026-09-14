@@ -8,6 +8,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import { GithubLogo } from 'phosphor-svelte';
 	import ThemeSwitcher from '$lib/components/layout/theme-switcher.svelte';
+	import CommandPalette from '$lib/components/layout/command-palette.svelte';
+	import { MagnifyingGlassIcon } from 'phosphor-svelte';
 	import * as Popover from '$lib/components/ui/popover';
 	import { BellIcon } from 'phosphor-svelte';
 	import { invalidateAll } from '$app/navigation';
@@ -32,6 +34,8 @@
 	});
 
 	let { children } = $props();
+
+	let paletteOpen = $state(false);
 
 	$effect(() => {
 		const events = new EventSource('/tickets/events');
@@ -89,6 +93,21 @@
 					</Breadcrumb.Root>
 				</div>
 				<div class="flex items-center gap-2">
+					<Button
+						variant="ghost"
+						size="sm"
+						class="hidden gap-2 text-muted-foreground md:flex"
+						onclick={() => (paletteOpen = true)}
+						aria-label="Search tickets and navigation"
+					>
+						<MagnifyingGlassIcon class="size-4" />
+						<span class="text-xs">Search...</span>
+						<kbd
+							class="pointer-events-none rounded border bg-muted px-1 font-mono text-[10px] font-medium"
+						>
+							⌘K
+						</kbd>
+					</Button>
 					<Popover.Root>
 						<Popover.Trigger>
 							<Button variant="ghost" size="icon" class="relative" aria-label="Notifications">
@@ -158,3 +177,4 @@
 		</div>
 	</Sidebar.Inset>
 </Sidebar.Provider>
+<CommandPalette bind:open={paletteOpen} />

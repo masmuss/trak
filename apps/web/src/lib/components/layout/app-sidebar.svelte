@@ -1,76 +1,5 @@
 <script lang="ts" module>
-	import {
-		ChartPieIcon,
-		TicketIcon,
-		UsersIcon,
-		KeyIcon,
-		ShieldIcon,
-		GearSixIcon
-	} from 'phosphor-svelte';
-
-	const data = {
-		navGroups: [
-			{
-				id: 'workspace',
-				label: 'Workspace',
-				items: [
-					{
-						title: 'Dashboard',
-						url: '/dashboard',
-						icon: ChartPieIcon
-					},
-					{
-						title: 'Tickets',
-						url: '/tickets',
-						icon: TicketIcon,
-						items: [
-							{ title: 'All Tickets', url: '/tickets' },
-							{ title: 'Open', url: '/tickets?status=open' },
-							{ title: 'In Progress', url: '/tickets?status=in_progress' },
-							{ title: 'Resolved', url: '/tickets?status=resolved' }
-						]
-					}
-				]
-			},
-			{
-				id: 'management',
-				label: 'Management',
-				items: [
-					{
-						title: 'Reporters',
-						url: '/reporters',
-						icon: UsersIcon
-					},
-					{
-						title: 'Invite Codes',
-						url: '/invite-codes',
-						icon: KeyIcon
-					},
-					{
-						title: 'Agents',
-						url: '/agents',
-						icon: ShieldIcon
-					}
-				]
-			},
-			{
-				id: 'system',
-				label: 'System',
-				items: [
-					{
-						title: 'Settings',
-						url: '/settings',
-						icon: GearSixIcon
-					},
-					{
-						title: 'Audit Logs',
-						url: '/audit-logs',
-						icon: ShieldIcon
-					}
-				]
-			}
-		]
-	};
+	import { visibleNavGroups } from '$lib/config/navigation';
 </script>
 
 <script lang="ts">
@@ -88,14 +17,7 @@
 	}: ComponentProps<typeof Sidebar.Root> = $props();
 
 	const user = $derived(page.data.user);
-	const navGroups = $derived(
-		user?.role === 'admin'
-			? data.navGroups
-			: data.navGroups.map((group) => ({
-					...group,
-					items: group.items.filter((item) => item.title !== 'Audit Logs')
-				}))
-	);
+	const navGroups = $derived(visibleNavGroups(user?.role));
 </script>
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>
