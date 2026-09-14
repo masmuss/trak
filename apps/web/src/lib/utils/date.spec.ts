@@ -15,11 +15,11 @@ describe('date utils', () => {
 
 	it('formats relative time in the past', () => {
 		const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-		expect(formatRelativeTime(fiveMinutesAgo)).toMatch(/lalu/i);
+		expect(formatRelativeTime(fiveMinutesAgo)).toMatch(/ago/i);
 	});
 
 	it('formats relative time for yesterday', () => {
 		const yesterday = new Date(Date.now() - 26 * 60 * 60 * 1000);
-		expect(formatRelativeTime(yesterday)).toMatch(/kemarin|hari/i);
+		expect(formatRelativeTime(yesterday)).toMatch(/yesterday|day/i);
 	});
 });

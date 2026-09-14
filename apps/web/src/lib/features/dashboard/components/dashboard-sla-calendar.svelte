@@ -14,7 +14,7 @@
 		isSlaBreached: boolean;
 	}
 
-	const WEEKDAYS = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+	const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 	const DOT_CLASS: Record<string, string> = {
 		CRITICAL: 'bg-red-500',
@@ -31,7 +31,7 @@
 	let loading = $state(true);
 
 	const monthLabel = $derived(
-		new Date(year, month, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+		new Date(year, month, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 	);
 
 	const cells = $derived.by(() => {

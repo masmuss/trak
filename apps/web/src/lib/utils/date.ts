@@ -18,7 +18,7 @@ export function formatDateTime(dateStr: string | Date): string {
 export function formatRelativeTime(dateStr: string | Date): string {
 	const date = new Date(dateStr);
 	const diffSeconds = Math.round((date.getTime() - Date.now()) / 1000);
-	const formatter = new Intl.RelativeTimeFormat('id-ID', { numeric: 'auto' });
+	const formatter = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
 
 	const divisions = [
 		{ amount: 60, unit: 'second' },

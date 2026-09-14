@@ -26,7 +26,7 @@ export interface BaseFilterConfig<T = string> {
 	title: string;
 	type: FilterType;
 	options?: FilterOption<T>[];
-	serverKey?: string; // Key yang dikirim ke server, default sama dengan key
+	serverKey?: string; // Key sent to the server, defaults to key
 	placeholder?: string;
 }
 

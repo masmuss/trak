@@ -118,27 +118,27 @@ async function main() {
 			.insert(categories)
 			.values([
 				{
-					name: 'Bug & Eror Sistem',
+					name: 'System Bugs & Errors',
 					description:
-						'Masalah teknis seperti aplikasi crash, tombol tidak merespon, halaman tidak memuat, dll.',
+						'Technical issues such as app crashes, unresponsive buttons, pages failing to load, etc.',
 					isActive: true
 				},
 				{
-					name: 'Transaksi & Pembayaran',
+					name: 'Transactions & Payments',
 					description:
-						'Keluhan mengenai kegagalan pembayaran, tagihan tidak sesuai, refund saldo, atau masalah e-wallet/bank.',
+						'Complaints about payment failures, incorrect billing, balance refunds, or e-wallet/bank issues.',
 					isActive: true
 				},
 				{
-					name: 'Akun & Keamanan',
+					name: 'Account & Security',
 					description:
-						'Isu mengenai kegagalan login, verifikasi OTP tidak terkirim, lupa password, atau akun terblokir.',
+						'Issues with login failures, OTP verification not arriving, forgotten passwords, or blocked accounts.',
 					isActive: true
 				},
 				{
-					name: 'Usulan Fitur & UX',
+					name: 'Feature Requests & UX',
 					description:
-						'Saran peningkatan antarmuka (UI/UX) atau permintaan fitur baru untuk produk.',
+						'Interface (UI/UX) improvement suggestions or new feature requests for the product.',
 					isActive: true
 				}
 			])
@@ -192,8 +192,8 @@ async function main() {
 				ticketCode: 'TKT-SEED01',
 				reporterId: reporterRecords[0].id,
 				categoryId: categoryRecords[2].id,
-				title: 'Gagal Menerima Kode OTP WhatsApp saat Registrasi',
-				body: 'Saya mencoba mendaftar akun baru menggunakan nomor WhatsApp +628123456789, namun setelah menekan tombol kirim OTP sebanyak 5 kali dan menunggu masing-masing 2 menit, tidak ada pesan masuk dari sistem. Mohon dicek apakah gateway WhatsApp sedang bermasalah.',
+				title: 'Not Receiving WhatsApp OTP Code During Registration',
+				body: 'I tried registering a new account using WhatsApp number +628123456789, but after pressing the send OTP button 5 times and waiting 2 minutes each, no message arrived from the system. Please check whether the WhatsApp gateway is having issues.',
 				status: 'open' as const,
 				priority: 'HIGH' as const,
 				createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000)
@@ -202,8 +202,8 @@ async function main() {
 				ticketCode: 'TKT-SEED02',
 				reporterId: reporterRecords[0].id,
 				categoryId: categoryRecords[1].id,
-				title: 'Saldo LinkAja Terpotong tapi Pembayaran Langganan Premium Gagal',
-				body: 'Saya melakukan checkout untuk paket langganan 1 bulan seharga Rp 150.000 menggunakan pembayaran LinkAja. Di aplikasi LinkAja saldo sudah terpotong sukses, namun halaman checkout aplikasi Trak menyatakan transaksi expired/gagal dan akun saya belum berubah status ke Premium.',
+				title: 'LinkAja Balance Charged but Premium Subscription Payment Failed',
+				body: 'I checked out a 1-month subscription plan for Rp 150.000 using LinkAja payment. My LinkAja balance was successfully charged, but the Trak checkout page says the transaction expired/failed and my account has not been upgraded to Premium.',
 				status: 'in_progress' as const,
 				priority: 'HIGH' as const,
 				createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000)
@@ -212,8 +212,8 @@ async function main() {
 				ticketCode: 'TKT-SEED03',
 				reporterId: reporterRecords[1].id,
 				categoryId: categoryRecords[0].id,
-				title: 'Aplikasi Crash Saat Membuka Halaman Riwayat Transaksi',
-				body: 'Setiap kali saya menekan tombol "Riwayat Transaksi" di navigasi utama, aplikasi Trak langsung menutup sendiri (force close) tanpa ada pesan eror. Saya menggunakan HP Android Samsung S21 dengan OS Android 13.',
+				title: 'App Crashes When Opening Transaction History Page',
+				body: 'Every time I tap the "Transaction History" button in the main navigation, the Trak app closes by itself (force close) without any error message. I use a Samsung S21 phone with Android 13.',
 				status: 'resolved' as const,
 				priority: 'MEDIUM' as const,
 				createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000)
@@ -222,8 +222,8 @@ async function main() {
 				ticketCode: 'TKT-SEED04',
 				reporterId: reporterRecords[1].id,
 				categoryId: categoryRecords[1].id,
-				title: 'Double Charge Pada Tagihan Bulanan Kartu Kredit',
-				body: 'Pada tagihan kartu kredit bulan ini untuk pembayaran langganan aplikasi Trak, muncul dua kali transaksi dengan nominal masing-masing Rp 89.000 pada hari yang sama (15 Mei). Mohon bantuannya untuk memproses refund satu transaksi yang double.',
+				title: 'Double Charge on Monthly Credit Card Bill',
+				body: 'On this month credit card bill for the Trak app subscription, two transactions of Rp 89.000 each appeared on the same day (May 15). Please help refund one of the duplicate transactions.',
 				status: 'resolved' as const,
 				priority: 'HIGH' as const,
 				createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -232,8 +232,8 @@ async function main() {
 				ticketCode: 'TKT-SEED05',
 				reporterId: reporterRecords[3].id,
 				categoryId: categoryRecords[2].id,
-				title: 'Isu Akun Terkunci Otomatis Setelah Ganti Password',
-				body: 'Saya baru saja mengganti password melalui menu pengaturan kemarin malam. Setelah sukses mengganti password, saya log out dan mencoba login kembali dengan password baru. Namun muncul pesan "Akun Anda dinonaktifkan sementara karena alasan keamanan". Tolong buka kunci akun saya.',
+				title: 'Account Auto-Locked After Password Change',
+				body: 'I just changed my password through the settings menu last night. After successfully changing it, I logged out and tried logging back in with the new password. But a message appeared saying "Your account is temporarily disabled for security reasons". Please unlock my account.',
 				status: 'open' as const,
 				priority: 'CRITICAL' as const,
 				createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000)
@@ -242,8 +242,8 @@ async function main() {
 				ticketCode: 'TKT-SEED06',
 				reporterId: reporterRecords[4].id,
 				categoryId: categoryRecords[3].id,
-				title: 'Usulan Fitur Export Laporan Bulanan ke Format Excel/PDF',
-				body: 'Sebagai administrator di tim kami, saya butuh fitur untuk mendownload/export data rekap laporan support bulanan ke dalam format file Excel (.xlsx) atau laporan PDF. Saat ini kami harus menyalinnya secara manual satu per satu, yang memakan waktu.',
+				title: 'Feature Request: Monthly Report Export to Excel/PDF',
+				body: 'As an administrator in our team, I need a feature to download/export the monthly support recap data into Excel (.xlsx) files or PDF reports. Right now we have to copy everything manually one by one, which takes a lot of time.',
 				status: 'in_progress' as const,
 				priority: 'LOW' as const,
 				createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
@@ -252,8 +252,8 @@ async function main() {
 				ticketCode: 'TKT-SEED07',
 				reporterId: reporterRecords[1].id,
 				categoryId: categoryRecords[3].id,
-				title: 'Tampilan Dark Mode Terlalu Terang Pada Bagian Sidebar',
-				body: 'Kontras teks warna abu-abu di atas latar belakang sidebar dark mode saat ini agak susah dibaca, terutama jika pencahayaan ruangan redup. Usulan saya, latar belakang sidebar dibuat sedikit lebih gelap atau warna teks abu-abunya diperterang agar kontrasnya pas.',
+				title: 'Dark Mode Too Bright in Sidebar Area',
+				body: 'The gray text contrast on the dark mode sidebar background is currently a bit hard to read, especially when room lighting is dim. My suggestion: make the sidebar background slightly darker or brighten the gray text so the contrast feels right.',
 				status: 'resolved' as const,
 				priority: 'LOW' as const,
 				createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000)
@@ -262,8 +262,8 @@ async function main() {
 				ticketCode: 'TKT-SEED08',
 				reporterId: reporterRecords[2].id,
 				categoryId: categoryRecords[1].id,
-				title: 'Permohonan Refund Karena Salah Pilih Paket Premium',
-				body: 'Saya berniat membeli paket langganan tahunan, tetapi salah mengklik dan membeli paket langganan 1 bulan (non-recurring). Apakah bisa transaksi tersebut di-refund sehingga saya bisa mengulang transaksi pembelian paket tahunan?',
+				title: 'Refund Request After Picking the Wrong Premium Plan',
+				body: 'I intended to buy the annual subscription plan, but I misclicked and bought the 1-month plan (non-recurring). Can that transaction be refunded so I can redo the annual plan purchase?',
 				status: 'closed' as const,
 				priority: 'MEDIUM' as const,
 				createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000)
@@ -272,8 +272,8 @@ async function main() {
 				ticketCode: 'TKT-SEED09',
 				reporterId: reporterRecords[4].id,
 				categoryId: categoryRecords[1].id,
-				title: 'Metode Pembayaran QRIS Tidak Menampilkan Kode QR',
-				body: 'Saya mencoba mengupgrade akun menggunakan metode pembayaran QRIS di halaman billing. Setelah memilih QRIS dan menekan tombol Bayar, layar loading terus berjalan dan kode QR-nya tidak muncul sama sekali. Saya sudah coba di browser Chrome dan Firefox hasilnya sama.',
+				title: 'QRIS Payment Method Not Showing QR Code',
+				body: 'I tried upgrading my account using the QRIS payment method on the billing page. After selecting QRIS and pressing the Pay button, the loading screen keeps spinning and the QR code never appears at all. I tried in both Chrome and Firefox browsers with the same result.',
 				status: 'in_progress' as const,
 				priority: 'HIGH' as const,
 				createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000)
@@ -282,8 +282,8 @@ async function main() {
 				ticketCode: 'TKT-SEED10',
 				reporterId: reporterRecords[3].id,
 				categoryId: categoryRecords[2].id,
-				title: 'Upaya Akses Mencurigakan Dari Luar Kota',
-				body: 'Saya mendapatkan email notifikasi keamanan bahwa ada upaya login ke akun saya dari IP address berlokasi di Surabaya, Jawa Timur pada jam 2 dini hari tadi, padahal saya berdomisili di Jakarta dan sedang tertidur saat itu. Saya ingin mengganti password dan memaksa log out dari seluruh device.',
+				title: 'Suspicious Access Attempt From Another City',
+				body: 'I received a security notification email that there was a login attempt to my account from an IP address located in Surabaya, East Java at 2 AM today, even though I live in Jakarta and was asleep at the time. I want to change my password and force log out from all devices.',
 				status: 'closed' as const,
 				priority: 'CRITICAL' as const,
 				createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000)
@@ -292,8 +292,8 @@ async function main() {
 				ticketCode: 'TKT-SEED11',
 				reporterId: reporterRecords[0].id,
 				categoryId: categoryRecords[0].id,
-				title: 'Tombol "Batal Kirim" di Laporan Tidak Bisa Diklik',
-				body: 'Setelah membuat keluhan baru di portal, ada tombol "Batal Kirim Laporan" yang muncul selama 5 detik pertama. Namun ketika diklik, tombol tersebut tidak merespon dan laporan tetap terkirim ke agent. Mohon perbaiki fungsionalitas pembatalan ini.',
+				title: '"Cancel Submit" Button in Report Cannot Be Clicked',
+				body: 'After creating a new complaint in the portal, a "Cancel Report Submission" button appears for the first 5 seconds. But when clicked, the button does not respond and the report is still sent to the agent. Please fix this cancellation functionality.',
 				status: 'open' as const,
 				priority: 'MEDIUM' as const,
 				createdAt: new Date(Date.now() - 30 * 60 * 1000)
@@ -333,7 +333,7 @@ async function main() {
 					changedBy: adminId,
 					oldStatus: 'open',
 					newStatus: 'in_progress',
-					note: 'Keluhan diterima. Tim Finance kami sedang mencocokkan mutasi pembayaran pada sistem pembayaran LinkAja. Proses pencocokan biasanya memakan waktu maksimal 1 jam kerja.',
+					note: 'Complaint received. Our Finance team is reconciling the payment records on the LinkAja payment system. Reconciliation usually takes at most 1 business hour.',
 					changedAt: new Date(Date.now() - 20 * 60 * 60 * 1000)
 				},
 				{
@@ -341,7 +341,7 @@ async function main() {
 					changedBy: agentId,
 					oldStatus: 'open',
 					newStatus: 'in_progress',
-					note: 'Investigasi awal dijalankan untuk menganalisa crash log pada HP Samsung S21.',
+					note: 'Initial investigation started to analyze the crash logs on the Samsung S21 phone.',
 					changedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000)
 				},
 				{
@@ -349,7 +349,7 @@ async function main() {
 					changedBy: agentId,
 					oldStatus: 'in_progress',
 					newStatus: 'resolved',
-					note: 'Masalah crash teratasi. Kami merilis update minor versi 1.0.4 untuk memperbaiki rendering data riwayat transaksi pada versi Android tertentu.',
+					note: 'Crash issue resolved. We released minor update version 1.0.4 to fix transaction history data rendering on certain Android versions.',
 					changedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
 				},
 				{
@@ -357,7 +357,7 @@ async function main() {
 					changedBy: adminId,
 					oldStatus: 'open',
 					newStatus: 'resolved',
-					note: 'Pihak payment gateway membenarkan adanya kesalahan pencatatan transaksi ganda. Dana transaksi yang kedua (sebesar Rp 89.000) sudah di-void dan dikembalikan ke kartu kredit Pelapor.',
+					note: 'The payment gateway confirmed a double-recording error. The second transaction funds (Rp 89.000) have been voided and returned to the reporter credit card.',
 					changedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000)
 				},
 				{
@@ -365,7 +365,7 @@ async function main() {
 					changedBy: adminId,
 					oldStatus: 'open',
 					newStatus: 'closed',
-					note: 'Kami menutup keluhan ini karena transaksi salah paket tidak memenuhi syarat refund (telah terpakai kuota transfernya). Sebagai gantinya kami memberikan voucher diskon untuk mempermudah upgrade ke paket tahunan.',
+					note: 'We closed this complaint because the wrong-plan transaction is not eligible for a refund (its transfer quota was already used). Instead we gave a discount voucher to make upgrading to the annual plan easier.',
 					changedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
 				},
 				{
@@ -373,7 +373,7 @@ async function main() {
 					changedBy: adminId,
 					oldStatus: 'open',
 					newStatus: 'closed',
-					note: 'Akun telah diamankan. Password diubah oleh pemilik akun, dan kami mematikan seluruh sesi aktif pada device lain seperti yang diminta.',
+					note: 'Account secured. Password changed by the account owner, and we terminated all active sessions on other devices as requested.',
 					changedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 				}
 			])

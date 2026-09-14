@@ -44,7 +44,7 @@ export async function claimTicketAction(event: RequestEvent) {
 		recipientUserId: user.id,
 		reportId: id,
 		type: 'assignment',
-		message: `Ticket ${id} berhasil di-claim`
+		message: `Ticket ${id} successfully claimed`
 	});
 
 	return { success: true };
@@ -89,10 +89,10 @@ export async function updateStatusAction(event: RequestEvent) {
 		reportId: id,
 		type: 'status_changed',
 		message:
-			`🔄 Status tiket ${ticket.ticketCode} diperbarui\n\n` +
-			`Judul: ${ticket.title}\n` +
+			`🔄 Status of ticket ${ticket.ticketCode} updated\n\n` +
+			`Title: ${ticket.title}\n` +
 			`Status: ${getStatusLabel(ticket.status)} → ${getStatusLabel(newStatus)}` +
-			(note ? `\nCatatan: ${note}` : '')
+			(note ? `\nNote: ${note}` : '')
 	});
 
 	return { success: true };
@@ -140,7 +140,7 @@ export async function sendMessageAction(event: RequestEvent) {
 			reporterTelegramId: ticket.reporter.telegramId,
 			reportId: ticket.id,
 			type: 'agent_reply',
-			message: `💬 Balasan baru untuk tiket ${ticket.ticketCode}\n\n${body}`
+			message: `💬 New reply for ticket ${ticket.ticketCode}\n\n${body}`
 		});
 	}
 
@@ -169,9 +169,9 @@ export async function updatePriorityAction(event: RequestEvent) {
 		reportId: id,
 		type: 'priority_changed',
 		message:
-			`🏷 Prioritas tiket ${ticket.ticketCode} diperbarui\n\n` +
-			`Judul: ${ticket.title}\n` +
-			`Prioritas: ${ticket.priority} → ${newPriority}`
+			`🏷 Priority of ticket ${ticket.ticketCode} updated\n\n` +
+			`Title: ${ticket.title}\n` +
+			`Priority: ${ticket.priority} → ${newPriority}`
 	});
 
 	return { success: true };

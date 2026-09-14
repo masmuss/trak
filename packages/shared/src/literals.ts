@@ -66,8 +66,8 @@ export function getStatusLabel(status: TicketStatus): string {
 }
 
 export const AGENT_NOTIFICATION_TYPE_LABEL: Record<AgentNotificationType, string> = {
-	reporter_reply: '💬 Balasan reporter',
-	assignment: '📌 Penugasan'
+	reporter_reply: '💬 Reporter reply',
+	assignment: '📌 Assignment'
 };
 
 export function getAgentNotificationTypeLabel(type: string): string {
