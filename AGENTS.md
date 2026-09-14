@@ -44,7 +44,7 @@
 - README updated with mermaid architecture graph + sequence diagram.
 - **Priority management system**: `updateTicketPriority`, `checkSlaBreach` services; `PriorityBadge` component with color-coded icons (CRITICAL=red/WarningCircle, HIGH=orange/Warning, MEDIUM=yellow/Circle, LOW=slate/Flag); priority column in tickets table; priority form in detail view with SLA deadline display and breach indicator; priority change notifications.
 - **SLA recalculated on priority change** from ticket's `createdAt`, not current time. `checkSlaBreach` side-effect updates `isSlaBreached` column.
-- **Bot refactored (PR pending)**: extracted shared utilities, deduplicated logic across handlers, slimmed `bot.ts` from 202→70 lines.
+- **Bot refactored (merged PR #52/#53 to `dev`)**: extracted shared utilities, deduplicated logic across handlers, slimmed `bot.ts` from 202→70 lines.
   - `utils/messages.ts` — all string constants centralized (was scattered across 5 files)
   - `utils/keyboards.ts` — factory functions for all inline/reply keyboards (4 ad-hoc constructions eliminated)
   - `utils/helpers.ts` — `requireReporter`, `resetSession` (3 Object.assign dups → 1), `getAttachmentSummary`
@@ -57,13 +57,17 @@
 - **Bot full split (branch `refactor/bot-and-tests`)**: `submitReportWithAttachments` facade (single tx: ticket + attachments + `ticket.created` audit); `createReport` delegates to facade; `presenters/ticket-status.ts` pure renderer; `utils/callbacks.ts` central `STATIC_CALLBACK` + encode/parse for dynamic payloads; `replyTicketStatus` now fetch + `formatTicketStatusMessage` + keyboard.
 - **Types centralized**: `ticket_status` + `agent_notification_type` pgEnums (migration 0015), `TicketStatus`/`AgentNotificationType`/`MessageSenderType` inferred from DB; dotted `AuditAction` union (`ticket.*`, `user.*`, `category.*`, `invite_code.*`); `AuditEntityType` incl. `ticket_message`; `UserRole` + `isUserRole` + `Actor` + `ForbiddenError` + `requireActorRole`; `STATUS_LABEL: Record<TicketStatus,string>` + `getStatusLabel` + `toTicketStatusList`/`toPriorityList` + limits in `@trak/shared`. Zero `any` / `as never` / `as Promise` in services/bot/shared. Fixed latent crash: `changedByUser` now `User | null` (`oleh Sistem` fallback for reopen-by-system rows).
 - **RBAC enforced in services**: `claimTicket`/`updateTicketStatus` require agent/admin, `assignTicket`/`updateTicketPriority` require admin via `Actor`; routes pass `toActor(user)`.
-- **Tests (23 green, real Postgres `trak_test`)**: `packages/services` vitest (`fileParallelism: false`, per-test TRUNCATE). Suites: claim atomic (incl. concurrent), assignment auth, reopen (+SLA/audit/assignee notif), attachment ownership/relasi, notification read (incl. cross-user mark scoping), RBAC matrix, submit facade validation.
+- **Tests (58 green services + 28 green web unit, real Postgres `trak_test` + real MinIO)**: `packages/services` vitest (per-test TRUNCATE). Suites: claim atomic (incl. concurrent), assignment auth, reopen (+SLA/audit/assignee notif), attachment ownership/relasi, notification read (incl. cross-user mark scoping), RBAC matrix, submit facade validation, ticket sort (severity CASE order, fallback newest-first, sort-key whitelist), ticket stale (threshold, agent-reply bump, filter/sort integration).
 - **Audit in-tx (strict rollback)**: `createAuditLog(input, tx?)`; status/assignment/priority/message/submit audits moved inside service transactions; route handler audit calls removed. Rollback proof test included.
 - **Assignment lanjut**: `assignTicket` validates assignee exists + active + agent/admin role; notifies previous assignee on reassign/unassign + new assignee; `getActiveTicketCounts()` shown as badge in agents table.
 - **Notifications (migration 0016)**: `dedup_key` unique on both tables (`onConflictDoNothing`, default key includes recipient for agent notifs — test caught cross-recipient collision); `type` pgEnum on reporter notifs; `markAll*Read`; `purgeReadNotifications(30d)` in bot 3AM cron; bell dropdown has mark-all + type label + `formatRelativeTime`.
 - **Audit viewer**: `getAuditLogs` + `getAuditLogsCount` with date range; admin page has action/entity dropdowns (from union arrays), date inputs, pagination, before/after detail dialog, CSV export route (limit 5000).
 - **Attachments e2e**: Telegram proxy extracted to `$lib/server/telegram.ts` (mocked-fetch unit tests, all branches); MinIO roundtrip unit test (real MinIO); vitest `src/lib/server/**` exclusion removed (`$env` works); Playwright smoke `e2e/auth-smoke.e2e.ts` (login → dashboard → tickets, 2 passed).
 - **Browser-safe shared literals**: `packages/shared/src/literals.ts` (zero-dep; `constants.ts` re-exports it). Fixed client crash `Buffer is not defined` caused by `constants.ts` value-importing `@trak/database` (postgres+dotenv bundled to client). DB↔literal sync enforced by `literals-sync.test.ts`. `reuseExistingServer` in playwright config.
+- **Ticket list completion (P0 gaps)**: priority + SLA filters already existed; added server-side sorting (`sort`/`order` URL → `listTickets`, whitelist via `isTicketSortKey`, priority sorts by severity CASE not alphabet), proportional SLA warning (`sla-badge.svelte` warns at ≤25% window remaining instead of fixed 2h — fixed CRITICAL always-At-Risk), Priority + SLA + Last Activity columns in CSV export.
+- **Stale detection (migration 0017)**: `last_activity_at` column + `touch_report_activity()` trigger. `reports` BEFORE UPDATE fires only on meaningful cols (status/priority/assignee/title/body/category/resolved/first_response — SLA-flag flips excluded); child INSERTs (messages/attachments/histories) touch parent. `getStaleTickets(hours)` + `stale_hours` list filter (24/48/72/168) + `lastActivityAt` sort + Last Activity column with amber Stale badge (>24h, open only).
+- **DB cycle broken (P2)**: connection code extracted to `packages/database/src/client.ts` (`db` proxy, `initDb`, `listen`, `getDb`); `index.ts` is a pure barrel; `session-adapter.ts` imports from `./client`. Fallow circular count 5→4. Also removed last 2 `as any` in adapter (jsonb col is `unknown`).
+- **Dead code triage (P3)**: deleted `dashboard-satisfaction.svelte` (unrendered mock) + `ticket-message-header.svelte` (zero importers); removed unused deps `better-call`, `drizzle-seed`, `drizzle-zod`, `zod`, `vitest-browser-svelte` from `@trak/web`; removed dead bot exports (`STATUS_LABEL` re-export, `cancelWithRemoveKeyboard`, `NO_CATEGORY_MESSAGE`, `StaticCallback`), `AgentNotification` type, `PaginatedResult`/`TableFilterConfig`/`TableDataFetcher`/`ServerTableResponse` types, audit-logs `pageSize` key. Kept intentionally: 182 `components/ui/*` files (design-system library), `FilterManager` API, eslint unlisted deps (root devDeps), barrel dup exports.
 
 ### Blocked
 
@@ -83,31 +87,34 @@
 - **Priority set by agent, not reporter**: default MEDIUM on create, agent adjusts via panel.
 - **SLA deadlines on priority change**: recalculated from ticket `createdAt` each update.
 - **Function `uuid_generate_v7()` in PostgreSQL** (not app-level): transparent to Drizzle, no code changes needed for existing inserts.
+- **Activity via DB triggers, not app writes**: `last_activity_at` maintained by `touch_report_activity()` so child-table events + SLA-flag exclusion need no service coordination.
+- **Proportional SLA warning**: badge warns at ≤25% window remaining; fixed-hour thresholds misfire across priorities (CRITICAL 2h vs LOW 7d).
+- **Priority sort is severity CASE**, not alphabetical (alphabetical puts LOW before MEDIUM).
+- **Design-system files are not dead code**: `components/ui/*` + table-toolkit barrel exports stay even when unreferenced; only app-level dead code gets deleted.
 
 ## Next Steps
 
-1. Add filter-by-priority in ticket list (agent panel).
-2. Wire `lastActivityAt` trigger or cron for stale ticket detection.
-3. Show SLA warning colors in ticket list (green/yellow/red based on deadline proximity).
-4. Merge bot refactor PR to main.
+1. Stale-ticket agent notification (cron or on-login nudge) — detection + surfacing exist, no proactive ping yet.
+2. Large-template splits opportunistically (`seed.ts` 363 LOC, `progressive-table`/`table-state` ~284) — touch only when editing those files.
+3. shadcn barrel import cycles (calendar/range-calendar/dialog/scroll-area `index.ts`) — low value, skip unless churn rises.
 
 ## Critical Context
 
 - Project uses `pnpm`, not `npm`.
 - Repository: `git@github.com:masmuss/trak.git`
-- Active branch: `refactor/bot-cleanup`.
+- Active branch: `dev`.
 - `DATABASE_URL` lives in root `.env`, loaded automatically by `@trak/database` import.
 - Per-app `.env` files only contain non-DB vars: `TELEGRAM_BOT_TOKEN`, `ORIGIN`, `BETTER_AUTH_SECRET`.
-- DB reset + full migrate (0000–0006) + re-seed done. No pending migrations.
+- Migrations through 0017 applied to `local` + `trak_test` (both docker). WARNING: `local` journal once drifted (0013–0016 objects existed with no journal rows, migrate failed silently) — fixed by backfilling rows with sha256(file) hashes; `trak_test` is push-managed (no journal).
 - `uuid_generate_v7()` function now works correctly (tested: returns valid UUID v7).
 
 ## Relevant Files
 
-- `packages/database/src/schema.ts` — all tables: `reports` (now has priority + SLA fields), `reporters`, `categories`, `notifications`, `botSessions`, `statusHistories`, etc.
+- `packages/database/src/schema.ts` — all tables: `reports` (priority + SLA + `last_activity_at` fields), `reporters`, `categories`, `notifications`, `botSessions`, `statusHistories`, etc.
 - `packages/database/drizzle/0005_green_spot.sql` — `uuid_generate_v7()` function + ALTER DEFAULT for 7 tables
 - `packages/database/drizzle/0006_careful_trauma.sql` — priority enum + SLA columns on `reports`
-- `packages/database/src/index.ts` — `db` proxy, `initDb()`, `listen()`, `createPgSessionAdapter`, `getDb()`
-- `packages/services/src/report.service.ts` — ticket CRUD, `calculateSLA()`, `createReport`, `updateTicketPriority`, `checkSlaBreach`, `getTicketByTicketCode`, `getTicketById`
+- `packages/database/src/index.ts` — pure barrel (connection lives in `client.ts`: `db` proxy, `initDb()`, `listen()`, `getDb()`); `session-adapter.ts` imports from `./client` (no cycle)
+- `packages/services/src/ticket-query.service.ts` — `listTickets` (filter/sort), `getStaleTickets`, `isTicketSortKey`, `parseStaleHours`, `getTicketByTicketCode`, `getTicketById`; ticket CRUD split across `ticket-*.service.ts` domain modules
 - `packages/services/src/index.ts` — barrel exports
 - `packages/shared/src/types.ts` — `Priority` type, `TicketDetails` includes SLA fields
 - `apps/web/src/routes/(authenticated)/tickets/[id]/+page.server.ts` — form actions (`updateStatus`, `updatePriority`)
