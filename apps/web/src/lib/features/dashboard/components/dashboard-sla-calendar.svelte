@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { SvelteMap } from 'svelte/reactivity';
+	import { resolve } from '$app/paths';
 	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { CaretLeftIcon, CaretRightIcon } from 'phosphor-svelte';
@@ -38,7 +40,7 @@
 		const first = new Date(year, month, 1);
 		const leadBlanks = (first.getDay() + 6) % 7;
 		const dayCount = new Date(year, month + 1, 0).getDate();
-		const byDay = new Map<number, Deadline[]>();
+		const byDay = new SvelteMap<number, Deadline[]>();
 		for (const d of deadlines) {
 			const date = new Date(d.slaResolveDue);
 			if (date.getFullYear() !== year || date.getMonth() !== month) continue;
@@ -126,7 +128,7 @@
 						<button
 							type="button"
 							title={ticket.title}
-							onclick={() => void goto(`/tickets/${ticket.id}`)}
+							onclick={() => void goto(resolve('/(authenticated)/tickets/[id]', { id: ticket.id }))}
 							class="rounded-md border border-red-200 bg-background px-2 py-1 font-mono text-xs font-medium hover:bg-muted dark:border-red-900"
 						>
 							{ticket.ticketCode}
@@ -164,7 +166,8 @@
 									type="button"
 									title={`${item.ticketCode} — ${item.title}`}
 									aria-label={`Open ${item.ticketCode}`}
-									onclick={() => void goto(`/tickets/${item.id}`)}
+									onclick={() =>
+										void goto(resolve('/(authenticated)/tickets/[id]', { id: item.id }))}
 									class="size-2.5 rounded-full {dotClass(item)}"
 								></button>
 							{/each}

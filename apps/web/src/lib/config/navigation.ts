@@ -10,12 +10,12 @@ import type { Component } from 'svelte';
 
 export interface NavSubItem {
 	title: string;
-	url: string;
+	url: NavHref;
 }
 
 export interface NavItem {
 	title: string;
-	url: string;
+	url: NavHref;
 	icon: Component;
 	items?: NavSubItem[];
 	adminOnly?: boolean;
@@ -27,6 +27,23 @@ export interface NavGroup {
 	items: NavItem[];
 }
 
+// Every item below is checked against this union at compile time:
+// adding a URL to the data without listing it here fails the build,
+// which keeps resolve() calls type-safe (it only accepts literal routes).
+export type NavHref =
+	| '/dashboard'
+	| '/tickets'
+	| '/tickets?status=open'
+	| '/tickets?status=in_progress'
+	| '/tickets?status=resolved'
+	| '/reporters'
+	| '/invite-codes'
+	| '/agents'
+	| '/settings'
+	| '/audit-logs';
+
+// Every item carries `items` + `adminOnly` explicitly so the inferred
+// literal types stay indexable (optional props would splinter the union).
 export const navGroups: NavGroup[] = [
 	{
 		id: 'workspace',
@@ -35,7 +52,9 @@ export const navGroups: NavGroup[] = [
 			{
 				title: 'Dashboard',
 				url: '/dashboard',
-				icon: ChartPieIcon
+				icon: ChartPieIcon,
+				items: [],
+				adminOnly: false
 			},
 			{
 				title: 'Tickets',
@@ -46,7 +65,8 @@ export const navGroups: NavGroup[] = [
 					{ title: 'Open', url: '/tickets?status=open' },
 					{ title: 'In Progress', url: '/tickets?status=in_progress' },
 					{ title: 'Resolved', url: '/tickets?status=resolved' }
-				]
+				],
+				adminOnly: false
 			}
 		]
 	},
@@ -57,17 +77,23 @@ export const navGroups: NavGroup[] = [
 			{
 				title: 'Reporters',
 				url: '/reporters',
-				icon: UsersIcon
+				icon: UsersIcon,
+				items: [],
+				adminOnly: false
 			},
 			{
 				title: 'Invite Codes',
 				url: '/invite-codes',
-				icon: KeyIcon
+				icon: KeyIcon,
+				items: [],
+				adminOnly: false
 			},
 			{
 				title: 'Agents',
 				url: '/agents',
-				icon: ShieldIcon
+				icon: ShieldIcon,
+				items: [],
+				adminOnly: false
 			}
 		]
 	},
@@ -78,17 +104,20 @@ export const navGroups: NavGroup[] = [
 			{
 				title: 'Settings',
 				url: '/settings',
-				icon: GearSixIcon
+				icon: GearSixIcon,
+				items: [],
+				adminOnly: false
 			},
 			{
 				title: 'Audit Logs',
 				url: '/audit-logs',
 				icon: ShieldIcon,
+				items: [],
 				adminOnly: true
 			}
 		]
 	}
-];
+] satisfies NavGroup[];
 
 export function visibleNavGroups(role?: string | null): NavGroup[] {
 	if (role === 'admin') return navGroups;

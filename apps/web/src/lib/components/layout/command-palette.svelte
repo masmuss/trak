@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import * as Command from '$lib/components/ui/command/index.js';
-	import { visibleNavGroups } from '$lib/config/navigation';
+	import { visibleNavGroups, type NavHref } from '$lib/config/navigation';
 	import TicketIcon from 'phosphor-svelte/lib/Ticket';
 	import { onMount } from 'svelte';
 
@@ -41,9 +42,14 @@
 		hits = [];
 	}
 
-	function go(url: string) {
+	function go(url: NavHref) {
 		close();
-		void goto(url);
+		void goto(resolve(url));
+	}
+
+	function goTicket(id: string) {
+		close();
+		void goto(resolve('/(authenticated)/tickets/[id]', { id }));
 	}
 
 	async function searchTickets(value: string) {
@@ -92,10 +98,7 @@
 		{#if hits.length > 0}
 			<Command.Group heading="Tickets">
 				{#each hits as hit (hit.id)}
-					<Command.Item
-						value={`${hit.ticketCode} ${hit.title}`}
-						onSelect={() => go(`/tickets/${hit.id}`)}
-					>
+					<Command.Item value={`${hit.ticketCode} ${hit.title}`} onSelect={() => goTicket(hit.id)}>
 						<TicketIcon class="size-4 shrink-0 text-muted-foreground" />
 						<span class="font-mono text-xs font-medium">{hit.ticketCode}</span>
 						<span class="min-w-0 flex-1 truncate text-sm">{hit.title}</span>
