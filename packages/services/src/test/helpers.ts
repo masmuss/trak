@@ -11,7 +11,7 @@ function unique(prefix: string): string {
 	return `${prefix}-${Date.now()}-${counter++}-${randomUUID().slice(0, 8)}`;
 }
 
-export async function truncateAll(): Promise<void> {
+async function truncateAll(): Promise<void> {
 	await db.execute(sql`
 		TRUNCATE
 			ticket_messages,

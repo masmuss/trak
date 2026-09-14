@@ -44,7 +44,7 @@ export function resetSession(session: BotSession): void {
 	});
 }
 
-export function getAttachmentSummary(attachments: BotSession['attachments']): string {
+function getAttachmentSummary(attachments: BotSession['attachments']): string {
 	return attachments.length > 0 ? `${attachments.length} file(s)` : 'Tidak ada';
 }
 

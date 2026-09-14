@@ -34,7 +34,6 @@ export const load: PageServerLoad = async (event) => {
 		logs,
 		total,
 		page,
-		pageSize: PAGE_SIZE,
 		pageCount: Math.max(1, Math.ceil(total / PAGE_SIZE)),
 		filters: {
 			action: action ?? '',

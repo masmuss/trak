@@ -71,8 +71,6 @@ export async function markAllNotificationsRead(reporterTelegramId: bigint) {
 		);
 }
 
-export type AgentNotification = typeof agentNotifications.$inferSelect;
-
 export async function createAgentNotification(input: {
 	recipientUserId: string;
 	reportId: string;

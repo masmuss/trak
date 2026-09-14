@@ -17,8 +17,6 @@ export const STATIC_CALLBACK = {
 	CANCEL_REPLY: 'cancel_reply'
 } as const;
 
-export type StaticCallback = (typeof STATIC_CALLBACK)[keyof typeof STATIC_CALLBACK];
-
 const CATEGORY_PREFIX = 'category_';
 const STATUS_PREFIX = 'status_';
 const REPLY_PREFIX = 'reply_';

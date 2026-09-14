@@ -1,5 +1,3 @@
-export { STATUS_LABEL, getStatusLabel } from '@trak/shared';
-
 export const HELP_TEXT =
 	'Bantuan Bot Pelaporan:\n\n' +
 	'/start - Mulai dan daftarkan diri\n' +
@@ -35,10 +33,6 @@ export function invalidInviteError(code: string): string {
 }
 
 export const CANCEL_MESSAGE = '🚫 Laporan dibatalkan.';
-
-export function cancelWithRemoveKeyboard(): string {
-	return '🚫 Laporan dibatalkan.';
-}
 
 export const IDLE_ERROR_MESSAGE =
 	'Maaf, saya tidak mengerti maksud Anda atau sesi laporan Anda sebelumnya telah kedaluwarsa karena tidak ada aktivitas.\n\nSilakan ketik /report untuk memulai laporan baru.';
@@ -85,9 +79,6 @@ export function categorySelected(name: string): string {
 export const ATTACHMENT_PROMPT =
 	'Anda dapat mengirim lampiran (foto/dokumen) untuk melengkapi laporan Anda.\n\n' +
 	'Kirim file sekarang atau pilih "Selesai" jika tidak ingin menambahkan lampiran.';
-
-export const NO_CATEGORY_MESSAGE =
-	'Laporan tanpa kategori.\n\nSekarang kirim lampiran (foto/dokumen) atau pilih "Selesai" untuk lanjut.';
 
 export function attachmentReceived(count: number): string {
 	return `📎 Diterima. Total lampiran: ${count}\n\nKirim lagi atau pilih "Selesai" untuk lanjut.`;

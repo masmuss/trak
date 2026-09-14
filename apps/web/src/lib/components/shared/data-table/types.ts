@@ -52,11 +52,6 @@ export interface DateFilterConfig extends BaseFilterConfig {
 export type FilterConfig =
 	SelectFilterConfig | SearchFilterConfig | DateRangeFilterConfig | DateFilterConfig;
 
-export interface TableFilterConfig {
-	filters: FilterConfig[];
-	defaultValues?: Record<string, unknown>;
-}
-
 // ============================================================================
 // Table Configuration Types
 // ============================================================================
@@ -155,21 +150,6 @@ export interface DateRange {
 export interface DateRangePreset {
 	label: string;
 	range: DateRange;
-}
-
-// ============================================================================
-// Server Integration Types
-// ============================================================================
-
-export interface ServerTableResponse<TData> {
-	data: TData[];
-	total: number;
-	page: number;
-	limit: number;
-}
-
-export interface TableDataFetcher<TData> {
-	(query: TableQuery): Promise<ServerTableResponse<TData>>;
 }
 
 // ============================================================================
