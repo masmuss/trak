@@ -86,9 +86,9 @@
 </script>
 
 <Command.Dialog bind:open bind:value={query}>
-	<Command.Input placeholder="Cari tiket atau navigasi..." />
+	<Command.Input placeholder="Search tickets or navigate..." />
 	<Command.List>
-		<Command.Empty>{loading ? 'Mencari...' : 'Tidak ada hasil.'}</Command.Empty>
+		<Command.Empty>{loading ? 'Searching...' : 'No results found.'}</Command.Empty>
 		{#if hits.length > 0}
 			<Command.Group heading="Tickets">
 				{#each hits as hit (hit.id)}
@@ -98,16 +98,20 @@
 					>
 						<TicketIcon class="size-4 shrink-0 text-muted-foreground" />
 						<span class="font-mono text-xs font-medium">{hit.ticketCode}</span>
-						<span class="truncate text-sm">{hit.title}</span>
+						<span class="min-w-0 flex-1 truncate text-sm">{hit.title}</span>
 					</Command.Item>
 				{/each}
 			</Command.Group>
 		{/if}
 		<Command.Group heading="Navigation">
 			{#each navItems as item (item.url + item.title)}
-				<Command.Item value={`${item.group} ${item.title}`} onSelect={() => go(item.url)}>
-					<span class="text-sm">{item.title}</span>
-					<span class="ml-auto text-xs text-muted-foreground">{item.group}</span>
+				<Command.Item
+					value={`${item.group} ${item.title}`}
+					onSelect={() => go(item.url)}
+					class="flex w-full items-center gap-2 [&>svg]:hidden"
+				>
+					<span class="min-w-0 flex-1 truncate text-sm">{item.title}</span>
+					<span class="ml-auto shrink-0 text-xs text-muted-foreground">{item.group}</span>
 				</Command.Item>
 			{/each}
 		</Command.Group>
