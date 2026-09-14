@@ -4,18 +4,32 @@ import {
 	getRecentTickets,
 	getTopInviteCodes,
 	getCriticalTickets,
-	getPerformanceOverview
+	getPerformanceOverview,
+	getTicketVolume,
+	getTicketCreationTrend,
+	getCategoryDistribution
 } from '@trak/services';
 
 export const load: PageServerLoad = async () => {
-	const [stats, recentReports, topInviteCodes, criticalReports, performanceOverview] =
-		await Promise.all([
-			getDashboardStats(),
-			getRecentTickets(5),
-			getTopInviteCodes(5),
-			getCriticalTickets(5),
-			getPerformanceOverview()
-		]);
+	const [
+		stats,
+		recentReports,
+		topInviteCodes,
+		criticalReports,
+		performanceOverview,
+		volume,
+		trend,
+		distribution
+	] = await Promise.all([
+		getDashboardStats(),
+		getRecentTickets(5),
+		getTopInviteCodes(5),
+		getCriticalTickets(5),
+		getPerformanceOverview(),
+		getTicketVolume(14),
+		getTicketCreationTrend(),
+		getCategoryDistribution()
+	]);
 
 	return {
 		stats: {
@@ -29,6 +43,10 @@ export const load: PageServerLoad = async () => {
 		recentReports,
 		criticalReports,
 		performanceOverview,
+		volume,
+		trend,
+		distribution: distribution.distribution,
+		uncategorized: distribution.uncategorized,
 		inviteCodes: topInviteCodes.map((code) => ({
 			id: code.id,
 			code: code.code,

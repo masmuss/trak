@@ -1,11 +1,13 @@
-import { eq, count } from 'drizzle-orm';
+import { eq, count, gte } from 'drizzle-orm';
 import { db, reports, reporters, inviteCodes } from '@trak/database';
 import type { TicketWithRelations } from '@trak/shared';
 import type {
+	CreationTrend,
 	DashboardStats,
 	DayData,
 	PerformanceOverviewData,
-	TopInviteCode
+	TopInviteCode,
+	VolumeDayData
 } from './dashboard.types';
 
 export async function getDashboardStats(): Promise<DashboardStats> {
@@ -122,5 +124,79 @@ export async function getPerformanceOverview(): Promise<PerformanceOverviewData>
 		chartData,
 		totalReports,
 		resolvedReports
+	};
+}
+
+function startOfDay(date: Date): Date {
+	const d = new Date(date);
+	d.setHours(0, 0, 0, 0);
+	return d;
+}
+
+/**
+ * Daily created vs resolved counts for the last `days` days (inclusive today).
+ * Days with zero activity are included so charts render a continuous axis.
+ */
+export async function getTicketVolume(days = 14): Promise<VolumeDayData[]> {
+	if (!Number.isFinite(days) || days <= 0) {
+		throw new Error('days must be a positive number');
+	}
+	const today = startOfDay(new Date());
+	const start = new Date(today);
+	start.setDate(start.getDate() - (days - 1));
+
+	const rows = await db.query.reports.findMany({
+		columns: { createdAt: true, status: true },
+		where: gte(reports.createdAt, start)
+	});
+
+	const buckets = new Map<string, VolumeDayData>();
+	for (let i = 0; i < days; i++) {
+		const d = new Date(start);
+		d.setDate(d.getDate() + i);
+		const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+		buckets.set(label, { day: label, created: 0, resolved: 0 });
+	}
+
+	for (const row of rows) {
+		const label = new Date(row.createdAt).toLocaleDateString('en-US', {
+			month: 'short',
+			day: 'numeric'
+		});
+		const bucket = buckets.get(label);
+		if (!bucket) continue;
+		bucket.created += 1;
+		if (row.status === 'resolved' || row.status === 'closed') bucket.resolved += 1;
+	}
+
+	return [...buckets.values()];
+}
+
+/**
+ * Tickets created in the last 7 days vs the 7 days before, for trend badges.
+ */
+export async function getTicketCreationTrend(): Promise<CreationTrend> {
+	const today = startOfDay(new Date());
+	const currentStart = new Date(today);
+	currentStart.setDate(currentStart.getDate() - 6);
+	const previousStart = new Date(today);
+	previousStart.setDate(previousStart.getDate() - 13);
+
+	const rows = await db.query.reports.findMany({
+		columns: { createdAt: true },
+		where: gte(reports.createdAt, previousStart)
+	});
+
+	let current = 0;
+	let previous = 0;
+	for (const row of rows) {
+		if (new Date(row.createdAt) >= currentStart) current += 1;
+		else previous += 1;
+	}
+
+	return {
+		current,
+		previous,
+		pctChange: previous === 0 ? null : Math.round(((current - previous) / previous) * 100)
 	};
 }

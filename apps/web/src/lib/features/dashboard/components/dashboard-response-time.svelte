@@ -38,15 +38,6 @@
 				</div>
 
 				<div class="flex flex-col gap-5 rounded-lg p-4 lg:col-span-4">
-					<div class="flex flex-col gap-1">
-						<div class="text-4xl leading-none font-medium tabular-nums">
-							4.8 <span class="text-lg font-normal text-muted-foreground">/ 5.0</span>
-						</div>
-						<p class="text-sm text-muted-foreground">
-							Average reporter satisfaction based on recent reviews.
-						</p>
-					</div>
-
 					<div class="flex flex-col gap-3 rounded-lg border border-border/60 p-3">
 						<div class="text-[11px] tracking-widest text-muted-foreground uppercase">
 							Resolution Rate

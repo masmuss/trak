@@ -2,6 +2,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { ArrowUpRightIcon, TrendUpIcon, TrendDownIcon } from 'phosphor-svelte';
+	import type { CreationTrend } from '@trak/services';
 
 	type Stats = {
 		totalReports: number;
@@ -10,7 +11,14 @@
 		criticalTickets: number;
 	};
 
-	let { stats }: { stats: Stats } = $props();
+	let { stats, trend }: { stats: Stats; trend: CreationTrend | null } = $props();
+
+	const trendLabel = $derived(
+		!trend || trend.pctChange === null
+			? 'New this week'
+			: `${trend.pctChange >= 0 ? '+' : ''}${trend.pctChange}%`
+	);
+	const trendUp = $derived((trend?.pctChange ?? 0) >= 0);
 </script>
 
 <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -28,13 +36,17 @@
 					variant="outline"
 					class="border-green-200 bg-green-500/10 text-green-700 dark:border-green-900/40 dark:bg-green-500/15 dark:text-green-300"
 				>
-					<TrendUpIcon class="mr-1 size-3" />
-					+12%
+					{#if trendUp}
+						<TrendUpIcon class="mr-1 size-3" />
+					{:else}
+						<TrendDownIcon class="mr-1 size-3" />
+					{/if}
+					{trendLabel}
 				</Badge>
 			</div>
 			<p class="text-sm">
 				<span class="font-medium text-foreground">Total</span>
-				<span class="text-muted-foreground">tickets received</span>
+				<span class="text-muted-foreground">tickets received · vs prior 7 days</span>
 			</p>
 		</Card.Content>
 	</Card.Root>

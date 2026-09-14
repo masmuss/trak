@@ -14,6 +14,15 @@ export type PerformanceOverviewData = {
 	resolvedReports: number;
 };
 
+export type VolumeDayData = { day: string; created: number; resolved: number };
+
+export type CreationTrend = {
+	current: number;
+	previous: number;
+	/** Percentage change, null when previous window is empty. */
+	pctChange: number | null;
+};
+
 export type TopInviteCode = {
 	id: string;
 	code: string;

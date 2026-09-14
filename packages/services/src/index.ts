@@ -91,12 +91,16 @@ export {
 	getRecentTickets,
 	getTopInviteCodes,
 	getCriticalTickets,
-	getPerformanceOverview
+	getPerformanceOverview,
+	getTicketVolume,
+	getTicketCreationTrend
 } from './dashboard.service';
 export type {
 	DashboardStats,
 	TopInviteCode,
 	PerformanceOverviewData,
+	VolumeDayData,
+	CreationTrend,
 	DayData
 } from './dashboard.types';
 
